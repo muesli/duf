@@ -18,6 +18,10 @@ var (
 )
 
 func printTable(m []Mount) {
+	if len(m) == 0 {
+		return
+	}
+
 	tab := table.NewWriter()
 	tab.SetOutputMirror(os.Stdout)
 	tab.SetStyle(table.StyleRounded)
