@@ -16,6 +16,7 @@ type Mount struct {
 	Device     string
 	Mountpoint string
 	Fstype     string
+	Type       string
 	Opts       string
 	Stat       unix.Statfs_t
 	Total      uint64
@@ -62,6 +63,7 @@ func mounts() ([]Mount, error) {
 			Device:     device,
 			Mountpoint: unescapeFstab(mountPoint),
 			Fstype:     fstype,
+			Type:       fsTypeMap[stat.Type],
 			Opts:       mountOpts,
 			Stat:       stat,
 			Total:      (uint64(stat.Blocks) * uint64(stat.Bsize)),

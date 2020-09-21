@@ -7,14 +7,27 @@ import (
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/muesli/termenv"
 )
 
 var (
+	term = termenv.ColorProfile()
+
 	all         = flag.Bool("all", false, "show all devices")
 	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
 	hideVirtual = flag.Bool("hide-virtual", true, "hides virtual devices")
+)
+
+var (
+	colorRed     = term.Color("#E88388")
+	colorYellow  = term.Color("#DBAB79")
+	colorGreen   = term.Color("#A8CC8C")
+	colorBlue    = term.Color("#71BEF2")
+	colorGray    = term.Color("#B9BFCA")
+	colorMagenta = term.Color("#D290E4")
+	colorCyan    = term.Color("#66C2CD")
 )
 
 func printTable(title string, m []Mount) {
@@ -45,19 +58,39 @@ func printTable(title string, m []Mount) {
 			continue
 		}
 
-		var usepct string
+		var free = termenv.String(sizeToString(v.Free))
+		switch {
+		case v.Free < 1<<30:
+			free = free.Foreground(colorRed)
+		case v.Free < 10*1<<30:
+			free = free.Foreground(colorYellow)
+		default:
+			free = free.Foreground(colorGreen)
+		}
+
+		var usage = float64(v.Used) / float64(v.Total)
+		usepct := termenv.String()
 		if v.Total > 0 {
-			usepct = fmt.Sprintf("%.1f%%", float64(v.Used)/float64(v.Total)*100)
+			usepct = termenv.String(fmt.Sprintf("%.1f%%", usage*100))
+		}
+
+		switch {
+		case usage >= 90:
+			usepct = usepct.Foreground(colorRed)
+		case usage >= 50:
+			usepct = usepct.Foreground(colorYellow)
+		default:
+			usepct = usepct.Foreground(colorGreen)
 		}
 
 		tab.AppendRow([]interface{}{
-			v.Device, // filesystem
-			sizeToString(v.Total),
-			sizeToString(v.Used),
-			sizeToString(v.Free),
-			usepct,
-			fsTypeMap[v.Stat.Type], // type
-			v.Mountpoint,           // mounted on
+			termenv.String(v.Device).Foreground(colorGray), // filesystem
+			sizeToString(v.Total),                          // size
+			sizeToString(v.Used),                           // used
+			free,                                           // avail
+			usepct,                                         // use%
+			termenv.String(v.Type).Foreground(colorGray),       // type
+			termenv.String(v.Mountpoint).Foreground(colorBlue), // mounted on
 		})
 	}
 
