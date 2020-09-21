@@ -57,6 +57,10 @@ func printTable(title string, m []Mount) {
 		if v.Stat.Blocks == 0 && !*all {
 			continue
 		}
+		// skip zero size devices
+		if v.Stat.Bsize == 0 && !*all {
+			continue
+		}
 
 		var free = termenv.String(sizeToString(v.Free))
 		switch {
