@@ -113,17 +113,17 @@ func sizeToString(size uint64) (str string) {
 
 	switch {
 	case size >= 1<<60:
-		str = fmt.Sprintf("%.1f EiB", b/(1<<60))
+		str = fmt.Sprintf("%.1fE", b/(1<<60))
 	case size >= 1<<50:
-		str = fmt.Sprintf("%.1f PiB", b/(1<<50))
+		str = fmt.Sprintf("%.1fP", b/(1<<50))
 	case size >= 1<<40:
-		str = fmt.Sprintf("%.1f TiB", b/(1<<40))
+		str = fmt.Sprintf("%.1fT", b/(1<<40))
 	case size >= 1<<30:
-		str = fmt.Sprintf("%.1f GiB", b/(1<<30))
+		str = fmt.Sprintf("%.1fG", b/(1<<30))
 	case size >= 1<<20:
-		str = fmt.Sprintf("%.1f MiB", b/(1<<20))
+		str = fmt.Sprintf("%.1fM", b/(1<<20))
 	case size >= 1<<10:
-		str = fmt.Sprintf("%.1f KiB", b/(1<<10))
+		str = fmt.Sprintf("%.1fK", b/(1<<10))
 	default:
 		str = fmt.Sprintf("%dB", size)
 	}
