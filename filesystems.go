@@ -254,6 +254,11 @@ func isLocalFs(stat unix.Statfs_t) bool {
 	return localMap[stat.Type]
 }
 
+func isFuseFs(stat unix.Statfs_t) bool {
+	return stat.Type == FUSEBLK_SUPER_MAGIC ||
+		stat.Type == FUSE_SUPER_MAGIC
+}
+
 func isNetworkFs(stat unix.Statfs_t) bool {
 	return networkMap[stat.Type]
 }

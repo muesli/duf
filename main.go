@@ -17,6 +17,7 @@ var (
 	all         = flag.Bool("all", false, "show all devices")
 	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
+	hideFuse    = flag.Bool("hide-fuse", false, "hides fuse devices")
 	hideSpecial = flag.Bool("hide-special", false, "hides special devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
 )
@@ -148,17 +149,23 @@ func main() {
 
 	var local []Mount
 	var network []Mount
+	var fuse []Mount
 	var special []Mount
 	for _, v := range m {
-		if isLocalFs(v.Stat) {
-			local = append(local, v)
-		}
 		if isNetworkFs(v.Stat) {
 			network = append(network, v)
+			continue
 		}
 		if isSpecialFs(v.Stat) {
 			special = append(special, v)
+			continue
 		}
+		if isFuseFs(v.Stat) {
+			fuse = append(fuse, v)
+			continue
+		}
+
+		local = append(local, v)
 	}
 
 	if !*hideLocal || *all {
@@ -166,6 +173,9 @@ func main() {
 	}
 	if !*hideNetwork || *all {
 		printTable("network devices", network)
+	}
+	if !*hideFuse || *all {
+		printTable("FUSE devices", fuse)
 	}
 	if !*hideSpecial || *all {
 		printTable("special devices", special)
