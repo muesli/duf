@@ -75,9 +75,9 @@ func printTable(title string, m []Mount) {
 		}
 
 		switch {
-		case usage >= 90:
+		case usage >= 0.9:
 			usepct = usepct.Foreground(colorRed)
-		case usage >= 50:
+		case usage >= 0.5:
 			usepct = usepct.Foreground(colorYellow)
 		default:
 			usepct = usepct.Foreground(colorGreen)
