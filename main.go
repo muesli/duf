@@ -17,7 +17,7 @@ var (
 	hideVirtual = flag.Bool("hide-virtual", true, "hides virtual devices")
 )
 
-func printTable(m []Mount) {
+func printTable(title string, m []Mount) {
 	if len(m) == 0 {
 		return
 	}
@@ -36,11 +36,11 @@ func printTable(m []Mount) {
 		if v.Fstype == "autofs" {
 			continue
 		}
-
 		// skip bind-mounts
 		if *hideBinds && strings.Contains(v.Opts, "bind") {
 			continue
 		}
+		// skip special devices
 		if v.Stat.Blocks == 0 && !*all {
 			continue
 		}
@@ -61,6 +61,7 @@ func printTable(m []Mount) {
 		})
 	}
 
+	tab.SetTitle("%d %s", tab.Length(), title)
 	tab.Render()
 }
 
@@ -112,12 +113,12 @@ func main() {
 	}
 
 	if !*hideLocal || *all {
-		printTable(local)
+		printTable("local devices", local)
 	}
 	if !*hideNetwork || *all {
-		printTable(network)
+		printTable("network devices", network)
 	}
 	if !*hideVirtual || *all {
-		printTable(special)
+		printTable("special devices", special)
 	}
 }
