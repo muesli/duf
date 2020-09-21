@@ -55,7 +55,7 @@ func mounts() ([]Mount, error) {
 		var stat unix.Statfs_t
 		err := unix.Statfs(unescapeFstab(mountPoint), &stat)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("%s: %s\n", unescapeFstab(mountPoint), err)
 			continue
 		}
 
