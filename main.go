@@ -33,10 +33,6 @@ var (
 )
 
 func printTable(title string, m []Mount) {
-	if len(m) == 0 {
-		return
-	}
-
 	tab := table.NewWriter()
 	tab.SetOutputMirror(os.Stdout)
 	tab.SetStyle(table.StyleRounded)
@@ -109,6 +105,10 @@ func printTable(title string, m []Mount) {
 			termenv.String(v.Type).Foreground(colorGray),   // type
 			termenv.String(v.Device).Foreground(colorGray), // filesystem
 		})
+	}
+
+	if tab.Length() == 0 {
+		return
 	}
 
 	tab.SetTitle("%d %s", tab.Length(), title)
