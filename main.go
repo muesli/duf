@@ -17,8 +17,8 @@ var (
 	all         = flag.Bool("all", false, "show all devices")
 	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
+	hideSpecial = flag.Bool("hide-special", false, "hides special devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
-	hideSpecial = flag.Bool("hide-special", true, "hides special devices")
 )
 
 var (
