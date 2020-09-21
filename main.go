@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/muesli/termenv"
 )
 
@@ -38,7 +39,13 @@ func printTable(title string, m []Mount) {
 	tab := table.NewWriter()
 	tab.SetOutputMirror(os.Stdout)
 	tab.SetStyle(table.StyleRounded)
-	tab.AppendHeader(table.Row{"Filesystem", "Size", "Used", "Avail", "Use%", "Type", "Mounted on"})
+
+	tab.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 2, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Align: text.AlignRight, AlignHeader: text.AlignRight},
+	})
+	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"})
 
 	for _, v := range m {
 		// fmt.Println(v)
@@ -93,13 +100,13 @@ func printTable(title string, m []Mount) {
 		}
 
 		tab.AppendRow([]interface{}{
-			termenv.String(v.Device).Foreground(colorGray), // filesystem
-			sizeToString(v.Total),                          // size
-			sizeToString(v.Used),                           // used
-			free,                                           // avail
-			usepct,                                         // use%
-			termenv.String(v.Type).Foreground(colorGray),       // type
 			termenv.String(v.Mountpoint).Foreground(colorBlue), // mounted on
+			sizeToString(v.Total),                              // size
+			sizeToString(v.Used),                               // used
+			free,                                               // avail
+			usepct,                                             // use%
+			termenv.String(v.Type).Foreground(colorGray),   // type
+			termenv.String(v.Device).Foreground(colorGray), // filesystem
 		})
 	}
 
