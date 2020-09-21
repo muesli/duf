@@ -15,3 +15,5 @@
 # vendor/
 
 duf
+
+dist/
