@@ -230,7 +230,7 @@ var networkMap = map[int64]bool{
 	SMB2_MAGIC_NUMBER: true,
 }
 
-var virtualMap = map[int64]bool{
+var specialMap = map[int64]bool{
 	AUTOFS_SUPER_MAGIC:     true,
 	BINFMTFS_MAGIC:         true,
 	BPF_FS_MAGIC:           true,
@@ -258,8 +258,8 @@ func isNetworkFs(stat unix.Statfs_t) bool {
 	return networkMap[stat.Type]
 }
 
-func isVirtualFs(stat unix.Statfs_t) bool {
-	return virtualMap[stat.Type]
+func isSpecialFs(stat unix.Statfs_t) bool {
+	return specialMap[stat.Type]
 }
 
 // remote: [ "nfs", "smbfs", "cifs", "ncpfs", "afs", "coda", "ftpfs", "mfs", "sshfs", "fuse.sshfs", "nfs4" ]

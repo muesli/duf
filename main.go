@@ -17,7 +17,7 @@ var (
 	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
-	hideVirtual = flag.Bool("hide-virtual", true, "hides virtual devices")
+	hideSpecial = flag.Bool("hide-special", true, "hides special devices")
 )
 
 var (
@@ -140,7 +140,7 @@ func main() {
 		if isNetworkFs(v.Stat) {
 			network = append(network, v)
 		}
-		if isVirtualFs(v.Stat) {
+		if isSpecialFs(v.Stat) {
 			special = append(special, v)
 		}
 	}
@@ -151,7 +151,7 @@ func main() {
 	if !*hideNetwork || *all {
 		printTable("network devices", network)
 	}
-	if !*hideVirtual || *all {
+	if !*hideSpecial || *all {
 		printTable("special devices", special)
 	}
 }
