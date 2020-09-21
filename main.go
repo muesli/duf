@@ -72,10 +72,15 @@ func printTable(title string, m []Mount) {
 			free = free.Foreground(colorGreen)
 		}
 
+		barWidth := 20.0
 		var usage = float64(v.Used) / float64(v.Total)
 		usepct := termenv.String()
 		if v.Total > 0 {
-			usepct = termenv.String(fmt.Sprintf("%.1f%%", usage*100))
+			usepct = termenv.String(fmt.Sprintf("[%s%s] %.1f%%",
+				strings.Repeat("#", int(usage*barWidth)),
+				strings.Repeat(".", int(barWidth)-int(usage*barWidth)),
+				usage*100,
+			))
 		}
 
 		switch {
