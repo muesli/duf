@@ -40,3 +40,7 @@ If you want to see all devices:
 You can hide individual tables:
 
     duf -hide-local -hide-network -hide-fuse -hide-special
+
+You can also pipe the output to a json parsing tool like `jq`.
+
+    duf  --json-output | jq

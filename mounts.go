@@ -12,23 +12,30 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type Mount struct {
-	Device     string
-	Mountpoint string
-	Fstype     string
-	Type       string
-	Opts       string
-	Stat       unix.Statfs_t
-	Total      uint64
-	Free       uint64
-	Used       uint64
+type Mounts struct {
+	All      map[string][]Mount `json:"Mounts"`
+	Warnings []string           `json:"Warnings,omitempty"`
 }
 
-func mounts() ([]Mount, error) {
+type Mount struct {
+	Device     string        `json:"Device"`
+	Mountpoint string        `json:"MountPoint"`
+	Fstype     string        `json:"Fstype"`
+	Type       string        `json:"Type"`
+	Opts       string        `json:"Opts"`
+	Stat       unix.Statfs_t `json:"Stat"`
+	Total      uint64        `json:"Total"`
+	Free       uint64        `json:"Free"`
+	Used       uint64        `json:"Used"`
+}
+
+func mounts() ([]Mount, []string, error) {
+	var warnings []string
+
 	filename := "/proc/self/mountinfo"
 	lines, err := readLines(filename)
 	if err != nil {
-		return nil, err
+		return nil, warnings, err
 	}
 
 	ret := make([]Mount, 0, len(lines))
@@ -40,7 +47,7 @@ func mounts() ([]Mount, error) {
 		// split the mountinfo line by the separator hyphen
 		parts := strings.Split(line, " - ")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
+			return nil, warnings, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
 		fields := strings.Fields(parts[0])
@@ -56,11 +63,12 @@ func mounts() ([]Mount, error) {
 		err := unix.Statfs(mountPoint, &stat)
 		if err != nil {
 			if err != os.ErrPermission {
-				fmt.Printf("%s: %s\n", mountPoint, err)
+				warnings = append(warnings, fmt.Sprintf("%s: %s\n", mountPoint, err))
 				continue
 			}
 
 			stat = unix.Statfs_t{}
+			continue
 		}
 
 		d := Mount{
@@ -87,7 +95,7 @@ func mounts() ([]Mount, error) {
 		ret = append(ret, d)
 	}
 
-	return ret, nil
+	return ret, warnings, nil
 }
 
 func readLines(filename string) ([]string, error) {

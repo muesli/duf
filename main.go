@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -20,6 +21,7 @@ var (
 	hideFuse    = flag.Bool("hide-fuse", false, "hides fuse devices")
 	hideSpecial = flag.Bool("hide-special", false, "hides special devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
+	jsonOutput  = flag.Bool("json-output", false, "print the output in json format")
 )
 
 var (
@@ -144,7 +146,7 @@ func sizeToString(size uint64) (str string) {
 func main() {
 	flag.Parse()
 
-	m, err := mounts()
+	m, warnings, err := mounts()
 	if err != nil {
 		panic(err)
 	}
@@ -170,16 +172,40 @@ func main() {
 		local = append(local, v)
 	}
 
+	var mounts Mounts
+	mounts.All = make(map[string][]Mount)
+	mounts.Warnings = warnings
+
 	if !*hideLocal || *all {
-		printTable("local devices", local)
+		mounts.All["local devices"] = local
 	}
 	if !*hideNetwork || *all {
-		printTable("network devices", network)
+		mounts.All["network devices"] = network
 	}
 	if !*hideFuse || *all {
-		printTable("FUSE devices", fuse)
+		mounts.All["FUSE devices"] = fuse
 	}
 	if !*hideSpecial || *all {
-		printTable("special devices", special)
+		mounts.All["special devices"] = special
 	}
+
+	// If user requested json-output
+	if *jsonOutput {
+		output, err := json.Marshal(mounts)
+		if err != nil {
+			fmt.Println("Error formatting the json output", err.Error())
+		} else {
+			fmt.Println(string(output))
+		}
+		return
+	}
+
+	// In any other case print the warnings first and then render the table
+	for _, warning := range warnings {
+		fmt.Println(warning)
+	}
+	for header, rows := range mounts.All {
+		printTable(header, rows)
+	}
+
 }
