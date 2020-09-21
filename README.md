@@ -1,6 +1,6 @@
 # duf
 
-Disk Usage/Free Utility
+Disk Usage/Free Utility (currently Linux-only, support for BSDs soon)
 
 ![duf](/duf.png)
 
