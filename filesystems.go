@@ -251,7 +251,7 @@ var specialMap = map[int64]bool{
 }
 
 func isLocalFs(stat unix.Statfs_t) bool {
-	return localMap[stat.Type]
+	return localMap[int64(stat.Type)]
 }
 
 func isFuseFs(stat unix.Statfs_t) bool {
@@ -260,11 +260,11 @@ func isFuseFs(stat unix.Statfs_t) bool {
 }
 
 func isNetworkFs(stat unix.Statfs_t) bool {
-	return networkMap[stat.Type]
+	return networkMap[int64(stat.Type)]
 }
 
 func isSpecialFs(stat unix.Statfs_t) bool {
-	return specialMap[stat.Type]
+	return specialMap[int64(stat.Type)]
 }
 
 // remote: [ "nfs", "smbfs", "cifs", "ncpfs", "afs", "coda", "ftpfs", "mfs", "sshfs", "fuse.sshfs", "nfs4" ]

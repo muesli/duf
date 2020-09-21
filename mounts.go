@@ -63,7 +63,7 @@ func mounts() ([]Mount, error) {
 			Device:     device,
 			Mountpoint: unescapeFstab(mountPoint),
 			Fstype:     fstype,
-			Type:       fsTypeMap[stat.Type],
+			Type:       fsTypeMap[int64(stat.Type)],
 			Opts:       mountOpts,
 			Stat:       stat,
 			Total:      (uint64(stat.Blocks) * uint64(stat.Bsize)),
