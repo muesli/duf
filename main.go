@@ -41,6 +41,7 @@ func printTable(title string, m []Mount) {
 		{Number: 2, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 3, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 4, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 5, AlignHeader: text.AlignCenter},
 	})
 	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"})
 
