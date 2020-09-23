@@ -22,13 +22,16 @@ var (
 	hideLoopback = flag.Bool("hide-loopback", true, "hide loopback devices")
 	hideBinds    = flag.Bool("hide-binds", true, "hide bind mounts")
 
-	width = flag.Uint("width", 0, "max output width")
+	sortBy = flag.String("sort", "mountpoint", "sort output by key (mountpoint, size, used, avail, usage, type, filesystem)")
+	width  = flag.Uint("width", 0, "max output width")
 
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
-func renderTables(m []Mount) {
+func renderTables(m []Mount, sortCol int) {
 	var local, network, fuse, special []Mount
+
+	// sort/filter devices
 	for _, v := range m {
 		if isNetworkFs(v.Stat) {
 			network = append(network, v)
@@ -46,17 +49,18 @@ func renderTables(m []Mount) {
 		local = append(local, v)
 	}
 
+	// print tables
 	if !*hideLocal || *all {
-		printTable("local", local)
+		printTable("local", local, sortCol)
 	}
 	if !*hideNetwork || *all {
-		printTable("network", network)
+		printTable("network", network, sortCol)
 	}
 	if !*hideFuse || *all {
-		printTable("FUSE", fuse)
+		printTable("FUSE", fuse, sortCol)
 	}
 	if !*hideSpecial || *all {
-		printTable("special", special)
+		printTable("special", special, sortCol)
 	}
 }
 
@@ -72,6 +76,12 @@ func renderJSON(m []Mount) error {
 
 func main() {
 	flag.Parse()
+
+	sortCol, err := stringToColumn(*sortBy)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "unknown sort key, valid values: mountpoint, size, used, avail, usage, type, filesystem")
+		os.Exit(1)
+	}
 
 	// detect terminal width
 	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
@@ -105,5 +115,5 @@ func main() {
 		return
 	}
 
-	renderTables(m)
+	renderTables(m, sortCol)
 }

@@ -11,6 +11,8 @@ import (
 )
 
 var (
+	columns = table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"}
+
 	colorRed     = term.Color("#E88388")
 	colorYellow  = term.Color("#DBAB79")
 	colorGreen   = term.Color("#A8CC8C")
@@ -44,19 +46,100 @@ func sizeToString(size uint64) (str string) {
 	return
 }
 
-func printTable(title string, m []Mount) {
-	tab := table.NewWriter()
-	tab.SetAllowedRowLength(int(*width))
-	tab.SetOutputMirror(os.Stdout)
-	tab.SetStyle(table.StyleRounded)
+// stringToColumn converts a column name to its index.
+func stringToColumn(s string) (int, error) {
+	switch strings.ToLower(s) {
+	case "mountpoint":
+		return 1, nil
+	case "size":
+		return 8, nil
+	case "used":
+		return 9, nil
+	case "avail":
+		return 10, nil
+	case "usage":
+		return 11, nil
+	case "type":
+		return 6, nil
+	case "filesystem":
+		return 7, nil
 
-	barWidth := 20.0
+	default:
+		return 0, fmt.Errorf("unknown column identifier: %s", s)
+	}
+}
+
+func sizeTransformer(val interface{}) string {
+	return sizeToString(val.(uint64))
+}
+
+func spaceTransformer(val interface{}) string {
+	free := val.(uint64)
+
+	var s = termenv.String(sizeToString(free))
+	switch {
+	case free < 1<<30:
+		s = s.Foreground(colorRed)
+	case free < 10*1<<30:
+		s = s.Foreground(colorYellow)
+	default:
+		s = s.Foreground(colorGreen)
+	}
+
+	return s.String()
+}
+
+func barTransformer(val interface{}) string {
+	barWidth := 20
 	switch {
 	case *width < 100:
 		barWidth = 0
 	case *width < 120:
 		barWidth = 10
 	}
+
+	usage := val.(float64)
+	s := termenv.String()
+	if usage > 0 {
+		if barWidth > 0 {
+			s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
+				strings.Repeat("#", int(usage*float64(barWidth))),
+				strings.Repeat(".", barWidth-int(usage*float64(barWidth))),
+				usage*100,
+			))
+		} else {
+			s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
+		}
+	}
+
+	// apply color to progress-bar
+	switch {
+	case usage >= 0.9:
+		s = s.Foreground(colorRed)
+	case usage >= 0.5:
+		s = s.Foreground(colorYellow)
+	default:
+		s = s.Foreground(colorGreen)
+	}
+
+	return s.String()
+}
+
+func printTable(title string, m []Mount, sortBy int) {
+	tab := table.NewWriter()
+	tab.SetAllowedRowLength(int(*width))
+	tab.SetOutputMirror(os.Stdout)
+	tab.SetStyle(table.StyleRounded)
+	// tab.Style().Options.SeparateColumns = false
+
+	barWidth := 20
+	switch {
+	case *width < 100:
+		barWidth = 0
+	case *width < 120:
+		barWidth = 10
+	}
+
 	cols := *width -
 		7*3 - // size columns
 		uint(barWidth) - // bar
@@ -70,14 +153,19 @@ func printTable(title string, m []Mount) {
 
 	tab.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 1, WidthMax: int(float64(cols) * 0.4)},
-		{Number: 2, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 3, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 4, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 5, AlignHeader: text.AlignCenter},
+		{Number: 2, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 5, Transformer: barTransformer, AlignHeader: text.AlignCenter},
 		{Number: 6, WidthMax: int(float64(cols) * 0.2)},
 		{Number: 7, WidthMax: int(float64(cols) * 0.4)},
+		{Number: 8, Hidden: true},  // sortBy helper for size
+		{Number: 9, Hidden: true},  // sortBy helper for used
+		{Number: 10, Hidden: true}, // sortBy helper for avail
+		{Number: 11, Hidden: true}, // sortBy helper for usage
 	})
-	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"})
+
+	tab.AppendHeader(columns)
 
 	for _, v := range m {
 		// spew.Dump(v)
@@ -103,50 +191,24 @@ func printTable(title string, m []Mount) {
 			continue
 		}
 
-		// free space
-		var free = termenv.String(sizeToString(v.Free))
-		switch {
-		case v.Free < 1<<30:
-			free = free.Foreground(colorRed)
-		case v.Free < 10*1<<30:
-			free = free.Foreground(colorYellow)
-		default:
-			free = free.Foreground(colorGreen)
-		}
-
 		// render progress-bar
-		var usage = float64(v.Used) / float64(v.Total)
-		usepct := termenv.String()
+		var usage float64
 		if v.Total > 0 {
-			if barWidth > 0 {
-				usepct = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
-					strings.Repeat("#", int(usage*barWidth)),
-					strings.Repeat(".", int(barWidth)-int(usage*barWidth)),
-					usage*100,
-				))
-			} else {
-				usepct = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
-			}
-		}
-
-		// apply color to progress-bar
-		switch {
-		case usage >= 0.9:
-			usepct = usepct.Foreground(colorRed)
-		case usage >= 0.5:
-			usepct = usepct.Foreground(colorYellow)
-		default:
-			usepct = usepct.Foreground(colorGreen)
+			usage = float64(v.Used) / float64(v.Total)
 		}
 
 		tab.AppendRow([]interface{}{
 			termenv.String(v.Mountpoint).Foreground(colorBlue), // mounted on
-			sizeToString(v.Total),                              // size
-			sizeToString(v.Used),                               // used
-			free,                                               // avail
-			usepct,                                             // use%
+			v.Total, // size
+			v.Used,  // used
+			v.Free,  // avail
+			usage,   // use%
 			termenv.String(v.Type).Foreground(colorGray),   // type
 			termenv.String(v.Device).Foreground(colorGray), // filesystem
+			v.Total, // size sorting helper
+			v.Used,  // used sorting helper
+			v.Free,  // avail sorting helper
+			usage,   // use% sorting helper
 		})
 	}
 
@@ -159,5 +221,13 @@ func printTable(title string, m []Mount) {
 		suffix = "devices"
 	}
 	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
+
+	//tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
+	sortMode := table.Asc
+	if sortBy >= 8 && sortBy <= 11 {
+		sortMode = table.AscNumeric
+	}
+
+	tab.SortBy([]table.SortBy{{Number: sortBy, Mode: sortMode}})
 	tab.Render()
 }
