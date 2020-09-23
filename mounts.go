@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,6 +16,21 @@ import (
 type Mounts struct {
 	All      map[string][]Mount `json:"Mounts"`
 	Warnings []string           `json:"Warnings,omitempty"`
+}
+
+// MarshalJSON custom marshals Mounts struct to skip keys with missing values
+func (u *Mounts) MarshalJSON() ([]byte, error) {
+	type Alias Mounts
+	var alias Alias
+	alias.All = make(map[string][]Mount)
+	alias.Warnings = u.Warnings
+
+	for k, v := range u.All {
+		if len(v) > 0 {
+			alias.All[k] = v
+		}
+	}
+	return json.Marshal(alias)
 }
 
 type Mount struct {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -111,11 +110,16 @@ func printTable(title string, m []Mount) {
 		})
 	}
 
-	if tab.Length() == 0 {
+	tabLen := tab.Length()
+	if tabLen == 0 {
 		return
 	}
 
-	tab.SetTitle("%d %s", tab.Length(), title)
+	suffix := "device"
+	if tabLen > 1 {
+		suffix = "devices"
+	}
+	tab.SetTitle("%d %s %s", tabLen, title, suffix)
 	tab.Render()
 }
 
@@ -151,10 +155,7 @@ func main() {
 		panic(err)
 	}
 
-	var local []Mount
-	var network []Mount
-	var fuse []Mount
-	var special []Mount
+	var local, network, fuse, special []Mount
 	for _, v := range m {
 		if isNetworkFs(v.Stat) {
 			network = append(network, v)
@@ -177,21 +178,21 @@ func main() {
 	mounts.Warnings = warnings
 
 	if !*hideLocal || *all {
-		mounts.All["local devices"] = local
+		mounts.All["local"] = local
 	}
 	if !*hideNetwork || *all {
-		mounts.All["network devices"] = network
+		mounts.All["network"] = network
 	}
 	if !*hideFuse || *all {
-		mounts.All["FUSE devices"] = fuse
+		mounts.All["FUSE"] = fuse
 	}
 	if !*hideSpecial || *all {
-		mounts.All["special devices"] = special
+		mounts.All["special"] = special
 	}
 
 	// If user requested json-output
 	if *jsonOutput {
-		output, err := json.Marshal(mounts)
+		output, err := mounts.MarshalJSON()
 		if err != nil {
 			fmt.Println("Error formatting the json output", err.Error())
 		} else {
