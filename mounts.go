@@ -40,7 +40,7 @@ func mounts() ([]Mount, error) {
 		// split the mountinfo line by the separator hyphen
 		parts := strings.Split(line, " - ")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("found invalid mountinfo line in file %s: %s ", filename, line)
+			return nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
 		fields := strings.Fields(parts[0])
@@ -75,6 +75,7 @@ func mounts() ([]Mount, error) {
 			Used:       (uint64(stat.Blocks) - uint64(stat.Bfree)) * uint64(stat.Bsize),
 		}
 
+		// resolve /dev/mapper/* device names
 		if strings.HasPrefix(d.Device, "/dev/mapper/") {
 			re := regexp.MustCompile(`^\/dev\/mapper\/(.*)-(.*)`)
 			match := re.FindAllStringSubmatch(d.Device, -1)
@@ -111,13 +112,4 @@ func unescapeFstab(path string) string {
 		return path
 	}
 	return escaped
-}
-
-func StringsHas(target []string, src string) bool {
-	for _, t := range target {
-		if strings.TrimSpace(t) == src {
-			return true
-		}
-	}
-	return false
 }

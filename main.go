@@ -46,9 +46,7 @@ func printTable(title string, m []Mount) {
 	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"})
 
 	for _, v := range m {
-		// fmt.Println(v)
-		// fmt.Println(stat.Type)
-		// fmt.Println(fsTypeMap[stat.Type])
+		// spew.Dump(v)
 
 		// skip autofs
 		if v.Fstype == "autofs" {
@@ -67,6 +65,7 @@ func printTable(title string, m []Mount) {
 			continue
 		}
 
+		// free space
 		var free = termenv.String(sizeToString(v.Free))
 		switch {
 		case v.Free < 1<<30:
@@ -77,6 +76,7 @@ func printTable(title string, m []Mount) {
 			free = free.Foreground(colorGreen)
 		}
 
+		// render progress-bar
 		barWidth := 20.0
 		var usage = float64(v.Used) / float64(v.Total)
 		usepct := termenv.String()
@@ -88,6 +88,7 @@ func printTable(title string, m []Mount) {
 			))
 		}
 
+		// apply color to progress-bar
 		switch {
 		case usage >= 0.9:
 			usepct = usepct.Foreground(colorRed)
