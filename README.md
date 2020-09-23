@@ -9,6 +9,14 @@ Disk Usage/Free Utility (currently Linux-only, support for BSDs soon)
 
 ![duf](/duf.png)
 
+## Features
+
+- [x] User-friendly, colorful output
+- [x] Adjusts to your terminal's width
+- [x] Sort the results according to your needs
+- [x] Groups & filters devices
+- [x] Can conveniently output JSON
+
 ## Installation
 
 ### Packages & Binaries
