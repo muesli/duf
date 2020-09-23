@@ -41,6 +41,6 @@ You can hide individual tables:
 
     duf -hide-local -hide-network -hide-fuse -hide-special
 
-You can also pipe the output to a json parsing tool like `jq`.
+If you prefer your output as JSON:
 
-    duf  -json-output | jq
+    duf -json

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -14,13 +15,15 @@ import (
 var (
 	term = termenv.ColorProfile()
 
-	all         = flag.Bool("all", false, "show all devices")
+	all = flag.Bool("all", false, "show all devices")
+
 	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
 	hideFuse    = flag.Bool("hide-fuse", false, "hides fuse devices")
 	hideSpecial = flag.Bool("hide-special", false, "hides special devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
-	jsonOutput  = flag.Bool("json-output", false, "print the output in json format")
+
+	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
 var (
@@ -110,16 +113,15 @@ func printTable(title string, m []Mount) {
 		})
 	}
 
-	tabLen := tab.Length()
-	if tabLen == 0 {
+	if tab.Length() == 0 {
 		return
 	}
 
 	suffix := "device"
-	if tabLen > 1 {
+	if tab.Length() > 1 {
 		suffix = "devices"
 	}
-	tab.SetTitle("%d %s %s", tabLen, title, suffix)
+	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
 	tab.Render()
 }
 
@@ -147,66 +149,70 @@ func sizeToString(size uint64) (str string) {
 	return
 }
 
-func main() {
-	flag.Parse()
-
-	m, warnings, err := mounts()
-	if err != nil {
-		panic(err)
-	}
-
+func renderTables(m []Mount) {
 	var local, network, fuse, special []Mount
 	for _, v := range m {
 		if isNetworkFs(v.Stat) {
 			network = append(network, v)
 			continue
 		}
-		if isSpecialFs(v.Stat) {
-			special = append(special, v)
-			continue
-		}
 		if isFuseFs(v.Stat) {
 			fuse = append(fuse, v)
+			continue
+		}
+		if isSpecialFs(v.Stat) {
+			special = append(special, v)
 			continue
 		}
 
 		local = append(local, v)
 	}
 
-	var mounts Mounts
-	mounts.All = make(map[string][]Mount)
-	mounts.Warnings = warnings
-
 	if !*hideLocal || *all {
-		mounts.All["local"] = local
+		printTable("local", local)
 	}
 	if !*hideNetwork || *all {
-		mounts.All["network"] = network
+		printTable("network", network)
 	}
 	if !*hideFuse || *all {
-		mounts.All["FUSE"] = fuse
+		printTable("FUSE", fuse)
 	}
 	if !*hideSpecial || *all {
-		mounts.All["special"] = special
+		printTable("special", special)
+	}
+}
+
+func renderJSON(m []Mount) error {
+	output, err := json.MarshalIndent(m, "", " ")
+	if err != nil {
+		return fmt.Errorf("error formatting the json output: %s", err)
 	}
 
-	// If user requested json-output
+	fmt.Println(string(output))
+	return nil
+}
+
+func main() {
+	flag.Parse()
+
+	m, warnings, err := mounts()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	for _, warning := range warnings {
+		fmt.Fprintln(os.Stderr, warning)
+	}
+
 	if *jsonOutput {
-		output, err := mounts.MarshalJSON()
+		err := renderJSON(m)
 		if err != nil {
-			fmt.Println("Error formatting the json output", err.Error())
-		} else {
-			fmt.Println(string(output))
+			fmt.Fprintln(os.Stderr, err)
 		}
+
 		return
 	}
 
-	// In any other case print the warnings first and then render the table
-	for _, warning := range warnings {
-		fmt.Println(warning)
-	}
-	for header, rows := range mounts.All {
-		printTable(header, rows)
-	}
-
+	renderTables(m)
 }

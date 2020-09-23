@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,36 +12,17 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type Mounts struct {
-	All      map[string][]Mount `json:"Mounts"`
-	Warnings []string           `json:"Warnings,omitempty"`
-}
-
-// MarshalJSON custom marshals Mounts struct to skip keys with missing values
-func (u *Mounts) MarshalJSON() ([]byte, error) {
-	type Alias Mounts
-	var alias Alias
-	alias.All = make(map[string][]Mount)
-	alias.Warnings = u.Warnings
-
-	for k, v := range u.All {
-		if len(v) > 0 {
-			alias.All[k] = v
-		}
-	}
-	return json.Marshal(alias)
-}
-
 type Mount struct {
-	Device     string        `json:"Device"`
-	Mountpoint string        `json:"MountPoint"`
-	Fstype     string        `json:"Fstype"`
-	Type       string        `json:"Type"`
-	Opts       string        `json:"Opts"`
-	Stat       unix.Statfs_t `json:"Stat"`
-	Total      uint64        `json:"Total"`
-	Free       uint64        `json:"Free"`
-	Used       uint64        `json:"Used"`
+	Device     string        `json:"device"`
+	DeviceType string        `json:"device_type"`
+	Mountpoint string        `json:"mount_point"`
+	Fstype     string        `json:"fs_type"`
+	Type       string        `json:"type"`
+	Opts       string        `json:"opts"`
+	Total      uint64        `json:"total"`
+	Free       uint64        `json:"free"`
+	Used       uint64        `json:"used"`
+	Stat       unix.Statfs_t `json:"-"`
 }
 
 func mounts() ([]Mount, []string, error) {
@@ -89,6 +69,7 @@ func mounts() ([]Mount, []string, error) {
 
 		d := Mount{
 			Device:     device,
+			DeviceType: deviceType(stat),
 			Mountpoint: mountPoint,
 			Fstype:     fstype,
 			Type:       fsTypeMap[int64(stat.Type)],
