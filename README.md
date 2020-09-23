@@ -41,6 +41,11 @@ You can hide individual tables:
 
     duf -hide-local -hide-network -hide-fuse -hide-special -hide-loopback -hide-binds
 
+Sort the output:
+
+    # valid sort-keys are: mountpoint, size, used, avail, usage, type, filesystem
+    duf -sort size
+
 If you prefer your output as JSON:
 
     duf -json
