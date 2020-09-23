@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/muesli/termenv"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
@@ -20,6 +21,8 @@ var (
 	hideSpecial  = flag.Bool("hide-special", false, "hide special devices")
 	hideLoopback = flag.Bool("hide-loopback", true, "hide loopback devices")
 	hideBinds    = flag.Bool("hide-binds", true, "hide bind mounts")
+
+	width = flag.Uint("width", 0, "max output width")
 
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
@@ -70,6 +73,19 @@ func renderJSON(m []Mount) error {
 func main() {
 	flag.Parse()
 
+	// detect terminal width
+	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
+	if isTerminal && *width == 0 {
+		w, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+		if err == nil {
+			*width = uint(w)
+		}
+	}
+	if *width == 0 {
+		*width = 80
+	}
+
+	// read mount table
 	m, warnings, err := mounts()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

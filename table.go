@@ -46,14 +46,36 @@ func sizeToString(size uint64) (str string) {
 
 func printTable(title string, m []Mount) {
 	tab := table.NewWriter()
+	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
 	tab.SetStyle(table.StyleRounded)
 
+	barWidth := 20.0
+	switch {
+	case *width < 100:
+		barWidth = 0
+	case *width < 120:
+		barWidth = 10
+	}
+	cols := *width -
+		7*3 - // size columns
+		uint(barWidth) - // bar
+		6 - // percentage
+		2 - // frame
+		7*2 - // spacers
+		7 // seperators
+	if barWidth > 0 {
+		cols -= 2
+	}
+
 	tab.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 1, WidthMax: int(float64(cols) * 0.4)},
 		{Number: 2, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 3, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 4, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 5, AlignHeader: text.AlignCenter},
+		{Number: 6, WidthMax: int(float64(cols) * 0.2)},
+		{Number: 7, WidthMax: int(float64(cols) * 0.4)},
 	})
 	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"})
 
@@ -93,15 +115,18 @@ func printTable(title string, m []Mount) {
 		}
 
 		// render progress-bar
-		barWidth := 20.0
 		var usage = float64(v.Used) / float64(v.Total)
 		usepct := termenv.String()
 		if v.Total > 0 {
-			usepct = termenv.String(fmt.Sprintf("[%s%s] %.1f%%",
-				strings.Repeat("#", int(usage*barWidth)),
-				strings.Repeat(".", int(barWidth)-int(usage*barWidth)),
-				usage*100,
-			))
+			if barWidth > 0 {
+				usepct = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
+					strings.Repeat("#", int(usage*barWidth)),
+					strings.Repeat(".", int(barWidth)-int(usage*barWidth)),
+					usage*100,
+				))
+			} else {
+				usepct = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
+			}
 		}
 
 		// apply color to progress-bar
