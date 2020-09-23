@@ -43,4 +43,4 @@ You can hide individual tables:
 
 You can also pipe the output to a json parsing tool like `jq`.
 
-    duf  --json-output | jq
+    duf  -json-output | jq

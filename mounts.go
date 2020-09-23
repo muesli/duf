@@ -35,7 +35,7 @@ func mounts() ([]Mount, []string, error) {
 	filename := "/proc/self/mountinfo"
 	lines, err := readLines(filename)
 	if err != nil {
-		return nil, warnings, err
+		return nil, nil, err
 	}
 
 	ret := make([]Mount, 0, len(lines))
@@ -47,7 +47,7 @@ func mounts() ([]Mount, []string, error) {
 		// split the mountinfo line by the separator hyphen
 		parts := strings.Split(line, " - ")
 		if len(parts) != 2 {
-			return nil, warnings, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
+			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
 		fields := strings.Fields(parts[0])
