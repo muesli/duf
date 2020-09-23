@@ -45,7 +45,7 @@ func mounts() ([]Mount, error) {
 
 		fields := strings.Fields(parts[0])
 		// blockDeviceID := fields[2]
-		mountPoint := fields[4]
+		mountPoint := unescapeFstab(fields[4])
 		mountOpts := fields[5]
 
 		fields = strings.Fields(parts[1])
@@ -53,7 +53,7 @@ func mounts() ([]Mount, error) {
 		device := fields[1]
 
 		var stat unix.Statfs_t
-		err := unix.Statfs(unescapeFstab(mountPoint), &stat)
+		err := unix.Statfs(mountPoint, &stat)
 		if err != nil {
 			if err != os.ErrPermission {
 				fmt.Printf("%s: %s\n", mountPoint, err)
@@ -65,7 +65,7 @@ func mounts() ([]Mount, error) {
 
 		d := Mount{
 			Device:     device,
-			Mountpoint: unescapeFstab(mountPoint),
+			Mountpoint: mountPoint,
 			Fstype:     fstype,
 			Type:       fsTypeMap[int64(stat.Type)],
 			Opts:       mountOpts,
