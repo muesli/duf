@@ -14,11 +14,12 @@ var (
 
 	all = flag.Bool("all", false, "show all devices")
 
-	hideLocal   = flag.Bool("hide-local", false, "hides local devices")
-	hideNetwork = flag.Bool("hide-network", false, "hides network devices")
-	hideFuse    = flag.Bool("hide-fuse", false, "hides fuse devices")
-	hideSpecial = flag.Bool("hide-special", false, "hides special devices")
-	hideBinds   = flag.Bool("hide-binds", true, "hides bind mounts")
+	hideLocal    = flag.Bool("hide-local", false, "hide local devices")
+	hideNetwork  = flag.Bool("hide-network", false, "hide network devices")
+	hideFuse     = flag.Bool("hide-fuse", false, "hide fuse devices")
+	hideSpecial  = flag.Bool("hide-special", false, "hide special devices")
+	hideLoopback = flag.Bool("hide-loopback", true, "hide loopback devices")
+	hideBinds    = flag.Bool("hide-binds", true, "hide bind mounts")
 
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )

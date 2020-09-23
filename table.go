@@ -68,6 +68,10 @@ func printTable(title string, m []Mount) {
 		if *hideBinds && strings.Contains(v.Opts, "bind") {
 			continue
 		}
+		// skip loopback devices
+		if *hideLoopback && strings.HasPrefix(v.Device, "/dev/loop") {
+			continue
+		}
 		// skip special devices
 		if v.Stat.Blocks == 0 && !*all {
 			continue

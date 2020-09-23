@@ -39,7 +39,7 @@ If you want to see all devices:
 
 You can hide individual tables:
 
-    duf -hide-local -hide-network -hide-fuse -hide-special
+    duf -hide-local -hide-network -hide-fuse -hide-special -hide-loopback -hide-binds
 
 If you prefer your output as JSON:
 
