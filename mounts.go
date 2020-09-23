@@ -13,22 +13,25 @@ import (
 )
 
 type Mount struct {
-	Device     string
-	Mountpoint string
-	Fstype     string
-	Type       string
-	Opts       string
-	Stat       unix.Statfs_t
-	Total      uint64
-	Free       uint64
-	Used       uint64
+	Device     string        `json:"device"`
+	DeviceType string        `json:"device_type"`
+	Mountpoint string        `json:"mount_point"`
+	Fstype     string        `json:"fs_type"`
+	Type       string        `json:"type"`
+	Opts       string        `json:"opts"`
+	Total      uint64        `json:"total"`
+	Free       uint64        `json:"free"`
+	Used       uint64        `json:"used"`
+	Stat       unix.Statfs_t `json:"-"`
 }
 
-func mounts() ([]Mount, error) {
+func mounts() ([]Mount, []string, error) {
+	var warnings []string
+
 	filename := "/proc/self/mountinfo"
 	lines, err := readLines(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ret := make([]Mount, 0, len(lines))
@@ -40,7 +43,7 @@ func mounts() ([]Mount, error) {
 		// split the mountinfo line by the separator hyphen
 		parts := strings.Split(line, " - ")
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
+			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
 		fields := strings.Fields(parts[0])
@@ -56,15 +59,17 @@ func mounts() ([]Mount, error) {
 		err := unix.Statfs(mountPoint, &stat)
 		if err != nil {
 			if err != os.ErrPermission {
-				fmt.Printf("%s: %s\n", mountPoint, err)
+				warnings = append(warnings, fmt.Sprintf("%s: %s\n", mountPoint, err))
 				continue
 			}
 
 			stat = unix.Statfs_t{}
+			continue
 		}
 
 		d := Mount{
 			Device:     device,
+			DeviceType: deviceType(stat),
 			Mountpoint: mountPoint,
 			Fstype:     fstype,
 			Type:       fsTypeMap[int64(stat.Type)],
@@ -87,7 +92,7 @@ func mounts() ([]Mount, error) {
 		ret = append(ret, d)
 	}
 
-	return ret, nil
+	return ret, warnings, nil
 }
 
 func readLines(filename string) ([]string, error) {

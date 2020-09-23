@@ -267,5 +267,19 @@ func isSpecialFs(stat unix.Statfs_t) bool {
 	return specialMap[int64(stat.Type)]
 }
 
+func deviceType(stat unix.Statfs_t) string {
+	if isNetworkFs(stat) {
+		return "network"
+	}
+	if isSpecialFs(stat) {
+		return "special"
+	}
+	if isFuseFs(stat) {
+		return "fuse"
+	}
+
+	return "local"
+}
+
 // remote: [ "nfs", "smbfs", "cifs", "ncpfs", "afs", "coda", "ftpfs", "mfs", "sshfs", "fuse.sshfs", "nfs4" ]
 // special: [ "tmpfs", "devpts", "devtmpfs", "proc", "sysfs", "usbfs", "devfs", "fdescfs", "linprocfs" ]
