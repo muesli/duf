@@ -203,7 +203,7 @@ func printTable(title string, m []Mount, sortBy int) {
 			v.Used,  // used
 			v.Free,  // avail
 			usage,   // use%
-			termenv.String(v.Type).Foreground(colorGray),   // type
+			termenv.String(v.Fstype).Foreground(colorGray), // type
 			termenv.String(v.Device).Foreground(colorGray), // filesystem
 			v.Total, // size sorting helper
 			v.Used,  // used sorting helper
