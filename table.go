@@ -11,8 +11,6 @@ import (
 )
 
 var (
-	columns = table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Type", "Filesystem"}
-
 	colorRed     = term.Color("#E88388")
 	colorYellow  = term.Color("#DBAB79")
 	colorGreen   = term.Color("#A8CC8C")
@@ -52,17 +50,25 @@ func stringToColumn(s string) (int, error) {
 	case "mountpoint":
 		return 1, nil
 	case "size":
-		return 8, nil
+		return 12, nil
 	case "used":
-		return 9, nil
+		return 13, nil
 	case "avail":
-		return 10, nil
+		return 14, nil
 	case "usage":
-		return 11, nil
+		return 15, nil
+	case "inodes":
+		return 16, nil
+	case "inodes_used":
+		return 17, nil
+	case "inodes_avail":
+		return 18, nil
+	case "inodes_usage":
+		return 19, nil
 	case "type":
-		return 6, nil
+		return 10, nil
 	case "filesystem":
-		return 7, nil
+		return 11, nil
 
 	default:
 		return 0, fmt.Errorf("unknown column identifier: %s", s)
@@ -125,7 +131,7 @@ func barTransformer(val interface{}) string {
 	return s.String()
 }
 
-func printTable(title string, m []Mount, sortBy int) {
+func printTable(title string, m []Mount, sortBy int, inodes bool) {
 	tab := table.NewWriter()
 	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
@@ -153,41 +159,59 @@ func printTable(title string, m []Mount, sortBy int) {
 
 	tab.SetColumnConfigs([]table.ColumnConfig{
 		{Number: 1, WidthMax: int(float64(cols) * 0.4)},
-		{Number: 2, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 3, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 4, Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 5, Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 6, WidthMax: int(float64(cols) * 0.2)},
-		{Number: 7, WidthMax: int(float64(cols) * 0.4)},
-		{Number: 8, Hidden: true},  // sortBy helper for size
-		{Number: 9, Hidden: true},  // sortBy helper for used
-		{Number: 10, Hidden: true}, // sortBy helper for avail
-		{Number: 11, Hidden: true}, // sortBy helper for usage
+		{Number: 2, Hidden: inodes, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Hidden: inodes, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Hidden: inodes, Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 5, Hidden: inodes, Transformer: barTransformer, AlignHeader: text.AlignCenter},
+		{Number: 6, Hidden: !inodes, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 7, Hidden: !inodes, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 8, Hidden: !inodes, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 9, Hidden: !inodes, Transformer: barTransformer, AlignHeader: text.AlignCenter},
+		{Number: 10, WidthMax: int(float64(cols) * 0.2)},
+		{Number: 11, WidthMax: int(float64(cols) * 0.4)},
+		{Number: 12, Hidden: true}, // sortBy helper for size
+		{Number: 13, Hidden: true}, // sortBy helper for used
+		{Number: 14, Hidden: true}, // sortBy helper for avail
+		{Number: 15, Hidden: true}, // sortBy helper for usage
+		{Number: 16, Hidden: true}, // sortBy helper for inodes size
+		{Number: 17, Hidden: true}, // sortBy helper for inodes used
+		{Number: 18, Hidden: true}, // sortBy helper for inodes avail
+		{Number: 19, Hidden: true}, // sortBy helper for inodes usage
 	})
 
-	tab.AppendHeader(columns)
+	tab.AppendHeader(table.Row{"Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "Used", "Avail", "Use%", "Type", "Filesystem"})
 
 	for _, v := range m {
 		// spew.Dump(v)
 
-		// render progress-bar
-		var usage float64
+		var usage, inodeUsage float64
 		if v.Total > 0 {
 			usage = float64(v.Used) / float64(v.Total)
+		}
+		if v.InodesTotal > 0 {
+			inodeUsage = float64(v.InodesUsed) / float64(v.InodesTotal)
 		}
 
 		tab.AppendRow([]interface{}{
 			termenv.String(v.Mountpoint).Foreground(colorBlue), // mounted on
-			v.Total, // size
-			v.Used,  // used
-			v.Free,  // avail
-			usage,   // use%
+			v.Total,       // size
+			v.Used,        // used
+			v.Free,        // avail
+			usage,         // use%
+			v.InodesTotal, // size
+			v.InodesUsed,  // used
+			v.InodesFree,  // avail
+			inodeUsage,    // use%
 			termenv.String(v.Fstype).Foreground(colorGray), // type
 			termenv.String(v.Device).Foreground(colorGray), // filesystem
-			v.Total, // size sorting helper
-			v.Used,  // used sorting helper
-			v.Free,  // avail sorting helper
-			usage,   // use% sorting helper
+			v.Total,       // size sorting helper
+			v.Used,        // used sorting helper
+			v.Free,        // avail sorting helper
+			usage,         // use% sorting helper
+			v.InodesTotal, // size sorting helper
+			v.InodesUsed,  // used sorting helper
+			v.InodesFree,  // avail sorting helper
+			inodeUsage,    // use% sorting helper
 		})
 	}
 
@@ -203,7 +227,7 @@ func printTable(title string, m []Mount, sortBy int) {
 
 	//tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
-	if sortBy >= 8 && sortBy <= 11 {
+	if sortBy >= 12 {
 		sortMode = table.AscNumeric
 	}
 

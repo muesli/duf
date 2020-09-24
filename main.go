@@ -14,8 +14,7 @@ import (
 var (
 	term = termenv.ColorProfile()
 
-	all = flag.Bool("all", false, "show all devices")
-
+	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideLocal   = flag.Bool("hide-local", false, "hide local devices")
 	hideNetwork = flag.Bool("hide-network", false, "hide network devices")
 	hideFuse    = flag.Bool("hide-fuse", false, "hide fuse devices")
@@ -23,9 +22,10 @@ var (
 	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
 
-	sortBy = flag.String("sort", "mountpoint", "sort output by key (mountpoint, size, used, avail, usage, type, filesystem)")
+	sortBy = flag.String("sort", "mountpoint", "sort output by: mountpoint, size, used, avail, usage, type, filesystem")
 	width  = flag.Uint("width", 0, "max output width")
 
+	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
@@ -73,16 +73,16 @@ func renderTables(m []Mount, sortCol int) {
 
 	// print tables
 	if !*hideLocal || *all {
-		printTable("local", local, sortCol)
+		printTable("local", local, sortCol, *inodes)
 	}
 	if !*hideNetwork || *all {
-		printTable("network", network, sortCol)
+		printTable("network", network, sortCol, *inodes)
 	}
 	if !*hideFuse || *all {
-		printTable("FUSE", fuse, sortCol)
+		printTable("FUSE", fuse, sortCol, *inodes)
 	}
 	if !*hideSpecial || *all {
-		printTable("special", special, sortCol)
+		printTable("special", special, sortCol, *inodes)
 	}
 }
 
