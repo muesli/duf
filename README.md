@@ -5,7 +5,7 @@
 [![Go ReportCard](http://goreportcard.com/badge/muesli/duf)](http://goreportcard.com/report/muesli/duf)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/muesli/duf)
 
-Disk Usage/Free Utility (currently Linux-only, support for BSDs soon)
+Disk Usage/Free Utility (currently Linux & macOS-only, support for BSDs soon)
 
 ![duf](/duf.png)
 
@@ -26,7 +26,7 @@ Disk Usage/Free Utility (currently Linux-only, support for BSDs soon)
 
 ### From source
 
-Make sure you have a working Go environment (Go 1.11 or higher is required).
+Make sure you have a working Go environment (Go 1.12 or higher is required).
 See the [install instructions](http://golang.org/doc/install.html).
 
 Compiling duf is easy, simply run:
