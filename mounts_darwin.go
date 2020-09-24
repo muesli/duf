@@ -3,9 +3,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"golang.org/x/sys/unix"
 )
 
@@ -22,62 +19,51 @@ func mounts() ([]Mount, []string, error) {
 		return nil, nil, err
 	}
 
-	for _, fstat := range fs {
+	for _, stat := range fs {
 		opts := "rw"
-		if fstat.Flags&unix.MNT_RDONLY != 0 {
+		if stat.Flags&unix.MNT_RDONLY != 0 {
 			opts = "ro"
 		}
-		if fstat.Flags&unix.MNT_SYNCHRONOUS != 0 {
+		if stat.Flags&unix.MNT_SYNCHRONOUS != 0 {
 			opts += ",sync"
 		}
-		if fstat.Flags&unix.MNT_NOEXEC != 0 {
+		if stat.Flags&unix.MNT_NOEXEC != 0 {
 			opts += ",noexec"
 		}
-		if fstat.Flags&unix.MNT_NOSUID != 0 {
+		if stat.Flags&unix.MNT_NOSUID != 0 {
 			opts += ",nosuid"
 		}
-		if fstat.Flags&unix.MNT_UNION != 0 {
+		if stat.Flags&unix.MNT_UNION != 0 {
 			opts += ",union"
 		}
-		if fstat.Flags&unix.MNT_ASYNC != 0 {
+		if stat.Flags&unix.MNT_ASYNC != 0 {
 			opts += ",async"
 		}
-		if fstat.Flags&unix.MNT_DONTBROWSE != 0 {
+		if stat.Flags&unix.MNT_DONTBROWSE != 0 {
 			opts += ",nobrowse"
 		}
-		if fstat.Flags&unix.MNT_AUTOMOUNTED != 0 {
+		if stat.Flags&unix.MNT_AUTOMOUNTED != 0 {
 			opts += ",automounted"
 		}
-		if fstat.Flags&unix.MNT_JOURNALED != 0 {
+		if stat.Flags&unix.MNT_JOURNALED != 0 {
 			opts += ",journaled"
 		}
-		if fstat.Flags&unix.MNT_MULTILABEL != 0 {
+		if stat.Flags&unix.MNT_MULTILABEL != 0 {
 			opts += ",multilabel"
 		}
-		if fstat.Flags&unix.MNT_NOATIME != 0 {
+		if stat.Flags&unix.MNT_NOATIME != 0 {
 			opts += ",noatime"
 		}
-		if fstat.Flags&unix.MNT_NODEV != 0 {
+		if stat.Flags&unix.MNT_NODEV != 0 {
 			opts += ",nodev"
 		}
 
-		device := intToString(fstat.Mntfromname[:])
-		mountPoint := intToString(fstat.Mntonname[:])
-		fsType := intToString(fstat.Fstypename[:])
+		device := intToString(stat.Mntfromname[:])
+		mountPoint := intToString(stat.Mntonname[:])
+		fsType := intToString(stat.Fstypename[:])
 
 		if len(device) == 0 {
 			continue
-		}
-
-		var stat unix.Statfs_t
-		err := unix.Statfs(mountPoint, &stat)
-		if err != nil {
-			if err != os.ErrPermission {
-				warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
-				continue
-			}
-
-			stat = unix.Statfs_t{}
 		}
 
 		d := Mount{
