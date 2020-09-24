@@ -41,13 +41,17 @@ You can simply start duf without any command-line arguments:
 
     duf
 
-If you want to see all devices:
+If you want to list everything (including pseudo, duplicate, inaccessible file systems):
 
     duf --all
 
 You can hide individual tables:
 
     duf --hide-local --hide-network --hide-fuse --hide-special --hide-loops --hide-binds
+
+List inode information instead of block usage:
+
+    duf --inodes
 
 Sort the output:
 
