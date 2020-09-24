@@ -55,8 +55,10 @@ List inode information instead of block usage:
 
 Sort the output:
 
-    # valid sort-keys are: mountpoint, size, used, avail, usage, type, filesystem
     duf --sort size
+
+Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
+`inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
 
 If you prefer your output as JSON:
 
