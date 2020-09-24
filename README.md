@@ -43,17 +43,17 @@ You can simply start duf without any command-line arguments:
 
 If you want to see all devices:
 
-    duf -all
+    duf --all
 
 You can hide individual tables:
 
-    duf -hide-local -hide-network -hide-fuse -hide-special -hide-loopback -hide-binds
+    duf --hide-local --hide-network --hide-fuse --hide-special --hide-loopback --hide-binds
 
 Sort the output:
 
     # valid sort-keys are: mountpoint, size, used, avail, usage, type, filesystem
-    duf -sort size
+    duf --sort size
 
 If you prefer your output as JSON:
 
-    duf -json
+    duf --json
