@@ -33,15 +33,15 @@ func renderTables(m []Mount, sortCol int) {
 
 	// sort/filter devices
 	for _, v := range m {
-		if isNetworkFs(v.Stat) {
+		if isNetworkFs(v) {
 			network = append(network, v)
 			continue
 		}
-		if isFuseFs(v.Stat) {
+		if isFuseFs(v) {
 			fuse = append(fuse, v)
 			continue
 		}
-		if isSpecialFs(v.Stat) {
+		if isSpecialFs(v) {
 			special = append(special, v)
 			continue
 		}
