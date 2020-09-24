@@ -60,6 +60,13 @@ Sort the output:
 Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
 
+Show or hide specific columns:
+
+    duf --output mountpoint,size,usage
+
+Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
+`inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
+
 If you prefer your output as JSON:
 
     duf --json
