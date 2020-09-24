@@ -18,12 +18,27 @@ builds:
       - 6
       - 7
 
+  - id: "darwin"
+    binary: "duf"
+    ldflags: -s -w -X main.Version={{ .Version }} -X main.CommitSHA={{ .Commit }}
+    goos:
+      - darwin
+    goarch:
+      - amd64
+
 archives:
   - id: default
     builds:
       - duf
     replacements:
       386: i386
+      amd64: x86_64
+
+  - id: darwin
+    builds:
+      - darwin
+    replacements:
+      darwin: Darwin
       amd64: x86_64
 
 nfpms:
@@ -39,6 +54,20 @@ nfpms:
       - deb
       - rpm
     bindir: /usr/bin
+
+brews:
+  - ids:
+      - darwin
+    goarm: 6
+    tap:
+      owner: muesli
+      name: homebrew-tap
+    commit_author:
+      name: "Christian Muehlhaeuser"
+      email: "muesli@gmail.com"
+    homepage: "https://fribbledom.com/"
+    description: "Disk Usage/Free Utility"
+    # skip_upload: true
 
 signs:
   - artifacts: checksum
