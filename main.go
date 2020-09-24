@@ -22,14 +22,15 @@ var (
 	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
 
-	sortBy = flag.String("sort", "mountpoint", "sort output by: mountpoint, size, used, avail, usage, type, filesystem")
+	output = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
+	sortBy = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width  = flag.Uint("width", 0, "max output width")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
-func renderTables(m []Mount, sortCol int) {
+func renderTables(m []Mount, sortCol int) error {
 	var local, network, fuse, special []Mount
 
 	// sort/filter devices
@@ -71,19 +72,33 @@ func renderTables(m []Mount, sortCol int) {
 		local = append(local, v)
 	}
 
+	columns, err := parseColumns(*output)
+	if err != nil {
+		return err
+	}
+	if len(columns) == 0 {
+		// no columns supplied, use defaults
+		if *inodes {
+			columns = []int{1, 6, 7, 8, 9, 10, 11}
+		} else {
+			columns = []int{1, 2, 3, 4, 5, 10, 11}
+		}
+	}
+
 	// print tables
 	if !*hideLocal || *all {
-		printTable("local", local, sortCol, *inodes)
+		printTable("local", local, sortCol, columns)
 	}
 	if !*hideNetwork || *all {
-		printTable("network", network, sortCol, *inodes)
+		printTable("network", network, sortCol, columns)
 	}
 	if !*hideFuse || *all {
-		printTable("FUSE", fuse, sortCol, *inodes)
+		printTable("FUSE", fuse, sortCol, columns)
 	}
 	if !*hideSpecial || *all {
-		printTable("special", special, sortCol, *inodes)
+		printTable("special", special, sortCol, columns)
 	}
+	return nil
 }
 
 func renderJSON(m []Mount) error {
@@ -96,12 +111,33 @@ func renderJSON(m []Mount) error {
 	return nil
 }
 
+func parseColumns(cols string) ([]int, error) {
+	var i []int
+
+	s := strings.Split(cols, ",")
+	for _, v := range s {
+		v = strings.TrimSpace(v)
+		if len(v) == 0 {
+			continue
+		}
+
+		col, err := stringToColumn(v)
+		if err != nil {
+			return nil, err
+		}
+
+		i = append(i, col)
+	}
+
+	return i, nil
+}
+
 func main() {
 	flag.Parse()
 
-	sortCol, err := stringToColumn(*sortBy)
+	sortCol, err := stringToSortIndex(*sortBy)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "unknown sort key, valid values: mountpoint, size, used, avail, usage, type, filesystem")
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -137,5 +173,8 @@ func main() {
 		return
 	}
 
-	renderTables(m, sortCol)
+	err = renderTables(m, sortCol)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }

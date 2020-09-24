@@ -9,19 +9,19 @@ import (
 )
 
 type Mount struct {
-	Device      string        `json:"device"`
-	DeviceType  string        `json:"device_type"`
-	Mountpoint  string        `json:"mount_point"`
-	Fstype      string        `json:"fs_type"`
-	Type        string        `json:"type"`
-	Opts        string        `json:"opts"`
-	Total       uint64        `json:"total"`
-	Free        uint64        `json:"free"`
-	Used        uint64        `json:"used"`
-	InodesTotal uint64        `json:"inodes_total"`
-	InodesFree  uint64        `json:"inodes_free"`
-	InodesUsed  uint64        `json:"inodes_used"`
-	Stat        unix.Statfs_t `json:"-"`
+	Device     string        `json:"device"`
+	DeviceType string        `json:"device_type"`
+	Mountpoint string        `json:"mount_point"`
+	Fstype     string        `json:"fs_type"`
+	Type       string        `json:"type"`
+	Opts       string        `json:"opts"`
+	Total      uint64        `json:"total"`
+	Free       uint64        `json:"free"`
+	Used       uint64        `json:"used"`
+	Inodes     uint64        `json:"inodes"`
+	InodesFree uint64        `json:"inodes_free"`
+	InodesUsed uint64        `json:"inodes_used"`
+	Stat       unix.Statfs_t `json:"-"`
 }
 
 func readLines(filename string) ([]string, error) {
