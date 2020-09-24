@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/muesli/termenv"
 	"golang.org/x/crypto/ssh/terminal"
@@ -15,12 +16,12 @@ var (
 
 	all = flag.Bool("all", false, "show all devices")
 
-	hideLocal    = flag.Bool("hide-local", false, "hide local devices")
-	hideNetwork  = flag.Bool("hide-network", false, "hide network devices")
-	hideFuse     = flag.Bool("hide-fuse", false, "hide fuse devices")
-	hideSpecial  = flag.Bool("hide-special", false, "hide special devices")
-	hideLoopback = flag.Bool("hide-loopback", true, "hide loopback devices")
-	hideBinds    = flag.Bool("hide-binds", true, "hide bind mounts")
+	hideLocal   = flag.Bool("hide-local", false, "hide local devices")
+	hideNetwork = flag.Bool("hide-network", false, "hide network devices")
+	hideFuse    = flag.Bool("hide-fuse", false, "hide fuse devices")
+	hideSpecial = flag.Bool("hide-special", false, "hide special devices")
+	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
+	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
 
 	sortBy = flag.String("sort", "mountpoint", "sort output by key (mountpoint, size, used, avail, usage, type, filesystem)")
 	width  = flag.Uint("width", 0, "max output width")
@@ -33,6 +34,27 @@ func renderTables(m []Mount, sortCol int) {
 
 	// sort/filter devices
 	for _, v := range m {
+		// skip autofs
+		if v.Fstype == "autofs" {
+			continue
+		}
+		// skip bind-mounts
+		if *hideBinds && !*all && strings.Contains(v.Opts, "bind") {
+			continue
+		}
+		// skip loop devices
+		if *hideLoops && !*all && strings.HasPrefix(v.Device, "/dev/loop") {
+			continue
+		}
+		// skip special devices
+		if v.Stat.Blocks == 0 && !*all {
+			continue
+		}
+		// skip zero size devices
+		if v.Stat.Bsize == 0 && !*all {
+			continue
+		}
+
 		if isNetworkFs(v) {
 			network = append(network, v)
 			continue

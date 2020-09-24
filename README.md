@@ -47,7 +47,7 @@ If you want to see all devices:
 
 You can hide individual tables:
 
-    duf --hide-local --hide-network --hide-fuse --hide-special --hide-loopback --hide-binds
+    duf --hide-local --hide-network --hide-fuse --hide-special --hide-loops --hide-binds
 
 Sort the output:
 
