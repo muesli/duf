@@ -46,12 +46,11 @@ func mounts() ([]Mount, []string, error) {
 		err := unix.Statfs(mountPoint, &stat)
 		if err != nil {
 			if err != os.ErrPermission {
-				warnings = append(warnings, fmt.Sprintf("%s: %s\n", mountPoint, err))
+				warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
 				continue
 			}
 
 			stat = unix.Statfs_t{}
-			continue
 		}
 
 		d := Mount{
