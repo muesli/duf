@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+*.snap
 
 # Test binary, built with `go test -c`
 *.test
