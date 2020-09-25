@@ -43,6 +43,7 @@ var (
 	colorCyan    = term.Color("#66C2CD")
 )
 
+// printTable prints an individual table of mounts.
 func printTable(title string, m []Mount, sortBy int, cols []int) {
 	tab := table.NewWriter()
 	tab.SetAllowedRowLength(int(*width))
@@ -138,10 +139,12 @@ func printTable(title string, m []Mount, sortBy int, cols []int) {
 	tab.Render()
 }
 
+// sizeTransformer makes a size human-readable.
 func sizeTransformer(val interface{}) string {
 	return sizeToString(val.(uint64))
 }
 
+// spaceTransformer makes a size human-readable and applies a color coding.
 func spaceTransformer(val interface{}) string {
 	free := val.(uint64)
 
@@ -158,6 +161,7 @@ func spaceTransformer(val interface{}) string {
 	return s.String()
 }
 
+// barTransformer transforms a percentage into a progress-bar.
 func barTransformer(val interface{}) string {
 	usage := val.(float64)
 	s := termenv.String()
@@ -187,9 +191,11 @@ func barTransformer(val interface{}) string {
 	return s.String()
 }
 
-func inColumns(i []int, j int) bool {
-	for _, v := range i {
-		if v == j {
+// inColumns return true if the column with index i is in the slice of visible
+// columns cols.
+func inColumns(cols []int, i int) bool {
+	for _, v := range cols {
+		if v == i {
 			return true
 		}
 	}
@@ -197,6 +203,7 @@ func inColumns(i []int, j int) bool {
 	return false
 }
 
+// barWidth returns the width of progress-bars for the given render width.
 func barWidth() int {
 	switch {
 	case *width < 100:
@@ -208,6 +215,7 @@ func barWidth() int {
 	}
 }
 
+// tableWidth returns the required minimum table width for the given columns.
 func tableWidth(cols []int, separators bool) int {
 	var sw int
 	if separators {
@@ -274,6 +282,7 @@ func stringToSortIndex(s string) (int, error) {
 	return 0, fmt.Errorf("unknown column: %s (valid: %s)", s, strings.Join(columnIDs(), ", "))
 }
 
+// columnsIDs returns a slice of all column IDs.
 func columnIDs() []string {
 	s := make([]string, len(columns))
 	for i, v := range columns {

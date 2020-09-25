@@ -8,6 +8,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+// Mount contains all metadata for a single filesystem mount.
 type Mount struct {
 	Device     string        `json:"device"`
 	DeviceType string        `json:"device_type"`

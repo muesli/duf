@@ -30,7 +30,8 @@ var (
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
-func renderTables(m []Mount, sortCol int) error {
+// renderTables renders all tables.
+func renderTables(m []Mount, columns []int, sortCol int) error {
 	var local, network, fuse, special []Mount
 
 	// sort/filter devices
@@ -72,19 +73,6 @@ func renderTables(m []Mount, sortCol int) error {
 		local = append(local, v)
 	}
 
-	columns, err := parseColumns(*output)
-	if err != nil {
-		return err
-	}
-	if len(columns) == 0 {
-		// no columns supplied, use defaults
-		if *inodes {
-			columns = []int{1, 6, 7, 8, 9, 10, 11}
-		} else {
-			columns = []int{1, 2, 3, 4, 5, 10, 11}
-		}
-	}
-
 	// print tables
 	if !*hideLocal || *all {
 		printTable("local", local, sortCol, columns)
@@ -101,6 +89,7 @@ func renderTables(m []Mount, sortCol int) error {
 	return nil
 }
 
+// renderJSON encodes the JSON output and prints it.
 func renderJSON(m []Mount) error {
 	output, err := json.MarshalIndent(m, "", " ")
 	if err != nil {
@@ -111,6 +100,7 @@ func renderJSON(m []Mount) error {
 	return nil
 }
 
+// parseColumns parses the supplied output flag into a slice of column indices.
 func parseColumns(cols string) ([]int, error) {
 	var i []int
 
@@ -134,6 +124,21 @@ func parseColumns(cols string) ([]int, error) {
 
 func main() {
 	flag.Parse()
+
+	// validate flags
+	columns, err := parseColumns(*output)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if len(columns) == 0 {
+		// no columns supplied, use defaults
+		if *inodes {
+			columns = []int{1, 6, 7, 8, 9, 10, 11}
+		} else {
+			columns = []int{1, 2, 3, 4, 5, 10, 11}
+		}
+	}
 
 	sortCol, err := stringToSortIndex(*sortBy)
 	if err != nil {
@@ -160,10 +165,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// print out warnings
 	for _, warning := range warnings {
 		fmt.Fprintln(os.Stderr, warning)
 	}
 
+	// print JSON
 	if *jsonOutput {
 		err := renderJSON(m)
 		if err != nil {
@@ -173,7 +180,8 @@ func main() {
 		return
 	}
 
-	err = renderTables(m, sortCol)
+	// print tables
+	err = renderTables(m, columns, sortCol)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
