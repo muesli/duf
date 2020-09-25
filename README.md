@@ -22,6 +22,7 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 ### Packages
 
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
+- macOS: `brew install muesli/homebrew-tap/duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
 
 ### Binaries
