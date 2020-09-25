@@ -21,6 +21,8 @@ type Mount struct {
 	Inodes     uint64        `json:"inodes"`
 	InodesFree uint64        `json:"inodes_free"`
 	InodesUsed uint64        `json:"inodes_used"`
+	Blocks     uint64        `json:"blocks"`
+	BlockSize  uint64        `json:"block_size"`
 	Stat       unix.Statfs_t `json:"-"`
 }
 

@@ -1,0 +1,99 @@
+// +build openbsd
+
+package main
+
+import (
+	"golang.org/x/sys/unix"
+)
+
+func mounts() ([]Mount, []string, error) {
+	var ret []Mount
+	var warnings []string
+
+	count, err := unix.Getfsstat(nil, unix.MNT_WAIT)
+	if err != nil {
+		return nil, nil, err
+	}
+	fs := make([]unix.Statfs_t, count)
+	if _, err = unix.Getfsstat(fs, unix.MNT_WAIT); err != nil {
+		return nil, nil, err
+	}
+
+	for _, stat := range fs {
+		opts := "rw"
+		if stat.F_flags&unix.MNT_RDONLY != 0 {
+			opts = "ro"
+		}
+		if stat.F_flags&unix.MNT_SYNCHRONOUS != 0 {
+			opts += ",sync"
+		}
+		if stat.F_flags&unix.MNT_NOEXEC != 0 {
+			opts += ",noexec"
+		}
+		if stat.F_flags&unix.MNT_NOSUID != 0 {
+			opts += ",nosuid"
+		}
+		if stat.F_flags&unix.MNT_NODEV != 0 {
+			opts += ",nodev"
+		}
+		if stat.F_flags&unix.MNT_ASYNC != 0 {
+			opts += ",async"
+		}
+		if stat.F_flags&unix.MNT_SOFTDEP != 0 {
+			opts += ",softdep"
+		}
+		if stat.F_flags&unix.MNT_NOATIME != 0 {
+			opts += ",noatime"
+		}
+		if stat.F_flags&unix.MNT_WXALLOWED != 0 {
+			opts += ",wxallowed"
+		}
+
+		device := intToString(stat.F_mntfromname[:])
+		mountPoint := intToString(stat.F_mntonname[:])
+		fsType := intToString(stat.F_fstypename[:])
+
+		if len(device) == 0 {
+			continue
+		}
+
+		d := Mount{
+			Device:     device,
+			Mountpoint: mountPoint,
+			Fstype:     fsType,
+			Type:       fsType,
+			Opts:       opts,
+			Stat:       stat,
+			Total:      (uint64(stat.F_blocks) * uint64(stat.F_bsize)),
+			Free:       (uint64(stat.F_bavail) * uint64(stat.F_bsize)),
+			Used:       (uint64(stat.F_blocks) - uint64(stat.F_bfree)) * uint64(stat.F_bsize),
+			Inodes:     stat.F_files,
+			InodesFree: uint64(stat.F_ffree),
+			InodesUsed: stat.F_files - uint64(stat.F_ffree),
+			Blocks:     uint64(stat.F_blocks),
+			BlockSize:  uint64(stat.F_bsize),
+		}
+		d.DeviceType = deviceType(d)
+
+		ret = append(ret, d)
+	}
+
+	return ret, warnings, nil
+}
+
+func intToString(orig []int8) string {
+	ret := make([]byte, len(orig))
+	size := -1
+	for i, o := range orig {
+		if o == 0 {
+			size = i
+			break
+		}
+		ret[i] = byte(o)
+	}
+	if size == -1 {
+		size = len(orig)
+	}
+
+	return string(ret[0:size])
+}

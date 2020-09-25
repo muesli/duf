@@ -79,6 +79,8 @@ func mounts() ([]Mount, []string, error) {
 			Inodes:     stat.Files,
 			InodesFree: stat.Ffree,
 			InodesUsed: stat.Files - stat.Ffree,
+			Blocks:     uint64(stat.Blocks),
+			BlockSize:  uint64(stat.Bsize),
 		}
 		d.DeviceType = deviceType(d)
 
