@@ -48,11 +48,11 @@ func renderTables(m []Mount, sortCol int) error {
 			continue
 		}
 		// skip special devices
-		if v.Stat.Blocks == 0 && !*all {
+		if v.Blocks == 0 && !*all {
 			continue
 		}
 		// skip zero size devices
-		if v.Stat.Bsize == 0 && !*all {
+		if v.BlockSize == 0 && !*all {
 			continue
 		}
 
