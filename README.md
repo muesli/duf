@@ -19,10 +19,14 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 
 ## Installation
 
-### Packages & Binaries
+### Packages
 
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
-- [Binaries](https://github.com/muesli/duf/releases) for Linux
+- [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
+
+### Binaries
+
+- [Binaries](https://github.com/muesli/duf/releases) for Linux, FreeBSD, macOS
 
 ### From source
 
