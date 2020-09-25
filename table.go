@@ -91,9 +91,15 @@ func printTable(title string, m []Mount, sortBy int, cols []int) {
 		var usage, inodeUsage float64
 		if v.Total > 0 {
 			usage = float64(v.Used) / float64(v.Total)
+			if usage > 1.0 {
+				usage = 1.0
+			}
 		}
 		if v.Inodes > 0 {
 			inodeUsage = float64(v.InodesUsed) / float64(v.Inodes)
+			if inodeUsage > 1.0 {
+				inodeUsage = 1.0
+			}
 		}
 
 		tab.AppendRow([]interface{}{
