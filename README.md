@@ -23,6 +23,7 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
 - macOS: `brew install muesli/homebrew-tap/duf`
+- Nix: `nix-env -iA nixpkgs.duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
 
 ### Binaries
