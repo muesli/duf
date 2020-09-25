@@ -5,7 +5,7 @@
 [![Go ReportCard](http://goreportcard.com/badge/muesli/duf)](http://goreportcard.com/report/muesli/duf)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/muesli/duf)
 
-Disk Usage/Free Utility (Linux, FreeBSD & macOS)
+Disk Usage/Free Utility (Linux, BSD & macOS)
 
 ![duf](/duf.png)
 
