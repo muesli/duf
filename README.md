@@ -21,6 +21,7 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 
 ### Packages
 
+- Go (compiles from source): `go get -u -v github.com/muesli/duf`
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
 - macOS: `brew install muesli/homebrew-tap/duf`
 - Nix: `nix-env -iA nixpkgs.duf`
