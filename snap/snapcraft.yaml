@@ -4,62 +4,11 @@ adopt-info: duf # Obtain version metadata from the 'duf' part
 license: MIT
 summary: Disk Usage/Free Utility
 description: |
-  ## Features
-  
-  - User-friendly, colorful output
-  - Adjusts to your terminal's width
-  - Sort the results according to your needs
-  - Groups & filters devices
-  - Can conveniently output JSON
+  duf is a user-friendly text-mode disk usage and free space utility. It
+  has colorful output and adjust to your text terminal's width. 
+  You can sort your results according to your needs. 
+  You can group together and filter your devices. Can output to JSON.
 
-  You can simply start duf without any command-line arguments:
-  
-  ```
-  duf
-  ```
-  
-  If you want to list everything (including pseudo, duplicate, inaccessible file systems):
-  
-  ```
-  duf --all
-  ```
-
-  You can hide individual tables:
-
-  ```
-  duf --hide-local --hide-network --hide-fuse --hide-special --hide-loops --hide-binds
-  ```
-
-  List inode information instead of block usage:
-
-  ```
-  duf --inodes
-  ```
-
-  Sort the output:
-
-  ```
-  duf --sort size
-  ```
-
-  Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
-  `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
-
-  Show or hide specific columns:
-
-  ```
-  duf --output mountpoint,size,usage
-  ```
-
-  Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
-  `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
-
-  If you prefer your output as JSON:
-
-  ```
-  duf --json
-  ```
-  
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
