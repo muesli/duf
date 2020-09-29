@@ -57,8 +57,7 @@ nfpms:
     bindir: /usr/bin
 
 brews:
-  - ids:
-      - darwin
+-
     goarm: 6
     tap:
       owner: muesli
