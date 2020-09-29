@@ -13,6 +13,7 @@ import (
 
 var (
 	term = termenv.ColorProfile()
+	theme Theme
 
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideLocal   = flag.Bool("hide-local", false, "hide local devices")
@@ -23,12 +24,13 @@ var (
 	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
 
-	output = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
-	sortBy = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
-	width  = flag.Uint("width", 0, "max output width")
+	output 		= flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
+	sortBy 		= flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
+	width  		= flag.Uint("width", 0, "max output width")
+	themeOpt  	= flag.String("theme", "dark", "color themes: dark, light") 
 
-	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
-	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
+	inodes     	= flag.Bool("inodes", false, "list inode information instead of block usage")
+	jsonOutput 	= flag.Bool("json", false, "output all devices in JSON format")
 )
 
 // renderTables renders all tables.
@@ -144,6 +146,7 @@ func parseHideFs(hideFs string) map[string]struct{} {
 func main() {
 	flag.Parse()
 
+	theme = loadThemes(*themeOpt)
 	// validate flags
 	columns, err := parseColumns(*output)
 	if err != nil {
