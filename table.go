@@ -33,14 +33,6 @@ var (
 		{ID: "type", Name: "Type", SortIndex: 10},
 		{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
 	}
-
-	colorRed     = term.Color("#E88388")
-	colorYellow  = term.Color("#DBAB79")
-	colorGreen   = term.Color("#A8CC8C")
-	colorBlue    = term.Color("#71BEF2")
-	colorGray    = term.Color("#B9BFCA")
-	colorMagenta = term.Color("#D290E4")
-	colorCyan    = term.Color("#66C2CD")
 )
 
 // printTable prints an individual table of mounts.
@@ -103,7 +95,7 @@ func printTable(title string, m []Mount, sortBy int, cols []int) {
 		}
 
 		tab.AppendRow([]interface{}{
-			termenv.String(v.Mountpoint).Foreground(colorBlue), // mounted on
+			termenv.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
 			v.Total,      // size
 			v.Used,       // used
 			v.Free,       // avail
@@ -112,8 +104,8 @@ func printTable(title string, m []Mount, sortBy int, cols []int) {
 			v.InodesUsed, // inodes used
 			v.InodesFree, // inodes avail
 			inodeUsage,   // inodes use%
-			termenv.String(v.Fstype).Foreground(colorGray), // type
-			termenv.String(v.Device).Foreground(colorGray), // filesystem
+			termenv.String(v.Fstype).Foreground(theme.colorGray), // type
+			termenv.String(v.Device).Foreground(theme.colorGray), // filesystem
 			v.Total,      // size sorting helper
 			v.Used,       // used sorting helper
 			v.Free,       // avail sorting helper
@@ -157,11 +149,11 @@ func spaceTransformer(val interface{}) string {
 	var s = termenv.String(sizeToString(free))
 	switch {
 	case free < 1<<30:
-		s = s.Foreground(colorRed)
+		s = s.Foreground(theme.colorRed)
 	case free < 10*1<<30:
-		s = s.Foreground(colorYellow)
+		s = s.Foreground(theme.colorYellow)
 	default:
-		s = s.Foreground(colorGreen)
+		s = s.Foreground(theme.colorGreen)
 	}
 
 	return s.String()
@@ -187,11 +179,11 @@ func barTransformer(val interface{}) string {
 	// apply color to progress-bar
 	switch {
 	case usage >= 0.9:
-		s = s.Foreground(colorRed)
+		s = s.Foreground(theme.colorRed)
 	case usage >= 0.5:
-		s = s.Foreground(colorYellow)
+		s = s.Foreground(theme.colorYellow)
 	default:
-		s = s.Foreground(colorGreen)
+		s = s.Foreground(theme.colorGreen)
 	}
 
 	return s.String()
