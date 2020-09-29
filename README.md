@@ -22,8 +22,8 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 ### Packages
 
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
-- macOS: 
-  - with [HomeBrew](https://brew.sh/): `brew install muesli/homebrew-tap/duf`
+- macOS:
+  - with [Homebrew](https://brew.sh/): `brew install muesli/homebrew-tap/duf`
   - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
@@ -78,3 +78,10 @@ Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 If you prefer your output as JSON:
 
     duf --json
+
+## Troubleshooting
+
+Users of `oh-my-zsh` should be aware that it already defines an alias called
+`duf`, which you will have to remove in order to use `duf`:
+
+    unalias duf
