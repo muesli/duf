@@ -2,11 +2,6 @@
 
 package main
 
-func isLocalFs(m Mount) bool {
-	//FIXME: implement
-	return false
-}
-
 func isFuseFs(m Mount) bool {
 	//FIXME: implement
 	return false
