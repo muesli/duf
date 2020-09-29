@@ -2,21 +2,31 @@
 
 package main
 
-func isLocalFs(m Mount) bool {
-	//FIXME: implement
-	return false
-}
-
 func isFuseFs(m Mount) bool {
 	//FIXME: implement
 	return false
 }
 
 func isNetworkFs(m Mount) bool {
-	//FIXME: implement
+	fs := []string{"nfs", "smbfs"}
+
+	for _, v := range fs {
+		if m.Fstype == v {
+			return true
+		}
+	}
+
 	return false
 }
 
 func isSpecialFs(m Mount) bool {
-	return m.Fstype == "devfs"
+	fs := []string{"devfs", "tmpfs", "linprocfs", "linsysfs", "fdescfs", "procfs"}
+
+	for _, v := range fs {
+		if m.Fstype == v {
+			return true
+		}
+	}
+
+	return false
 }
