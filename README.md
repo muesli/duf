@@ -28,6 +28,9 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
 - Nix: `nix-env -iA nixpkgs.duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
 
+- Android (via termux)
+  - with `pkg` package manager `pkg install duf`
+
 ### Binaries
 
 - [Binaries](https://github.com/muesli/duf/releases) for Linux, FreeBSD, macOS
