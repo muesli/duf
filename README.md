@@ -27,9 +27,7 @@ Disk Usage/Free Utility (Linux, BSD & macOS)
   - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
-
-- Android (via termux)
-  - with `pkg` package manager `pkg install duf`
+- Android (via termux): `pkg install duf`
 
 ### Binaries
 
