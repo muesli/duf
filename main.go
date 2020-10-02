@@ -21,6 +21,7 @@ var (
 	hideSpecial = flag.Bool("hide-special", false, "hide special devices")
 	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
 	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
+	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
 
 	output = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
@@ -33,9 +34,14 @@ var (
 // renderTables renders all tables.
 func renderTables(m []Mount, columns []int, sortCol int) error {
 	var local, network, fuse, special []Mount
+	hideFsMap := parseHideFs(*hideFs)
 
 	// sort/filter devices
 	for _, v := range m {
+		// skip hideFs
+		if _, ok := hideFsMap[v.Fstype]; ok {
+			continue
+		}
 		// skip autofs
 		if v.Fstype == "autofs" {
 			continue
@@ -120,6 +126,19 @@ func parseColumns(cols string) ([]int, error) {
 	}
 
 	return i, nil
+}
+
+// parseHideFs parses the supplied hide-fs flag into a map of fs types which should be skipped.
+func parseHideFs(hideFs string) map[string]struct{} {
+	hideMap := make(map[string]struct{})
+	for _, fs := range strings.Split(hideFs, ",") {
+		fs = strings.TrimSpace(fs)
+		if len(fs) == 0 {
+			continue
+		}
+		hideMap[fs] = struct{}{}
+	}
+	return hideMap
 }
 
 func main() {
