@@ -132,6 +132,7 @@ func parseColumns(cols string) ([]int, error) {
 func parseHideFs(hideFs string) map[string]struct{} {
 	hideMap := make(map[string]struct{})
 	for _, fs := range strings.Split(hideFs, ",") {
+		fs = strings.TrimSpace(fs)
 		if len(fs) == 0 {
 			continue
 		}
