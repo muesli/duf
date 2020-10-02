@@ -57,8 +57,7 @@ nfpms:
     bindir: /usr/bin
 
 brews:
--
-    goarm: 6
+  - goarm: 6
     tap:
       owner: muesli
       name: homebrew-tap
