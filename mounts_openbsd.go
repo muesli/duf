@@ -6,6 +6,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func (m *Mount) Stat() unix.Statfs_t {
+	return m.Metadata.(unix.Statfs_t)
+}
+
 func mounts() ([]Mount, []string, error) {
 	var ret []Mount
 	var warnings []string
@@ -63,7 +67,7 @@ func mounts() ([]Mount, []string, error) {
 			Fstype:     fsType,
 			Type:       fsType,
 			Opts:       opts,
-			Stat:       stat,
+			Metadata:   stat,
 			Total:      (uint64(stat.F_blocks) * uint64(stat.F_bsize)),
 			Free:       (uint64(stat.F_bavail) * uint64(stat.F_bsize)),
 			Used:       (uint64(stat.F_blocks) - uint64(stat.F_bfree)) * uint64(stat.F_bsize),

@@ -251,18 +251,18 @@ var specialMap = map[int64]bool{
 }
 
 func isLocalFs(m Mount) bool {
-	return localMap[int64(m.Stat.Type)]
+	return localMap[int64(m.Stat().Type)]
 }
 
 func isFuseFs(m Mount) bool {
-	return m.Stat.Type == FUSEBLK_SUPER_MAGIC ||
-		m.Stat.Type == FUSE_SUPER_MAGIC
+	return m.Stat().Type == FUSEBLK_SUPER_MAGIC ||
+		m.Stat().Type == FUSE_SUPER_MAGIC
 }
 
 func isNetworkFs(m Mount) bool {
-	return networkMap[int64(m.Stat.Type)]
+	return networkMap[int64(m.Stat().Type)]
 }
 
 func isSpecialFs(m Mount) bool {
-	return specialMap[int64(m.Stat.Type)]
+	return specialMap[int64(m.Stat().Type)]
 }
