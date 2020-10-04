@@ -65,6 +65,10 @@ You can hide individual tables:
 
     duf --hide-local --hide-network --hide-fuse --hide-special --hide-loops --hide-binds
 
+You can also hide specific filesystems:
+
+    duf --hide-fs tmpfs,vfat
+
 List inode information instead of block usage:
 
     duf --inodes
