@@ -14,7 +14,14 @@ type Theme struct {
 	colorCyan    termenv.Color
 }
 
-func loadThemes(theme string) Theme {
+func getDefaultThemeName() string {
+	if !termenv.HasDarkBackground() {
+		return "light"
+	}
+	return "dark"
+}
+
+func loadTheme(theme string) Theme {
 	themes := make(map[string]Theme)
 
 	themes["dark"] = Theme{
