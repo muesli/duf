@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -28,13 +29,14 @@ var (
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light")
+	styleOpt = flag.String("style", "unicode", "style: unicode, ascii")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 )
 
 // renderTables renders all tables.
-func renderTables(m []Mount, columns []int, sortCol int) error {
+func renderTables(m []Mount, columns []int, sortCol int, style table.Style) error {
 	var local, network, fuse, special []Mount
 	hideFsMap := parseHideFs(*hideFs)
 
@@ -83,16 +85,16 @@ func renderTables(m []Mount, columns []int, sortCol int) error {
 
 	// print tables
 	if !*hideLocal || *all {
-		printTable("local", local, sortCol, columns)
+		printTable("local", local, sortCol, columns, style)
 	}
 	if !*hideNetwork || *all {
-		printTable("network", network, sortCol, columns)
+		printTable("network", network, sortCol, columns, style)
 	}
 	if !*hideFuse || *all {
-		printTable("FUSE", fuse, sortCol, columns)
+		printTable("FUSE", fuse, sortCol, columns, style)
 	}
 	if !*hideSpecial || *all {
-		printTable("special", special, sortCol, columns)
+		printTable("special", special, sortCol, columns, style)
 	}
 	return nil
 }
@@ -130,6 +132,18 @@ func parseColumns(cols string) ([]int, error) {
 	return i, nil
 }
 
+// parseStyle converts user-provided style option into a table.Style.
+func parseStyle(styleOpt string) (table.Style, error) {
+	switch styleOpt {
+	case "unicode":
+		return table.StyleRounded, nil
+	case "ascii":
+		return table.StyleDefault, nil
+	default:
+		return table.Style{}, fmt.Errorf("Unknown style option: %s", styleOpt)
+	}
+}
+
 // parseHideFs parses the supplied hide-fs flag into a map of fs types which should be skipped.
 func parseHideFs(hideFs string) map[string]struct{} {
 	hideMap := make(map[string]struct{})
@@ -149,6 +163,12 @@ func main() {
 	// validate flags
 	var err error
 	theme, err = loadTheme(*themeOpt)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	style, err := parseStyle(*styleOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -209,7 +229,7 @@ func main() {
 	}
 
 	// print tables
-	err = renderTables(m, columns, sortCol)
+	err = renderTables(m, columns, sortCol, style)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
