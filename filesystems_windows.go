@@ -8,8 +8,8 @@ func isFuseFs(m Mount) bool {
 }
 
 func isNetworkFs(m Mount) bool {
-	//FIXME: implement
-	return false
+	_, ok := m.Metadata.(*NetResource)
+	return ok
 }
 
 func isSpecialFs(m Mount) bool {
