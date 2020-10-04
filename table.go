@@ -36,12 +36,12 @@ var (
 )
 
 // printTable prints an individual table of mounts.
-func printTable(title string, m []Mount, sortBy int, cols []int) {
+func printTable(title string, m []Mount, sortBy int, cols []int, style table.Style) {
 	tab := table.NewWriter()
 	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
-	tab.SetStyle(table.StyleRounded)
 	tab.Style().Options.SeparateColumns = true
+	tab.SetStyle(style)
 
 	if barWidth() > 0 {
 		columns[4].Width = barWidth() + 7
