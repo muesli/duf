@@ -247,6 +247,7 @@ func mounts() (ret []Mount, warnings []string, err error) {
 // Windows API
 const (
 	// Windows Networking const
+	// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnetwk/nf-winnetwk-wnetopenenumw
 	RESOURCE_CONNECTED  = 0x00000001
 	RESOURCE_GLOBALNET  = 0x00000002
 	RESOURCE_REMEMBERED = 0x00000003
@@ -281,6 +282,7 @@ var (
 	NetResourceSize = unsafe.Sizeof(NetResource{})
 )
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnetwk/ns-winnetwk-netresourcew
 type NetResource struct {
 	Scope       uint32
 	Type        uint32
@@ -292,6 +294,7 @@ type NetResource struct {
 	Provider    *uint16
 }
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnetwk/nf-winnetwk-wnetopenenumw
 func WNetOpenEnum(scope uint32, resourceType uint32, usage uint32, resource *NetResource) (handle windows.Handle, err error) {
 	r1, _, e1 := syscall.Syscall6(procWNetOpenEnumW.Addr(), 5, uintptr(scope), uintptr(resourceType), uintptr(usage), uintptr(unsafe.Pointer(resource)), uintptr(unsafe.Pointer(&handle)), 0)
 	if r1 != windows.NO_ERROR {
@@ -304,6 +307,7 @@ func WNetOpenEnum(scope uint32, resourceType uint32, usage uint32, resource *Net
 	return
 }
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnetwk/nf-winnetwk-wnetenumresourcew
 func WNetEnumResource(enumResource windows.Handle, count *uint32, buffer *byte, bufferSize *uint32) (err error) {
 	r1, _, e1 := syscall.Syscall6(procWNetEnumResourceW.Addr(), 4, uintptr(enumResource), uintptr(unsafe.Pointer(count)), uintptr(unsafe.Pointer(buffer)), uintptr(unsafe.Pointer(bufferSize)), 0, 0)
 	if r1 != windows.NO_ERROR {
@@ -316,6 +320,7 @@ func WNetEnumResource(enumResource windows.Handle, count *uint32, buffer *byte, 
 	return
 }
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/winnetwk/nf-winnetwk-wnetcloseenum
 func WNetCloseEnum(enumResource windows.Handle) (err error) {
 	r1, _, e1 := syscall.Syscall(procWNetCloseEnum.Addr(), 1, uintptr(enumResource), 0, 0)
 	if r1 != windows.NO_ERROR {
@@ -328,6 +333,7 @@ func WNetCloseEnum(enumResource windows.Handle) (err error) {
 	return
 }
 
+// Reference: https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getdiskfreespacew
 func GetDiskFreeSpace(directoryName *uint16, sectorsPerCluster *uint32, bytesPerSector *uint32, numberOfFreeClusters *uint32, totalNumberOfClusters *uint32) (err error) {
 	r1, _, e1 := syscall.Syscall6(procGetDiskFreeSpaceW.Addr(), 5, uintptr(unsafe.Pointer(directoryName)), uintptr(unsafe.Pointer(sectorsPerCluster)), uintptr(unsafe.Pointer(bytesPerSector)), uintptr(unsafe.Pointer(numberOfFreeClusters)), uintptr(unsafe.Pointer(totalNumberOfClusters)), 0)
 	if r1 == 0 {
