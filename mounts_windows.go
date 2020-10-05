@@ -50,6 +50,14 @@ func getSpaceInfo(guidOrMountPointBuf []uint16) (totalBytes uint64, freeBytes ui
 	return
 }
 
+func getClusterInfo(guidOrMountPointBuf []uint16) (totalClusters uint32, clusterSize uint32, err error) {
+	var sectorsPerCluster uint32
+	var bytesPerSector uint32
+	err = GetDiskFreeSpace(&guidOrMountPointBuf[0], &sectorsPerCluster, &bytesPerSector, nil, &totalClusters)
+	clusterSize = bytesPerSector * sectorsPerCluster
+	return
+}
+
 func getMountFromGUID(guidBuf []uint16) (m Mount, skip bool, warnings []string) {
 	var err error
 	guid := windows.UTF16ToString(guidBuf)
@@ -76,6 +84,12 @@ func getMountFromGUID(guidBuf []uint16) (m Mount, skip bool, warnings []string) 
 		warnings = append(warnings, fmt.Sprintf("%s: %s", guid, err))
 	}
 
+	// Get cluster info
+	totalClusters, clusterSize, err := getClusterInfo(guidBuf)
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", guid, err))
+	}
+
 	// Use GUID as volume name if no label was set
 	if len(volumeName) == 0 {
 		volumeName = guid
@@ -90,6 +104,8 @@ func getMountFromGUID(guidBuf []uint16) (m Mount, skip bool, warnings []string) 
 		Total:      totalBytes,
 		Free:       freeBytes,
 		Used:       totalBytes - freeBytes,
+		Blocks:     uint64(totalClusters),
+		BlockSize:  uint64(clusterSize),
 	}
 	m.DeviceType = deviceType(m)
 	return
@@ -148,6 +164,12 @@ func getMountFromNetResource(netResource NetResource) (m Mount, warnings []strin
 		warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
 	}
 
+	// Get cluster info
+	totalClusters, clusterSize, err := getClusterInfo(mountPointBuf)
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
+	}
+
 	// Use remote name as volume name if no label was set
 	if len(volumeName) == 0 {
 		volumeName = windows.UTF16PtrToString(netResource.RemoteName)
@@ -162,6 +184,8 @@ func getMountFromNetResource(netResource NetResource) (m Mount, warnings []strin
 		Total:      totalBytes,
 		Free:       freeBytes,
 		Used:       totalBytes - freeBytes,
+		Blocks:     uint64(totalClusters),
+		BlockSize:  uint64(clusterSize),
 		Metadata:   &netResource,
 	}
 	m.DeviceType = deviceType(m)
@@ -246,11 +270,13 @@ const (
 
 var (
 	// Windows syscall
-	modmpr = windows.NewLazySystemDLL("mpr.dll")
+	modmpr      = windows.NewLazySystemDLL("mpr.dll")
+	modkernel32 = windows.NewLazySystemDLL("kernel32.dll")
 
 	procWNetOpenEnumW     = modmpr.NewProc("WNetOpenEnumW")
 	procWNetCloseEnum     = modmpr.NewProc("WNetCloseEnum")
 	procWNetEnumResourceW = modmpr.NewProc("WNetEnumResourceW")
+	procGetDiskFreeSpaceW = modkernel32.NewProc("GetDiskFreeSpaceW")
 
 	NetResourceSize = unsafe.Sizeof(NetResource{})
 )
@@ -293,6 +319,18 @@ func WNetEnumResource(enumResource windows.Handle, count *uint32, buffer *byte, 
 func WNetCloseEnum(enumResource windows.Handle) (err error) {
 	r1, _, e1 := syscall.Syscall(procWNetCloseEnum.Addr(), 1, uintptr(enumResource), 0, 0)
 	if r1 != windows.NO_ERROR {
+		if e1 != 0 {
+			err = e1
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func GetDiskFreeSpace(directoryName *uint16, sectorsPerCluster *uint32, bytesPerSector *uint32, numberOfFreeClusters *uint32, totalNumberOfClusters *uint32) (err error) {
+	r1, _, e1 := syscall.Syscall6(procGetDiskFreeSpaceW.Addr(), 5, uintptr(unsafe.Pointer(directoryName)), uintptr(unsafe.Pointer(sectorsPerCluster)), uintptr(unsafe.Pointer(bytesPerSector)), uintptr(unsafe.Pointer(numberOfFreeClusters)), uintptr(unsafe.Pointer(totalNumberOfClusters)), 0)
+	if r1 == 0 {
 		if e1 != 0 {
 			err = e1
 		} else {
