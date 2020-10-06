@@ -95,6 +95,10 @@ If you prefer your output as JSON:
 
     duf --json
 
+## Usage with Docker
+   
+   make duf-run
+
 ## Troubleshooting
 
 Users of `oh-my-zsh` should be aware that it already defines an alias called
