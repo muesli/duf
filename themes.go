@@ -16,7 +16,7 @@ type Theme struct {
 	colorCyan    termenv.Color
 }
 
-func getDefaultThemeName() string {
+func defaultThemeName() string {
 	if !termenv.HasDarkBackground() {
 		return "light"
 	}

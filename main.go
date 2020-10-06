@@ -27,7 +27,7 @@ var (
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width    = flag.Uint("width", 0, "max output width")
-	themeOpt = flag.String("theme", "", "color themes: dark, light")
+	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
@@ -146,10 +146,7 @@ func parseHideFs(hideFs string) map[string]struct{} {
 func main() {
 	flag.Parse()
 
-	if *themeOpt == "" {
-		*themeOpt = getDefaultThemeName()
-	}
-
+	// validate flags
 	var err error
 	theme, err = loadTheme(*themeOpt)
 	if err != nil {
@@ -157,7 +154,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// validate flags
 	columns, err := parseColumns(*output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
