@@ -149,7 +149,14 @@ func main() {
 	if *themeOpt == "" {
 		*themeOpt = getDefaultThemeName()
 	}
-	theme = loadTheme(*themeOpt)
+
+	var err error
+	theme, err = loadTheme(*themeOpt)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	// validate flags
 	columns, err := parseColumns(*output)
 	if err != nil {

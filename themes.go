@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/muesli/termenv"
 )
 
@@ -21,7 +23,7 @@ func getDefaultThemeName() string {
 	return "dark"
 }
 
-func loadTheme(theme string) Theme {
+func loadTheme(theme string) (Theme, error) {
 	themes := make(map[string]Theme)
 
 	themes["dark"] = Theme{
@@ -45,8 +47,8 @@ func loadTheme(theme string) Theme {
 	}
 
 	if _, ok := themes[theme]; !ok {
-		return themes["dark"]
+		return Theme{}, fmt.Errorf("Unknown theme: %s", theme)
 	}
 
-	return themes[theme]
+	return themes[theme], nil
 }
