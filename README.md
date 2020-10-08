@@ -25,6 +25,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
 - Nix: `nix-env -iA nixpkgs.duf`
 - [Packages](https://github.com/muesli/duf/releases) in Debian & RPM formats
+- [APT repository](https://packages.azlux.fr) for Debian/Ubuntu to have auto update (external maintainer)
 
 #### BSD
 - FreeBSD: `pkg install duf`
