@@ -29,7 +29,7 @@ var (
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light")
-	styleOpt = flag.String("style", "unicode", "style: unicode, ascii")
+	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
