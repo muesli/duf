@@ -48,6 +48,7 @@ nfpms:
     description: "Disk Usage/Free Utility"
     license: MIT
     formats:
+      - apk
       - deb
       - rpm
     bindir: /usr/bin
