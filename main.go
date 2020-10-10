@@ -169,10 +169,15 @@ func main() {
 			CommitSHA = CommitSHA[:7]
 		}
 		if Version == "" {
-			Version = "unknown"
-			CommitSHA = "built from source"
+			Version = "(built from source)"
 		}
-		fmt.Printf("duf %s (%s)\n", Version, CommitSHA)
+
+		fmt.Printf("duf %s", Version)
+		if len(CommitSHA) > 0 {
+			fmt.Printf(" (%s)", CommitSHA)
+		}
+
+		fmt.Println()
 		os.Exit(0)
 	}
 
