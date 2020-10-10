@@ -13,6 +13,9 @@ import (
 )
 
 var (
+	Version   = ""
+	CommitSHA = ""
+
 	term  = termenv.ColorProfile()
 	theme Theme
 
@@ -33,6 +36,7 @@ var (
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
+	version    = flag.Bool("version", false, "display version")
 )
 
 // renderTables renders all tables.
@@ -159,6 +163,18 @@ func parseHideFs(hideFs string) map[string]struct{} {
 
 func main() {
 	flag.Parse()
+
+	if *version {
+		if len(CommitSHA) > 7 {
+			CommitSHA = CommitSHA[:7]
+		}
+		if Version == "" {
+			Version = "unknown"
+			CommitSHA = "built from source"
+		}
+		fmt.Printf("duf %s (%s)\n", Version, CommitSHA)
+		os.Exit(0)
+	}
 
 	// validate flags
 	var err error
