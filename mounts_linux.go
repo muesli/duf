@@ -43,8 +43,8 @@ func mounts() ([]Mount, []string, error) {
 		mountOpts := fields[5]
 
 		fields = strings.Fields(parts[1])
-		fstype := fields[0]
-		device := fields[1]
+		fstype := unescapeFstab(fields[0])
+		device := unescapeFstab(fields[1])
 
 		var stat unix.Statfs_t
 		err := unix.Statfs(mountPoint, &stat)
