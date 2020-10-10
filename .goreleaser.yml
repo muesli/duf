@@ -5,7 +5,11 @@ before:
     - go mod download
 builds:
   - id: "duf"
+    env:
+      - CGO_ENABLED=0
     binary: duf
+    flags:
+      - -trimpath
     ldflags: -s -w -X main.Version={{ .Version }} -X main.CommitSHA={{ .Commit }}
     goos:
       - linux
