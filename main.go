@@ -36,6 +36,7 @@ var (
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
+	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
 	version    = flag.Bool("version", false, "display version")
 )
 
@@ -235,8 +236,10 @@ func main() {
 	}
 
 	// print out warnings
-	for _, warning := range warnings {
-		fmt.Fprintln(os.Stderr, warning)
+	if *warns {
+		for _, warning := range warnings {
+			fmt.Fprintln(os.Stderr, warning)
+		}
 	}
 
 	// print JSON
