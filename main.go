@@ -16,7 +16,7 @@ var (
 	Version   = ""
 	CommitSHA = ""
 
-	term  = termenv.ColorProfile()
+	term  = termenv.EnvColorProfile()
 	theme Theme
 
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
