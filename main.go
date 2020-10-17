@@ -41,7 +41,7 @@ var (
 )
 
 // renderTables renders all tables.
-func renderTables(m []Mount, columns []int, sortCol int, style table.Style) error {
+func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	var local, network, fuse, special []Mount
 	hideFsMap := parseHideFs(*hideFs)
 
@@ -101,7 +101,6 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) erro
 	if !*hideSpecial || *all {
 		printTable("special", special, sortCol, columns, style)
 	}
-	return nil
 }
 
 // renderJSON encodes the JSON output and prints it.
@@ -253,8 +252,5 @@ func main() {
 	}
 
 	// print tables
-	err = renderTables(m, columns, sortCol, style)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	renderTables(m, columns, sortCol, style)
 }
