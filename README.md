@@ -63,7 +63,7 @@ If you want to list everything (including pseudo, duplicate, inaccessible file s
 
 You can show only individual tables:
 
-    duf --only-devices local,network,fuse,special,loops,binds
+    duf --only local,network,fuse,special,loops,binds
 
 You can also show only specific filesystems:
 
@@ -71,7 +71,7 @@ You can also show only specific filesystems:
 
 You can hide individual tables:
 
-    duf --hide-devices local,network,fuse,special,loops,binds
+    duf --hide local,network,fuse,special,loops,binds
 
 You can also hide specific filesystems:
 
