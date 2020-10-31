@@ -2,16 +2,16 @@ package main
 
 func deviceType(m Mount) string {
 	if isNetworkFs(m) {
-		return "network"
+		return networkDevice
 	}
 	if isSpecialFs(m) {
-		return "special"
+		return specialDevice
 	}
 	if isFuseFs(m) {
-		return "fuse"
+		return fuseDevice
 	}
 
-	return "local"
+	return localDevice
 }
 
 // remote: [ "nfs", "smbfs", "cifs", "ncpfs", "afs", "coda", "ftpfs", "mfs", "sshfs", "fuse.sshfs", "nfs4" ]

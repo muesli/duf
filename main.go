@@ -51,7 +51,7 @@ var (
 
 // renderTables renders all tables.
 func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
-	var local, network, fuse, special []Mount
+	deviceMounts := make(map[string][]Mount)
 	hideDevicesMap := parseCommaSeparatedValues(*hideDevices)
 	onlyDevicesMap := parseCommaSeparatedValues(*onlyDevices)
 	hasOnlyDevices := len(onlyDevicesMap) != 0
@@ -113,48 +113,27 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 			continue
 		}
 
-		if isNetworkFs(v) {
-			network = append(network, v)
-			continue
-		}
-		if isFuseFs(v) {
-			fuse = append(fuse, v)
-			continue
-		}
-		if isSpecialFs(v) {
-			special = append(special, v)
-			continue
-		}
-
-		local = append(local, v)
+		deviceType := deviceType(v)
+		deviceMounts[deviceType] = append(deviceMounts[deviceType], v)
 	}
 
 	// print tables
-	if onlyLocal {
-		printTable("local", local, sortCol, columns, style)
-	}
-	if onlyNetwork {
-		printTable("network", network, sortCol, columns, style)
-	}
-	if onlyFuse {
-		printTable("FUSE", fuse, sortCol, columns, style)
-	}
-	if onlySpecial {
-		printTable("special", special, sortCol, columns, style)
-	}
+	for deviceType, mounts := range deviceMounts {
+		shouldPrint := false
 
-	if !hasOnlyDevices {
-		if !hideLocal || *all {
-			printTable("local", local, sortCol, columns, style)
+		switch deviceType {
+		case localDevice:
+			shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
+		case networkDevice:
+			shouldPrint = (hasOnlyDevices && onlyNetwork) || (!hasOnlyDevices && !hideNetwork)
+		case fuseDevice:
+			shouldPrint = (hasOnlyDevices && onlyFuse) || (!hasOnlyDevices && !hideFuse)
+		case specialDevice:
+			shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
 		}
-		if !hideNetwork || *all {
-			printTable("network", network, sortCol, columns, style)
-		}
-		if !hideFuse || *all {
-			printTable("FUSE", fuse, sortCol, columns, style)
-		}
-		if !hideSpecial || *all {
-			printTable("special", special, sortCol, columns, style)
+
+		if shouldPrint {
+			printTable(deviceType, mounts, sortCol, columns, style)
 		}
 	}
 }
