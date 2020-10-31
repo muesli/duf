@@ -7,7 +7,7 @@
 
 Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
-![duf](/duf.png)
+![duf](https://github.com/muesli/duf/raw/master/duf.png)
 
 ## Features
 
@@ -60,6 +60,14 @@ You can simply start duf without any command-line arguments:
 If you want to list everything (including pseudo, duplicate, inaccessible file systems):
 
     duf --all
+
+You can show only individual tables:
+
+    duf --only-local --only-network --only-fuse --only-special --only-loops --only-binds
+
+You can also show only specific filesystems:
+
+    duf --only-fs tmpfs,vfat
 
 You can hide individual tables:
 

@@ -28,6 +28,14 @@ var (
 	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
 
+	onlyLocal   = flag.Bool("only-local", false, "only local devices")
+	onlyNetwork = flag.Bool("only-network", false, "only network devices")
+	onlyFuse    = flag.Bool("only-fuse", false, "only fuse devices")
+	onlySpecial = flag.Bool("only-special", false, "only special devices")
+	onlyLoops   = flag.Bool("only-loops", false, "only loop devices")
+	onlyBinds   = flag.Bool("only-binds", false, "only bind mounts")
+	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
+
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width    = flag.Uint("width", 0, "max output width")
@@ -43,32 +51,42 @@ var (
 // renderTables renders all tables.
 func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	var local, network, fuse, special []Mount
+	hasOnlyFlag := hasOnlyFlag()
 	hideFsMap := parseHideFs(*hideFs)
+	onlyFsMap := parseOnlyFs(*onlyFs)
 
 	// sort/filter devices
 	for _, v := range m {
-		// skip hideFs
-		if _, ok := hideFsMap[v.Fstype]; ok {
-			continue
+		if hasOnlyFlag {
+			// skip not onlyfs
+			if _, ok := onlyFsMap[v.Fstype]; !ok {
+				continue
+			}
+		} else {
+			// skip hideFs
+			if _, ok := hideFsMap[v.Fstype]; ok {
+				continue
+			}
 		}
 		// skip autofs
 		if v.Fstype == "autofs" {
 			continue
 		}
+
 		// skip bind-mounts
-		if *hideBinds && !*all && strings.Contains(v.Opts, "bind") {
+		if (hasOnlyFlag && !*onlyBinds) || (*hideBinds && !*all) && strings.Contains(v.Opts, "bind") {
 			continue
 		}
 		// skip loop devices
-		if *hideLoops && !*all && strings.HasPrefix(v.Device, "/dev/loop") {
+		if (hasOnlyFlag && !*onlyBinds) || (*hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
 			continue
 		}
 		// skip special devices
-		if v.Blocks == 0 && !*all {
+		if v.Blocks == 0 && (!*all || !hasOnlyFlag) {
 			continue
 		}
 		// skip zero size devices
-		if v.BlockSize == 0 && !*all {
+		if v.BlockSize == 0 && (!*all || !hasOnlyFlag) {
 			continue
 		}
 
@@ -89,18 +107,37 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	}
 
 	// print tables
-	if !*hideLocal || *all {
+	if *onlyLocal {
 		printTable("local", local, sortCol, columns, style)
 	}
-	if !*hideNetwork || *all {
+	if *onlyNetwork {
 		printTable("network", network, sortCol, columns, style)
 	}
-	if !*hideFuse || *all {
+	if *onlyFuse {
 		printTable("FUSE", fuse, sortCol, columns, style)
 	}
-	if !*hideSpecial || *all {
+	if *onlySpecial {
 		printTable("special", special, sortCol, columns, style)
 	}
+
+	if !hasOnlyFlag {
+		if !*hideLocal || *all {
+			printTable("local", local, sortCol, columns, style)
+		}
+		if !*hideNetwork || *all {
+			printTable("network", network, sortCol, columns, style)
+		}
+		if !*hideFuse || *all {
+			printTable("FUSE", fuse, sortCol, columns, style)
+		}
+		if !*hideSpecial || *all {
+			printTable("special", special, sortCol, columns, style)
+		}
+	}
+}
+
+func hasOnlyFlag() bool {
+	return *onlyLocal || *onlyNetwork || *onlyFuse || *onlySpecial || *onlyLoops || *onlyBinds || *onlyFs != ""
 }
 
 // renderJSON encodes the JSON output and prints it.
@@ -159,6 +196,19 @@ func parseHideFs(hideFs string) map[string]struct{} {
 		hideMap[fs] = struct{}{}
 	}
 	return hideMap
+}
+
+// parseOnlyFs parses the supplied only-fs flag into a map of fs types which should be show.
+func parseOnlyFs(onlyFs string) map[string]struct{} {
+	onlyFsMap := make(map[string]struct{})
+	for _, fs := range strings.Split(onlyFs, ",") {
+		fs = strings.TrimSpace(fs)
+		if len(fs) == 0 {
+			continue
+		}
+		onlyFsMap[fs] = struct{}{}
+	}
+	return onlyFsMap
 }
 
 func main() {
