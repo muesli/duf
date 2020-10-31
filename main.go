@@ -57,12 +57,12 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 
 	// sort/filter devices
 	for _, v := range m {
-		if hasOnlyFlag {
+		if hasOnlyFlag && len(onlyFsMap) != 0 {
 			// skip not onlyfs
 			if _, ok := onlyFsMap[v.Fstype]; !ok {
 				continue
 			}
-		} else {
+		} else if !hasOnlyFlag {
 			// skip hideFs
 			if _, ok := hideFsMap[v.Fstype]; ok {
 				continue
