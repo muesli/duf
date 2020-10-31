@@ -63,7 +63,7 @@ If you want to list everything (including pseudo, duplicate, inaccessible file s
 
 You can show only individual tables:
 
-    duf --only-local --only-network --only-fuse --only-special --only-loops --only-binds
+    duf --only-devices local,network,fuse,special,loops,binds
 
 You can also show only specific filesystems:
 
@@ -71,7 +71,7 @@ You can also show only specific filesystems:
 
 You can hide individual tables:
 
-    duf --hide-local --hide-network --hide-fuse --hide-special --hide-loops --hide-binds
+    duf --hide-devices local,network,fuse,special,loops,binds
 
 You can also hide specific filesystems:
 
@@ -84,7 +84,7 @@ List inode information instead of block usage:
 Sort the output:
 
     duf --sort size
-
+~~~~
 Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
 

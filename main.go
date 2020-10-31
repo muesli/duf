@@ -12,6 +12,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+const (
+	localDevice   = "local"
+	networkDevice = "network"
+	fuseDevice    = "fuse"
+	specialDevice = "special"
+	loopsDevice   = "loops"
+	bindsMount    = "binds"
+)
+
 var (
 	Version   = ""
 	CommitSHA = ""
@@ -19,21 +28,13 @@ var (
 	term  = termenv.EnvColorProfile()
 	theme Theme
 
+	allowedValues = strings.Join([]string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}, ", ")
+
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
-	hideLocal   = flag.Bool("hide-local", false, "hide local devices")
-	hideNetwork = flag.Bool("hide-network", false, "hide network devices")
-	hideFuse    = flag.Bool("hide-fuse", false, "hide fuse devices")
-	hideSpecial = flag.Bool("hide-special", false, "hide special devices")
-	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
-	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
+	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
 
-	onlyLocal   = flag.Bool("only-local", false, "only local devices")
-	onlyNetwork = flag.Bool("only-network", false, "only network devices")
-	onlyFuse    = flag.Bool("only-fuse", false, "only fuse devices")
-	onlySpecial = flag.Bool("only-special", false, "only special devices")
-	onlyLoops   = flag.Bool("only-loops", false, "only loop devices")
-	onlyBinds   = flag.Bool("only-binds", false, "only bind mounts")
+	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
@@ -51,9 +52,25 @@ var (
 // renderTables renders all tables.
 func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	var local, network, fuse, special []Mount
-	hasOnlyFlag := hasOnlyFlag()
-	hideFsMap := parseHideFs(*hideFs)
-	onlyFsMap := parseOnlyFs(*onlyFs)
+	hideDevicesMap := parseCommaSeparatedValues(*hideDevices)
+	onlyDevicesMap := parseCommaSeparatedValues(*onlyDevices)
+	hasOnlyDevices := len(onlyDevicesMap) != 0
+	hideFsMap := parseCommaSeparatedValues(*hideFs)
+	onlyFsMap := parseCommaSeparatedValues(*onlyFs)
+
+	_, hideLocal := hideDevicesMap[localDevice]
+	_, hideNetwork := hideDevicesMap[networkDevice]
+	_, hideFuse := hideDevicesMap[fuseDevice]
+	_, hideSpecial := hideDevicesMap[specialDevice]
+	_, hideLoops := hideDevicesMap[loopsDevice]
+	_, hideBinds := hideDevicesMap[bindsMount]
+
+	_, onlyLocal := onlyDevicesMap[localDevice]
+	_, onlyNetwork := onlyDevicesMap[networkDevice]
+	_, onlyFuse := onlyDevicesMap[fuseDevice]
+	_, onlySpecial := onlyDevicesMap[specialDevice]
+	_, onlyLoops := onlyDevicesMap[loopsDevice]
+	_, onlyBinds := onlyDevicesMap[bindsMount]
 
 	// sort/filter devices
 	for _, v := range m {
@@ -74,19 +91,19 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 		}
 
 		// skip bind-mounts
-		if (hasOnlyFlag && !*onlyBinds) || (*hideBinds && !*all) && strings.Contains(v.Opts, "bind") {
+		if (hasOnlyDevices && !onlyBinds) || (hideBinds && !*all) && strings.Contains(v.Opts, "bind") {
 			continue
 		}
 		// skip loop devices
-		if (hasOnlyFlag && !*onlyLoops) || (*hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
+		if (hasOnlyDevices && !onlyLoops) || (hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
 			continue
 		}
 		// skip special devices
-		if v.Blocks == 0 && (!*all || !hasOnlyFlag) {
+		if v.Blocks == 0 && (!*all || !hasOnlyDevices) {
 			continue
 		}
 		// skip zero size devices
-		if v.BlockSize == 0 && (!*all || !hasOnlyFlag) {
+		if v.BlockSize == 0 && (!*all || !hasOnlyDevices) {
 			continue
 		}
 
@@ -107,37 +124,33 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	}
 
 	// print tables
-	if *onlyLocal {
+	if onlyLocal {
 		printTable("local", local, sortCol, columns, style)
 	}
-	if *onlyNetwork {
+	if onlyNetwork {
 		printTable("network", network, sortCol, columns, style)
 	}
-	if *onlyFuse {
+	if onlyFuse {
 		printTable("FUSE", fuse, sortCol, columns, style)
 	}
-	if *onlySpecial {
+	if onlySpecial {
 		printTable("special", special, sortCol, columns, style)
 	}
 
-	if !hasOnlyFlag {
-		if !*hideLocal || *all {
+	if !hasOnlyDevices {
+		if !hideLocal || *all {
 			printTable("local", local, sortCol, columns, style)
 		}
-		if !*hideNetwork || *all {
+		if !hideNetwork || *all {
 			printTable("network", network, sortCol, columns, style)
 		}
-		if !*hideFuse || *all {
+		if !hideFuse || *all {
 			printTable("FUSE", fuse, sortCol, columns, style)
 		}
-		if !*hideSpecial || *all {
+		if !hideSpecial || *all {
 			printTable("special", special, sortCol, columns, style)
 		}
 	}
-}
-
-func hasOnlyFlag() bool {
-	return *onlyLocal || *onlyNetwork || *onlyFuse || *onlySpecial || *onlyLoops || *onlyBinds || *onlyFs != ""
 }
 
 // renderJSON encodes the JSON output and prints it.
@@ -185,30 +198,19 @@ func parseStyle(styleOpt string) (table.Style, error) {
 	}
 }
 
-// parseHideFs parses the supplied hide-fs flag into a map of fs types which should be skipped.
-func parseHideFs(hideFs string) map[string]struct{} {
-	hideMap := make(map[string]struct{})
-	for _, fs := range strings.Split(hideFs, ",") {
-		fs = strings.TrimSpace(fs)
-		if len(fs) == 0 {
+// parseCommaSeparatedValues parses comma separated string into a map.
+func parseCommaSeparatedValues(values string) map[string]bool {
+	items := make(map[string]bool)
+	for _, value := range strings.Split(values, ",") {
+		value = strings.TrimSpace(value)
+		if len(value) == 0 {
 			continue
 		}
-		hideMap[fs] = struct{}{}
-	}
-	return hideMap
-}
+		value = strings.ToLower(value)
 
-// parseOnlyFs parses the supplied only-fs flag into a map of fs types which should be show.
-func parseOnlyFs(onlyFs string) map[string]struct{} {
-	onlyFsMap := make(map[string]struct{})
-	for _, fs := range strings.Split(onlyFs, ",") {
-		fs = strings.TrimSpace(fs)
-		if len(fs) == 0 {
-			continue
-		}
-		onlyFsMap[fs] = struct{}{}
+		items[value] = true
 	}
-	return onlyFsMap
+	return items
 }
 
 func main() {
