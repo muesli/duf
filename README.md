@@ -7,7 +7,7 @@
 
 Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
-![duf](https://github.com/muesli/duf/raw/master/duf.png)
+![duf](/duf.png)
 
 ## Features
 
