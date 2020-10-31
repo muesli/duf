@@ -75,7 +75,7 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	// sort/filter devices
 	for _, v := range m {
 		if len(onlyFsMap) != 0 {
-			// skip not onlyfs
+			// skip not onlyFs
 			if _, ok := onlyFsMap[v.Fstype]; !ok {
 				continue
 			}
@@ -91,13 +91,19 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 		}
 
 		// skip bind-mounts
-		if (hasOnlyDevices && !onlyBinds) || (hideBinds && !*all) && strings.Contains(v.Opts, "bind") {
-			continue
+		if strings.Contains(v.Opts, "bind") {
+			if (hasOnlyDevices && !onlyBinds) || (hideBinds && !*all) {
+				continue
+			}
 		}
+
 		// skip loop devices
-		if (hasOnlyDevices && !onlyLoops) || (hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
-			continue
+		if strings.HasPrefix(v.Device, "/dev/loop") {
+			if (hasOnlyDevices && !onlyLoops) || (hideLoops && !*all) {
+				continue
+			}
 		}
+
 		// skip special devices
 		if v.Blocks == 0 && (!*all || !hasOnlyDevices) {
 			continue
@@ -194,7 +200,7 @@ func parseStyle(styleOpt string) (table.Style, error) {
 	case "ascii":
 		return table.StyleDefault, nil
 	default:
-		return table.Style{}, fmt.Errorf("Unknown style option: %s", styleOpt)
+		return table.Style{}, fmt.Errorf("unknown style option: %s", styleOpt)
 	}
 }
 
