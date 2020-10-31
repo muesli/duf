@@ -76,12 +76,12 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 	for _, v := range m {
 		if len(onlyFsMap) != 0 {
 			// skip not onlyFs
-			if _, ok := onlyFsMap[v.Fstype]; !ok {
+			if _, ok := onlyFsMap[strings.ToLower(v.Fstype)]; !ok {
 				continue
 			}
 		} else {
 			// skip hideFs
-			if _, ok := hideFsMap[v.Fstype]; ok {
+			if _, ok := hideFsMap[strings.ToLower(v.Fstype)]; ok {
 				continue
 			}
 		}
