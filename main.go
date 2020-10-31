@@ -105,11 +105,12 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 		}
 
 		// skip special devices
-		if v.Blocks == 0 && (!*all || !hasOnlyDevices) {
+		if v.Blocks == 0 && !*all {
 			continue
 		}
+
 		// skip zero size devices
-		if v.BlockSize == 0 && (!*all || !hasOnlyDevices) {
+		if v.BlockSize == 0 && !*all {
 			continue
 		}
 
