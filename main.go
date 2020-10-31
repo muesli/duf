@@ -205,8 +205,8 @@ func parseStyle(styleOpt string) (table.Style, error) {
 }
 
 // parseCommaSeparatedValues parses comma separated string into a map.
-func parseCommaSeparatedValues(values string) map[string]bool {
-	items := make(map[string]bool)
+func parseCommaSeparatedValues(values string) map[string]struct{} {
+	items := make(map[string]struct{})
 	for _, value := range strings.Split(values, ",") {
 		value = strings.TrimSpace(value)
 		if len(value) == 0 {
@@ -214,7 +214,7 @@ func parseCommaSeparatedValues(values string) map[string]bool {
 		}
 		value = strings.ToLower(value)
 
-		items[value] = true
+		items[value] = struct{}{}
 	}
 	return items
 }
