@@ -78,7 +78,7 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 			continue
 		}
 		// skip loop devices
-		if (hasOnlyFlag && !*onlyBinds) || (*hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
+		if (hasOnlyFlag && !*onlyLoops) || (*hideLoops && !*all) && strings.HasPrefix(v.Device, "/dev/loop") {
 			continue
 		}
 		// skip special devices
