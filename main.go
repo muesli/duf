@@ -120,17 +120,19 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 
 	// print tables
 	for deviceType, mounts := range deviceMounts {
-		shouldPrint := false
+		shouldPrint := *all
 
-		switch deviceType {
-		case localDevice:
-			shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
-		case networkDevice:
-			shouldPrint = (hasOnlyDevices && onlyNetwork) || (!hasOnlyDevices && !hideNetwork)
-		case fuseDevice:
-			shouldPrint = (hasOnlyDevices && onlyFuse) || (!hasOnlyDevices && !hideFuse)
-		case specialDevice:
-			shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
+		if !shouldPrint {
+			switch deviceType {
+			case localDevice:
+				shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
+			case networkDevice:
+				shouldPrint = (hasOnlyDevices && onlyNetwork) || (!hasOnlyDevices && !hideNetwork)
+			case fuseDevice:
+				shouldPrint = (hasOnlyDevices && onlyFuse) || (!hasOnlyDevices && !hideFuse)
+			case specialDevice:
+				shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
+			}
 		}
 
 		if shouldPrint {
