@@ -28,7 +28,8 @@ var (
 	term  = termenv.EnvColorProfile()
 	theme Theme
 
-	allowedValues = strings.Join([]string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}, ", ")
+	groups        = []string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}
+	allowedValues = strings.Join(groups, ", ")
 
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
@@ -114,16 +115,17 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 			continue
 		}
 
-		deviceType := deviceType(v)
-		deviceMounts[deviceType] = append(deviceMounts[deviceType], v)
+		t := deviceType(v)
+		deviceMounts[t] = append(deviceMounts[t], v)
 	}
 
 	// print tables
-	for deviceType, mounts := range deviceMounts {
-		shouldPrint := *all
+	for _, devType := range groups {
+		mounts := deviceMounts[devType]
 
+		shouldPrint := *all
 		if !shouldPrint {
-			switch deviceType {
+			switch devType {
 			case localDevice:
 				shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
 			case networkDevice:
@@ -136,7 +138,7 @@ func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
 		}
 
 		if shouldPrint {
-			printTable(deviceType, mounts, sortCol, columns, style)
+			printTable(devType, mounts, sortCol, columns, style)
 		}
 	}
 }
