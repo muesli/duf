@@ -12,6 +12,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+const (
+	localDevice   = "local"
+	networkDevice = "network"
+	fuseDevice    = "fuse"
+	specialDevice = "special"
+	loopsDevice   = "loops"
+	bindsMount    = "binds"
+)
+
 var (
 	Version   = ""
 	CommitSHA = ""
@@ -19,14 +28,14 @@ var (
 	term  = termenv.EnvColorProfile()
 	theme Theme
 
+	allowedValues = strings.Join([]string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}, ", ")
+
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
-	hideLocal   = flag.Bool("hide-local", false, "hide local devices")
-	hideNetwork = flag.Bool("hide-network", false, "hide network devices")
-	hideFuse    = flag.Bool("hide-fuse", false, "hide fuse devices")
-	hideSpecial = flag.Bool("hide-special", false, "hide special devices")
-	hideLoops   = flag.Bool("hide-loops", true, "hide loop devices")
-	hideBinds   = flag.Bool("hide-binds", true, "hide bind mounts")
+	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
+
+	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
+	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
@@ -42,64 +51,93 @@ var (
 
 // renderTables renders all tables.
 func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
-	var local, network, fuse, special []Mount
-	hideFsMap := parseHideFs(*hideFs)
+	deviceMounts := make(map[string][]Mount)
+	hideDevicesMap := parseCommaSeparatedValues(*hideDevices)
+	onlyDevicesMap := parseCommaSeparatedValues(*onlyDevices)
+	hasOnlyDevices := len(onlyDevicesMap) != 0
+	hideFsMap := parseCommaSeparatedValues(*hideFs)
+	onlyFsMap := parseCommaSeparatedValues(*onlyFs)
+
+	_, hideLocal := hideDevicesMap[localDevice]
+	_, hideNetwork := hideDevicesMap[networkDevice]
+	_, hideFuse := hideDevicesMap[fuseDevice]
+	_, hideSpecial := hideDevicesMap[specialDevice]
+	_, hideLoops := hideDevicesMap[loopsDevice]
+	_, hideBinds := hideDevicesMap[bindsMount]
+
+	_, onlyLocal := onlyDevicesMap[localDevice]
+	_, onlyNetwork := onlyDevicesMap[networkDevice]
+	_, onlyFuse := onlyDevicesMap[fuseDevice]
+	_, onlySpecial := onlyDevicesMap[specialDevice]
+	_, onlyLoops := onlyDevicesMap[loopsDevice]
+	_, onlyBinds := onlyDevicesMap[bindsMount]
 
 	// sort/filter devices
 	for _, v := range m {
-		// skip hideFs
-		if _, ok := hideFsMap[v.Fstype]; ok {
-			continue
+		if len(onlyFsMap) != 0 {
+			// skip not onlyFs
+			if _, ok := onlyFsMap[strings.ToLower(v.Fstype)]; !ok {
+				continue
+			}
+		} else {
+			// skip hideFs
+			if _, ok := hideFsMap[strings.ToLower(v.Fstype)]; ok {
+				continue
+			}
 		}
 		// skip autofs
 		if v.Fstype == "autofs" {
 			continue
 		}
+
 		// skip bind-mounts
-		if *hideBinds && !*all && strings.Contains(v.Opts, "bind") {
-			continue
+		if strings.Contains(v.Opts, "bind") {
+			if (hasOnlyDevices && !onlyBinds) || (hideBinds && !*all) {
+				continue
+			}
 		}
+
 		// skip loop devices
-		if *hideLoops && !*all && strings.HasPrefix(v.Device, "/dev/loop") {
-			continue
+		if strings.HasPrefix(v.Device, "/dev/loop") {
+			if (hasOnlyDevices && !onlyLoops) || (hideLoops && !*all) {
+				continue
+			}
 		}
+
 		// skip special devices
 		if v.Blocks == 0 && !*all {
 			continue
 		}
+
 		// skip zero size devices
 		if v.BlockSize == 0 && !*all {
 			continue
 		}
 
-		if isNetworkFs(v) {
-			network = append(network, v)
-			continue
-		}
-		if isFuseFs(v) {
-			fuse = append(fuse, v)
-			continue
-		}
-		if isSpecialFs(v) {
-			special = append(special, v)
-			continue
-		}
-
-		local = append(local, v)
+		deviceType := deviceType(v)
+		deviceMounts[deviceType] = append(deviceMounts[deviceType], v)
 	}
 
 	// print tables
-	if !*hideLocal || *all {
-		printTable("local", local, sortCol, columns, style)
-	}
-	if !*hideNetwork || *all {
-		printTable("network", network, sortCol, columns, style)
-	}
-	if !*hideFuse || *all {
-		printTable("FUSE", fuse, sortCol, columns, style)
-	}
-	if !*hideSpecial || *all {
-		printTable("special", special, sortCol, columns, style)
+	for deviceType, mounts := range deviceMounts {
+		shouldPrint := *all
+
+		if !shouldPrint {
+			switch deviceType {
+			case localDevice:
+				shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
+			case networkDevice:
+				shouldPrint = (hasOnlyDevices && onlyNetwork) || (!hasOnlyDevices && !hideNetwork)
+			case fuseDevice:
+				shouldPrint = (hasOnlyDevices && onlyFuse) || (!hasOnlyDevices && !hideFuse)
+			case specialDevice:
+				shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
+			}
+		}
+
+		if shouldPrint {
+			printTable(deviceType, mounts, sortCol, columns, style)
+		}
 	}
 }
 
@@ -144,21 +182,23 @@ func parseStyle(styleOpt string) (table.Style, error) {
 	case "ascii":
 		return table.StyleDefault, nil
 	default:
-		return table.Style{}, fmt.Errorf("Unknown style option: %s", styleOpt)
+		return table.Style{}, fmt.Errorf("unknown style option: %s", styleOpt)
 	}
 }
 
-// parseHideFs parses the supplied hide-fs flag into a map of fs types which should be skipped.
-func parseHideFs(hideFs string) map[string]struct{} {
-	hideMap := make(map[string]struct{})
-	for _, fs := range strings.Split(hideFs, ",") {
-		fs = strings.TrimSpace(fs)
-		if len(fs) == 0 {
+// parseCommaSeparatedValues parses comma separated string into a map.
+func parseCommaSeparatedValues(values string) map[string]struct{} {
+	items := make(map[string]struct{})
+	for _, value := range strings.Split(values, ",") {
+		value = strings.TrimSpace(value)
+		if len(value) == 0 {
 			continue
 		}
-		hideMap[fs] = struct{}{}
+		value = strings.ToLower(value)
+
+		items[value] = struct{}{}
 	}
-	return hideMap
+	return items
 }
 
 func main() {
