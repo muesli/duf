@@ -49,3 +49,7 @@ func isSpecialFs(m Mount) bool {
 	_, ok := windowsSandboxMountPoints[m.Mountpoint]
 	return ok
 }
+
+func isHiddenFs(m Mount) bool {
+	return false
+}

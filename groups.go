@@ -42,8 +42,9 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 				continue
 			}
 		}
-		// skip autofs
-		if v.Fstype == "autofs" {
+
+		// skip hidden devices
+		if isHiddenFs(v) && !*all {
 			continue
 		}
 
