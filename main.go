@@ -34,7 +34,6 @@ var (
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
-
 	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 
@@ -49,99 +48,6 @@ var (
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
 	version    = flag.Bool("version", false, "display version")
 )
-
-// renderTables renders all tables.
-func renderTables(m []Mount, columns []int, sortCol int, style table.Style) {
-	deviceMounts := make(map[string][]Mount)
-	hideDevicesMap := parseCommaSeparatedValues(*hideDevices)
-	onlyDevicesMap := parseCommaSeparatedValues(*onlyDevices)
-	hasOnlyDevices := len(onlyDevicesMap) != 0
-	hideFsMap := parseCommaSeparatedValues(*hideFs)
-	onlyFsMap := parseCommaSeparatedValues(*onlyFs)
-
-	_, hideLocal := hideDevicesMap[localDevice]
-	_, hideNetwork := hideDevicesMap[networkDevice]
-	_, hideFuse := hideDevicesMap[fuseDevice]
-	_, hideSpecial := hideDevicesMap[specialDevice]
-	_, hideLoops := hideDevicesMap[loopsDevice]
-	_, hideBinds := hideDevicesMap[bindsMount]
-
-	_, onlyLocal := onlyDevicesMap[localDevice]
-	_, onlyNetwork := onlyDevicesMap[networkDevice]
-	_, onlyFuse := onlyDevicesMap[fuseDevice]
-	_, onlySpecial := onlyDevicesMap[specialDevice]
-	_, onlyLoops := onlyDevicesMap[loopsDevice]
-	_, onlyBinds := onlyDevicesMap[bindsMount]
-
-	// sort/filter devices
-	for _, v := range m {
-		if len(onlyFsMap) != 0 {
-			// skip not onlyFs
-			if _, ok := onlyFsMap[strings.ToLower(v.Fstype)]; !ok {
-				continue
-			}
-		} else {
-			// skip hideFs
-			if _, ok := hideFsMap[strings.ToLower(v.Fstype)]; ok {
-				continue
-			}
-		}
-		// skip autofs
-		if v.Fstype == "autofs" {
-			continue
-		}
-
-		// skip bind-mounts
-		if strings.Contains(v.Opts, "bind") {
-			if (hasOnlyDevices && !onlyBinds) || (hideBinds && !*all) {
-				continue
-			}
-		}
-
-		// skip loop devices
-		if strings.HasPrefix(v.Device, "/dev/loop") {
-			if (hasOnlyDevices && !onlyLoops) || (hideLoops && !*all) {
-				continue
-			}
-		}
-
-		// skip special devices
-		if v.Blocks == 0 && !*all {
-			continue
-		}
-
-		// skip zero size devices
-		if v.BlockSize == 0 && !*all {
-			continue
-		}
-
-		t := deviceType(v)
-		deviceMounts[t] = append(deviceMounts[t], v)
-	}
-
-	// print tables
-	for _, devType := range groups {
-		mounts := deviceMounts[devType]
-
-		shouldPrint := *all
-		if !shouldPrint {
-			switch devType {
-			case localDevice:
-				shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
-			case networkDevice:
-				shouldPrint = (hasOnlyDevices && onlyNetwork) || (!hasOnlyDevices && !hideNetwork)
-			case fuseDevice:
-				shouldPrint = (hasOnlyDevices && onlyFuse) || (!hasOnlyDevices && !hideFuse)
-			case specialDevice:
-				shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
-			}
-		}
-
-		if shouldPrint {
-			printTable(devType, mounts, sortCol, columns, style)
-		}
-	}
-}
 
 // renderJSON encodes the JSON output and prints it.
 func renderJSON(m []Mount) error {
@@ -223,7 +129,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	// validate flags
+	// validate theme
 	var err error
 	theme, err = loadTheme(*themeOpt)
 	if err != nil {
@@ -231,12 +137,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	// validate style
 	style, err := parseStyle(*styleOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
+	// validate output columns
 	columns, err := parseColumns(*output)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -251,10 +159,19 @@ func main() {
 		}
 	}
 
+	// validate sort column
 	sortCol, err := stringToSortIndex(*sortBy)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+
+	// validate filters
+	filters := FilterOptions{
+		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
+		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
+		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
+		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
 	}
 
 	// detect terminal width
@@ -294,5 +211,9 @@ func main() {
 	}
 
 	// print tables
-	renderTables(m, columns, sortCol, style)
+	renderTables(m, filters, TableOptions{
+		Columns: columns,
+		SortBy:  sortCol,
+		Style:   style,
+	})
 }

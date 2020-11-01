@@ -10,6 +10,12 @@ import (
 	"github.com/muesli/termenv"
 )
 
+type TableOptions struct {
+	Columns []int
+	SortBy  int
+	Style   table.Style
+}
+
 type Column struct {
 	ID        string
 	Name      string
@@ -36,31 +42,31 @@ var (
 )
 
 // printTable prints an individual table of mounts.
-func printTable(title string, m []Mount, sortBy int, cols []int, style table.Style) {
+func printTable(title string, m []Mount, opts TableOptions) {
 	tab := table.NewWriter()
 	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
 	tab.Style().Options.SeparateColumns = true
-	tab.SetStyle(style)
+	tab.SetStyle(opts.Style)
 
 	if barWidth() > 0 {
 		columns[4].Width = barWidth() + 7
 		columns[8].Width = barWidth() + 7
 	}
-	twidth := tableWidth(cols, tab.Style().Options.SeparateColumns)
+	twidth := tableWidth(opts.Columns, tab.Style().Options.SeparateColumns)
 
 	tab.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 1, Hidden: !inColumns(cols, 1), WidthMax: int(float64(twidth) * 0.4)},
-		{Number: 2, Hidden: !inColumns(cols, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 3, Hidden: !inColumns(cols, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 4, Hidden: !inColumns(cols, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 5, Hidden: !inColumns(cols, 5), Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 6, Hidden: !inColumns(cols, 6), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 7, Hidden: !inColumns(cols, 7), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 8, Hidden: !inColumns(cols, 8), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 9, Hidden: !inColumns(cols, 9), Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 10, Hidden: !inColumns(cols, 10), WidthMax: int(float64(twidth) * 0.2)},
-		{Number: 11, Hidden: !inColumns(cols, 11), WidthMax: int(float64(twidth) * 0.4)},
+		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: int(float64(twidth) * 0.4)},
+		{Number: 2, Hidden: !inColumns(opts.Columns, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Hidden: !inColumns(opts.Columns, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Hidden: !inColumns(opts.Columns, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 5, Hidden: !inColumns(opts.Columns, 5), Transformer: barTransformer, AlignHeader: text.AlignCenter},
+		{Number: 6, Hidden: !inColumns(opts.Columns, 6), Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 7, Hidden: !inColumns(opts.Columns, 7), Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 8, Hidden: !inColumns(opts.Columns, 8), Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformer, AlignHeader: text.AlignCenter},
+		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: int(float64(twidth) * 0.2)},
+		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: int(float64(twidth) * 0.4)},
 		{Number: 12, Hidden: true}, // sortBy helper for size
 		{Number: 13, Hidden: true}, // sortBy helper for used
 		{Number: 14, Hidden: true}, // sortBy helper for avail
@@ -129,11 +135,11 @@ func printTable(title string, m []Mount, sortBy int, cols []int, style table.Sty
 
 	//tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
-	if sortBy >= 12 {
+	if opts.SortBy >= 12 {
 		sortMode = table.AscNumeric
 	}
 
-	tab.SortBy([]table.SortBy{{Number: sortBy, Mode: sortMode}})
+	tab.SortBy([]table.SortBy{{Number: opts.SortBy, Mode: sortMode}})
 	tab.Render()
 }
 
