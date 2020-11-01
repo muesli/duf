@@ -96,17 +96,36 @@ func parseStyle(styleOpt string) (table.Style, error) {
 
 // parseCommaSeparatedValues parses comma separated string into a map.
 func parseCommaSeparatedValues(values string) map[string]struct{} {
-	items := make(map[string]struct{})
-	for _, value := range strings.Split(values, ",") {
-		value = strings.TrimSpace(value)
-		if len(value) == 0 {
+	m := make(map[string]struct{})
+	for _, v := range strings.Split(values, ",") {
+		v = strings.TrimSpace(v)
+		if len(v) == 0 {
 			continue
 		}
-		value = strings.ToLower(value)
 
-		items[value] = struct{}{}
+		v = strings.ToLower(v)
+		m[v] = struct{}{}
 	}
-	return items
+	return m
+}
+
+// validateGroups validates the parsed group maps.
+func validateGroups(m map[string]struct{}) error {
+	for k := range m {
+		found := false
+		for _, g := range groups {
+			if g == k {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("unknown device group: %s", k)
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -188,6 +207,16 @@ func main() {
 		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
 		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
 		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
+	}
+	err = validateGroups(filters.HiddenDevices)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = validateGroups(filters.OnlyDevices)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	// validate arguments
