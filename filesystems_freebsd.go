@@ -30,3 +30,7 @@ func isSpecialFs(m Mount) bool {
 
 	return false
 }
+
+func isHiddenFs(m Mount) bool {
+	return false
+}
