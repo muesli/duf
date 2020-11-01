@@ -129,8 +129,24 @@ func main() {
 		os.Exit(0)
 	}
 
+	// read mount table
+	m, warnings, err := mounts()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// print JSON
+	if *jsonOutput {
+		err := renderJSON(m)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+
+		return
+	}
+
 	// validate theme
-	var err error
 	theme, err = loadTheme(*themeOpt)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -174,6 +190,30 @@ func main() {
 		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
 	}
 
+	// validate arguments
+	if len(flag.Args()) > 0 {
+		var mounts []Mount
+
+		for _, v := range flag.Args() {
+			fm, err := findMounts(m, v)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			mounts = append(mounts, fm...)
+		}
+
+		m = mounts
+	}
+
+	// print out warnings
+	if *warns {
+		for _, warning := range warnings {
+			fmt.Fprintln(os.Stderr, warning)
+		}
+	}
+
 	// detect terminal width
 	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
 	if isTerminal && *width == 0 {
@@ -184,30 +224,6 @@ func main() {
 	}
 	if *width == 0 {
 		*width = 80
-	}
-
-	// read mount table
-	m, warnings, err := mounts()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	// print out warnings
-	if *warns {
-		for _, warning := range warnings {
-			fmt.Fprintln(os.Stderr, warning)
-		}
-	}
-
-	// print JSON
-	if *jsonOutput {
-		err := renderJSON(m)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-		}
-
-		return
 	}
 
 	// print tables

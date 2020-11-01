@@ -57,29 +57,23 @@ You can simply start duf without any command-line arguments:
 
     duf
 
+If you supply arguments, duf will only list specific devices & mount points:
+
+    duf /home /some/file
+
 If you want to list everything (including pseudo, duplicate, inaccessible file systems):
 
     duf --all
 
-You can show only individual tables:
+You can show and hide specific tables:
 
     duf --only local,network,fuse,special,loops,binds
-
-You can also show only specific filesystems:
-
-    duf --only-fs tmpfs,vfat
-
-You can hide individual tables:
-
     duf --hide local,network,fuse,special,loops,binds
 
-You can also hide specific filesystems:
+You can also show and hide specific filesystems:
 
+    duf --only-fs tmpfs,vfat
     duf --hide-fs tmpfs,vfat
-
-List inode information instead of block usage:
-
-    duf --inodes
 
 Sort the output:
 
@@ -94,6 +88,10 @@ Show or hide specific columns:
 
 Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
+
+List inode information instead of block usage:
+
+    duf --inodes
 
 If duf doesn't detect your terminal's colors correctly, you can set a theme:
 
