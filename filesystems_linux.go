@@ -264,6 +264,10 @@ func isNetworkFs(m Mount) bool {
 }
 
 func isSpecialFs(m Mount) bool {
+	if m.Device == "nsfs" {
+		return true
+	}
+
 	return specialMap[int64(m.Stat().Type)]
 }
 
