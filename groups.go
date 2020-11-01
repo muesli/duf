@@ -2,6 +2,15 @@ package main
 
 import "strings"
 
+const (
+	localDevice   = "local"
+	networkDevice = "network"
+	fuseDevice    = "fuse"
+	specialDevice = "special"
+	loopsDevice   = "loops"
+	bindsMount    = "binds"
+)
+
 type FilterOptions struct {
 	HiddenDevices map[string]struct{}
 	OnlyDevices   map[string]struct{}

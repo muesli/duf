@@ -12,15 +12,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const (
-	localDevice   = "local"
-	networkDevice = "network"
-	fuseDevice    = "fuse"
-	specialDevice = "special"
-	loopsDevice   = "loops"
-	bindsMount    = "binds"
-)
-
 var (
 	Version   = ""
 	CommitSHA = ""
