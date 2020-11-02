@@ -13,6 +13,11 @@ func findMounts(mounts []Mount, path string) ([]Mount, error) {
 		return nil, err
 	}
 
+	path, err = filepath.EvalSymlinks(path)
+	if err != nil {
+		return nil, err
+	}
+
 	_, err = os.Stat(path)
 	if err != nil {
 		return nil, err
