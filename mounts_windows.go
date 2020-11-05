@@ -111,6 +111,49 @@ func getMountFromGUID(guidBuf []uint16) (m Mount, skip bool, warnings []string) 
 	return
 }
 
+func getMountFromMountPoint(mountPointBuf []uint16) (m Mount, warnings []string) {
+	var err error
+	mountPoint := windows.UTF16ToString(mountPointBuf)
+
+	// Get volume name & filesystem type
+	volumeName, fsType, err := getVolumeInfo(mountPointBuf)
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
+	}
+
+	// Get space info
+	totalBytes, freeBytes, err := getSpaceInfo(mountPointBuf)
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
+	}
+
+	// Get cluster info
+	totalClusters, clusterSize, err := getClusterInfo(mountPointBuf)
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
+	}
+
+	// Use GUID as volume name if no label was set
+	if len(volumeName) == 0 {
+		volumeName = mountPoint
+	}
+
+	m = Mount{
+		Device:     volumeName,
+		Mountpoint: mountPoint,
+		Fstype:     fsType,
+		Type:       fsType,
+		Opts:       "",
+		Total:      totalBytes,
+		Free:       freeBytes,
+		Used:       totalBytes - freeBytes,
+		Blocks:     uint64(totalClusters),
+		BlockSize:  uint64(clusterSize),
+	}
+	m.DeviceType = deviceType(m)
+	return
+}
+
 func appendLocalMounts(mounts []Mount, warnings []string) ([]Mount, []string, error) {
 	guidBuf := make([]uint16, guidBufLen)
 
@@ -228,6 +271,42 @@ EnumLoop:
 	return mounts, warnings, nil
 }
 
+func mountPointAlreadyPresent(mounts []Mount, mountPoint string) bool {
+	for _, m := range mounts {
+		if m.Mountpoint == mountPoint {
+			return true
+		}
+	}
+
+	return false
+}
+
+func appendLogicalDrives(mounts []Mount, warnings []string) ([]Mount, []string) {
+	drivebitmap, err := windows.GetLogicalDrives()
+	if err != nil {
+		warnings = append(warnings, fmt.Sprintf("GetLogicalDrives(): %s", err))
+		return mounts, warnings
+	}
+
+	for i := 0; i < 26; i++ {
+		if (drivebitmap & (1 << i)) == 0 {
+			continue
+		}
+
+		mountPoint := fmt.Sprintf("%s:\\", string(65+i))
+		if mountPointAlreadyPresent(mounts, mountPoint) {
+			continue
+		}
+
+		mountPointBuf := windows.StringToUTF16(mountPoint)
+		m, w := getMountFromMountPoint(mountPointBuf)
+		mounts = append(mounts, m)
+		warnings = append(warnings, w...)
+	}
+
+	return mounts, warnings
+}
+
 func mounts() (ret []Mount, warnings []string, err error) {
 	ret = make([]Mount, 0)
 
@@ -235,6 +314,9 @@ func mounts() (ret []Mount, warnings []string, err error) {
 	if ret, warnings, err = appendLocalMounts(ret, warnings); err != nil {
 		return
 	}
+
+	// Logical devices (from GetLogicalDrives bitflag)
+	ret, warnings = appendLogicalDrives(ret, warnings)
 
 	// Network devices
 	if ret, warnings, err = appendNetworkMounts(ret, warnings); err != nil {
