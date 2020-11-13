@@ -228,18 +228,18 @@ func mountPointAlreadyPresent(mounts []Mount, mountPoint string) bool {
 }
 
 func appendLogicalDrives(mounts []Mount, warnings []string) ([]Mount, []string) {
-	drivebitmap, err := windows.GetLogicalDrives()
+	driveBitmap, err := windows.GetLogicalDrives()
 	if err != nil {
 		warnings = append(warnings, fmt.Sprintf("GetLogicalDrives(): %s", err))
 		return mounts, warnings
 	}
 
-	for i := 0; i < 26; i++ {
-		if (drivebitmap & (1 << i)) == 0 {
+	for drive := 'A'; drive <= 'Z'; drive, driveBitmap = drive+1, driveBitmap>>1 {
+		if driveBitmap&0x1 == 0 {
 			continue
 		}
 
-		mountPoint := fmt.Sprintf("%s:\\", string(65+i))
+		mountPoint := fmt.Sprintf("%c:\\", drive)
 		if mountPointAlreadyPresent(mounts, mountPoint) {
 			continue
 		}
