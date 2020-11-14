@@ -315,13 +315,14 @@ func mounts() (ret []Mount, warnings []string, err error) {
 		return
 	}
 
-	// Logical devices (from GetLogicalDrives bitflag)
-	ret, warnings = appendLogicalDrives(ret, warnings)
-
 	// Network devices
 	if ret, warnings, err = appendNetworkMounts(ret, warnings); err != nil {
 		return
 	}
+
+	// Logical devices (from GetLogicalDrives bitflag)
+	// Check any possible logical drives, in case of some special virtual devices, such as RAM disk
+	ret, warnings = appendLogicalDrives(ret, warnings)
 
 	return ret, warnings, nil
 }
