@@ -1,5 +1,3 @@
-// +build windows
-
 package main
 
 import "github.com/mattn/go-runewidth"
