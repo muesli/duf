@@ -33,7 +33,6 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - macOS:
   - with [Homebrew](https://brew.sh/): `brew tap muesli/tap && brew install duf`
   - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
-  
 
 #### Windows
 - Windows:
