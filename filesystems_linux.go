@@ -2,6 +2,8 @@
 
 package main
 
+import "strings"
+
 const (
 	// man statfs
 	ADFS_SUPER_MAGIC      = 0xadf5
@@ -279,5 +281,14 @@ func isHiddenFs(m Mount) bool {
 		return true
 	}
 
-	return m.Fstype == "autofs"
+	switch m.Fstype {
+	case "autofs":
+		return true
+	case "squashfs":
+		if strings.HasPrefix(m.Mountpoint, "/snap") {
+			return true
+		}
+	}
+
+	return false
 }
