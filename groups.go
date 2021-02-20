@@ -21,6 +21,7 @@ type FilterOptions struct {
 	OnlyFilesystems   map[string]struct{}
 
 	HiddenMountPoint map[string]struct{}
+	OnlyMountPoint   map[string]struct{}
 }
 
 // renderTables renders all tables.
@@ -83,6 +84,13 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 		// skip zero size devices
 		if v.BlockSize == 0 && !*all {
 			continue
+		}
+
+		// skip not only mount point
+		if len(filters.OnlyMountPoint) != 0 {
+			if _, ok := filters.OnlyMountPoint[v.Mountpoint]; !ok {
+				continue
+			}
 		}
 
 		// skip hidden mount point
