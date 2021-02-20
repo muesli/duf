@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 const (
 	localDevice   = "local"
@@ -17,6 +19,8 @@ type FilterOptions struct {
 
 	HiddenFilesystems map[string]struct{}
 	OnlyFilesystems   map[string]struct{}
+
+	HiddenMountPoint map[string]struct{}
 }
 
 // renderTables renders all tables.
@@ -78,6 +82,11 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 
 		// skip zero size devices
 		if v.BlockSize == 0 && !*all {
+			continue
+		}
+
+		// skip hidden mount point
+		if _, ok := filters.HiddenMountPoint[v.Mountpoint]; ok {
 			continue
 		}
 
