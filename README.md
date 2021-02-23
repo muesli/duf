@@ -30,7 +30,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - FreeBSD: `pkg install duf`
 
 #### macOS
-- with [Homebrew](https://brew.sh/): `brew install duf`
+- with [Homebrew](https://brew.sh/): `brew tap muesli/tap ; brew install duf`
 - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
 
 #### Windows
