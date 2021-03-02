@@ -25,10 +25,10 @@ var (
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
-	hideMp      = flag.String("hide-mp", "", "hide specific mount point, separated with commas")
+	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas")
 	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
-	onlyMp      = flag.String("only-mp", "", "only specific mount point, separated with commas")
+	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
@@ -200,8 +200,8 @@ func main() {
 		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
 		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
 		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
-		HiddenMountPoint:  parseCommaSeparatedValues(*hideMp),
-		OnlyMountPoint:    parseCommaSeparatedValues(*onlyMp),
+		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
+		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
 	}
 	err = validateGroups(filters.HiddenDevices)
 	if err != nil {

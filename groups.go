@@ -20,8 +20,8 @@ type FilterOptions struct {
 	HiddenFilesystems map[string]struct{}
 	OnlyFilesystems   map[string]struct{}
 
-	HiddenMountPoint map[string]struct{}
-	OnlyMountPoint   map[string]struct{}
+	HiddenMountPoints map[string]struct{}
+	OnlyMountPoints   map[string]struct{}
 }
 
 // renderTables renders all tables.
@@ -87,14 +87,14 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 		}
 
 		// skip not only mount point
-		if len(filters.OnlyMountPoint) != 0 {
-			if _, ok := filters.OnlyMountPoint[v.Mountpoint]; !ok {
+		if len(filters.OnlyMountPoints) != 0 {
+			if _, ok := filters.OnlyMountPoints[v.Mountpoint]; !ok {
 				continue
 			}
 		}
 
 		// skip hidden mount point
-		if _, ok := filters.HiddenMountPoint[v.Mountpoint]; ok {
+		if _, ok := filters.HiddenMountPoints[v.Mountpoint]; ok {
 			continue
 		}
 
