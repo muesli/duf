@@ -94,8 +94,10 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 		}
 
 		// skip hidden mount point
-		if _, ok := filters.HiddenMountPoints[v.Mountpoint]; ok {
-			continue
+		if len(filters.HiddenMountPoints) != 0 {
+			if _, ok := filters.HiddenMountPoints[v.Mountpoint]; ok {
+				continue
+			}
 		}
 
 		t := deviceType(v)
