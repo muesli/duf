@@ -1,13 +1,11 @@
 env:
   - GO111MODULE=on
+  - CGO_ENABLED=0
 before:
   hooks:
-    - go mod download
+    - go mod tidy
 builds:
-  - id: "duf"
-    env:
-      - CGO_ENABLED=0
-    binary: duf
+  - binary: duf
     flags:
       - -trimpath
     ldflags: -s -w -X main.Version={{ .Version }} -X main.CommitSHA={{ .Commit }}
@@ -28,10 +26,7 @@ builds:
       - 7
 
 archives:
-  - id: default
-    builds:
-      - duf
-    format_overrides:
+  - format_overrides:
       - goos: windows
         format: zip
     replacements:
@@ -65,6 +60,22 @@ brews:
     homepage: "https://fribbledom.com/"
     description: "Disk Usage/Free Utility"
     # skip_upload: true
+
+snapcrafts:
+  - name: duf-utility
+    publish: true
+    summary: duf
+    description: |
+      Disk Usage/Free Utility
+
+    grade: stable
+    confinement: strict
+    license: MIT
+    base: core20
+
+    apps:
+      duf:
+        plugs: ["mount-observe"]
 
 signs:
   - artifacts: checksum
