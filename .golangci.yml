@@ -14,8 +14,10 @@ linters:
     - godot
     - godox
     - goimports
+    - golint
     - goprintffuncname
     - gosec
+    - ifshort
     - misspell
     - prealloc
     - rowserrcheck
