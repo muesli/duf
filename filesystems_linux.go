@@ -242,6 +242,7 @@ var specialMap = map[int64]bool{
 	DEBUGFS_MAGIC:          true,
 	DEVPTS_SUPER_MAGIC:     true,
 	EFIVARFS_MAGIC:         true,
+	FUSECTL_SUPER_MAGIC:    true,
 	HUGETLBFS_MAGIC:        true,
 	MQUEUE_MAGIC:           true,
 	PROC_SUPER_MAGIC:       true,
