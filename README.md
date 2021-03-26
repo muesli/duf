@@ -12,7 +12,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 ## Features
 
 - [x] User-friendly, colorful output
-- [x] Adjusts to your terminal's width
+- [x] Adjusts to your terminal's theme & width
 - [x] Sort the results according to your needs
 - [x] Groups & filters devices
 - [x] Can conveniently output JSON
@@ -35,6 +35,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
 
 #### Windows
+- with [Chocolatey](https://chocolatey.org/): `choco install duf`
 - with [scoop](https://scoop.sh/): `scoop install duf`
 
 #### Android
