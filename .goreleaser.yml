@@ -69,13 +69,9 @@ snapcrafts:
       Disk Usage/Free Utility
 
     grade: stable
-    confinement: strict
+    confinement: classic
     license: MIT
     base: core20
-
-    apps:
-      duf:
-        plugs: ["mount-observe"]
 
 signs:
   - artifacts: checksum
