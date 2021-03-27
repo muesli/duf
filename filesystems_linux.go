@@ -254,7 +254,7 @@ var specialMap = map[int64]bool{
 }
 
 func isLocalFs(m Mount) bool {
-	return localMap[int64(m.Stat().Type)]
+	return localMap[int64(m.Stat().Type)] //nolint:unconvert
 }
 
 func isFuseFs(m Mount) bool {
@@ -263,7 +263,7 @@ func isFuseFs(m Mount) bool {
 }
 
 func isNetworkFs(m Mount) bool {
-	return networkMap[int64(m.Stat().Type)]
+	return networkMap[int64(m.Stat().Type)] //nolint:unconvert
 }
 
 func isSpecialFs(m Mount) bool {
@@ -271,7 +271,7 @@ func isSpecialFs(m Mount) bool {
 		return true
 	}
 
-	return specialMap[int64(m.Stat().Type)]
+	return specialMap[int64(m.Stat().Type)] //nolint:unconvert
 }
 
 func isHiddenFs(m Mount) bool {
