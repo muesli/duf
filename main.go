@@ -25,10 +25,10 @@ var (
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
-	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas")
+	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (Support Asterisk wildcard)")
 	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
-	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas")
+	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (Support Asterisk wildcard)")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
@@ -119,6 +119,63 @@ func validateGroups(m map[string]struct{}) error {
 	}
 
 	return nil
+}
+
+// findInKey parse a slice of pattern to match the given key.
+func findInKey(str string, km map[string]struct{}) bool {
+	for p := range km {
+		if match(str, p) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// math try to match a pattern with a given string
+func match(str, pattern string) bool {
+	// if pattern is a wildcar or
+	// if parttern ans str are equal
+	if pattern == str || pattern == "*" {
+		return true
+	}
+
+	// if pattern not contain a wildcar or
+	// if str is lower then parttern
+	if !strings.Contains(pattern, "*") ||
+		strings.Count(str, "")-(strings.Count(pattern, "")-strings.Count(pattern, "*")-1) <= 0 {
+		return false
+	}
+
+	// iterate over plited pattern
+	result := true
+	strAct := str
+	patSpl := strings.Split(pattern, "*")
+	patSLen := len(patSpl) - 1
+
+	for i := range patSpl {
+		if patSpl[i] == "" {
+			continue
+		}
+
+		if i == 0 && !strings.HasPrefix(strAct, patSpl[i]) {
+			result = false
+			break
+		}
+
+		if i == patSLen && !strings.HasSuffix(strAct, patSpl[i]) {
+			result = false
+			break
+		}
+
+		strAft := strings.SplitAfter(strAct, patSpl[i])
+		if len(strAft) <= 1 {
+			return false
+		}
+		strAct = strings.Join(strAft[1:], "")
+	}
+
+	return result
 }
 
 func main() {

@@ -88,14 +88,14 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 
 		// skip not only mount point
 		if len(filters.OnlyMountPoints) != 0 {
-			if _, ok := filters.OnlyMountPoints[v.Mountpoint]; !ok {
+			if !findInKey(v.Mountpoint, filters.OnlyMountPoints) {
 				continue
 			}
 		}
 
 		// skip hidden mount point
 		if len(filters.HiddenMountPoints) != 0 {
-			if _, ok := filters.HiddenMountPoints[v.Mountpoint]; ok {
+			if findInKey(v.Mountpoint, filters.HiddenMountPoints) {
 				continue
 			}
 		}
