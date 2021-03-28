@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
+	wildcard "git.iglou.eu/Imported/go-wilcard"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/minio/minio/pkg/wildcard"
 	"github.com/muesli/termenv"
 	"golang.org/x/crypto/ssh/terminal"
 )
