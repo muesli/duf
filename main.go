@@ -132,22 +132,22 @@ func findInKey(str string, km map[string]struct{}) bool {
 	return false
 }
 
-// math try to match a pattern with a given string
+// match try to match a pattern with a given string
 func match(str, pattern string) bool {
-	// if pattern is a wildcar or
-	// if parttern ans str are equal
+	// if pattern is a wildcard or
+	// if pattern ans str are equal
 	if pattern == str || pattern == "*" {
 		return true
 	}
 
-	// if pattern not contain a wildcar or
-	// if str is lower then parttern
+	// if pattern not contain a wildcard or
+	// if str is lower then pattern
 	if !strings.Contains(pattern, "*") ||
 		strings.Count(str, "")-(strings.Count(pattern, "")-strings.Count(pattern, "*")-1) <= 0 {
 		return false
 	}
 
-	// iterate over plited pattern
+	// iterate over plit pattern
 	result := true
 	strAct := str
 	patSpl := strings.Split(pattern, "*")
