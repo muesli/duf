@@ -8,4 +8,5 @@ require (
 	github.com/muesli/termenv v0.8.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff
+	github.com/minio/minio v0.0.0-20210327201914-7c5b35d20f59
 )
