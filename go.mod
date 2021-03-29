@@ -11,3 +11,5 @@ require (
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff
 	github.com/minio/minio v0.0.0-20210327201914-7c5b35d20f59
 )
+
+replace git.iglou.eu/Imported/go-wilcard => github.com/IGLOU-EU/go-wilcard v1.0.0
