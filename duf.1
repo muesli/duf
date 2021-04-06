@@ -1,0 +1,188 @@
+.TH duf 1 "06 April 2021" "duf-0.6.2" "Disk Usage/Free Utility"
+.SH NAME
+\fBduf \fP- Disk Usage/Free Utility
+\fB
+.SH SYNOPSIS
+.nf
+.fam C
+\fBduf\fP [ \fIoptions\fP ]
+
+.fam T
+.fi
+.fam T
+.fi
+.SH DESCRIPTION
+Simple Disk Usage/Free Utility.
+.PP
+Features:
+.RS
+.IP \(bu 3
+User-friendly, colorful output.
+.IP \(bu 3
+Adjusts to your terminal's theme & width.
+.IP \(bu 3
+Sort the results according to your needs.
+.IP \(bu 3
+Groups & filters devices.
+.IP \(bu 3
+Can conveniently output JSON.
+.SH OPTIONS
+.TP
+.B
+\fB-all\fP
+Include pseudo, duplicate, inaccessible file systems.
+.TP
+.B
+\fB-hide\fP string
+Hide specific devices, separated with commas:
+local, network, fuse, special, loops, binds.
+.TP
+.B
+\fB-hide-fs\fP string
+Hide specific filesystems, separated with commas.
+.TP
+.B
+\fB-inodes\fP
+List inode information instead of block usage.
+.TP
+.B
+\fB-json\fP
+Output all devices in JSON format.
+.TP
+.B
+\fB-only\fP string
+Show only specific devices, separated with commas:
+local, network, fuse, special, loops, binds.
+.TP
+.B
+\fB-only-fs\fP string
+Only specific filesystems, separated with commas.
+.TP
+.B
+\fB-output\fP string
+Output fields: mountpoint, size, used, avail, usage, inodes,
+inodes_used, inodes_avail, inodes_usage, type, filesys‐tem.
+.TP
+.B
+\fB-sort\fP string
+Sort output by: mountpoint, size, used, avail, usage, inodes,
+inodes_used, inodes_avail, inodes_usage, type, filesys‐tem (default "mountpoint").
+.TP
+.B
+\fB-style\fP string
+Style: unicode, ascii (default "unicode").
+.TP
+.B
+\fB-theme\fP string
+Color themes: dark, light (default "dark").
+.TP
+.B
+\fB-version\fP
+Display version.
+.TP
+.B
+\fB-warnings\fP
+Output all warnings to STDERR.
+.TP
+.B
+\fB-width\fP uint
+Max output width.
+.SH USAGE
+You can simply start \fBduf\fP without any command-line arguments:
+.PP
+.nf
+.fam C
+  $ duf
+
+.fam T
+.fi
+If you supply arguments, \fBduf\fP will only list specific devices & mount points:
+.PP
+.nf
+.fam C
+  $ duf /home /some/file
+
+.fam T
+.fi
+If you want to list everything (including pseudo, duplicate, inaccessible file systems):
+.PP
+.nf
+.fam C
+  $ duf --all
+
+.fam T
+.fi
+You can show and hide specific tables:
+.PP
+.nf
+.fam C
+  $ duf --only local,network,fuse,special,loops,binds
+  $ duf --hide local,network,fuse,special,loops,binds
+
+.fam T
+.fi
+You can also show and hide specific filesystems:
+.PP
+.nf
+.fam C
+  $ duf --only-fs tmpfs,vfat
+  $ duf --hide-fs tmpfs,vfat
+
+.fam T
+.fi
+Sort the output:
+.PP
+.nf
+.fam C
+  $ duf --sort size
+
+  Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem.
+
+.fam T
+.fi
+Show or hide specific columns:
+.PP
+.nf
+.fam C
+  $ duf --output mountpoint,size,usage
+
+  Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem.
+
+.fam T
+.fi
+List inode information instead of block usage:
+.PP
+.nf
+.fam C
+  $ duf --inodes
+
+.fam T
+.fi
+If \fBduf\fP doesn't detect your terminal's colors correctly, you can set a theme:
+.PP
+.nf
+.fam C
+  $ duf --theme light
+
+.fam T
+.fi
+If you prefer your output as JSON:
+.PP
+.nf
+.fam C
+  $ duf --json
+
+.fam T
+.fi
+.SH NOTES
+Portions of \fBduf\fP's code are copied and modified from https://github.com/shirou/gopsutil.
+.PP
+gopsutil was written by WAKAYAMA Shirou and is distributed under BSD-3-Clause.
+.SH AUTHORS
+\fBduf\fP was written by Christian Muehlhaeuser <https://github.com/muesli/\fBduf\fP/issues>.
+.PP
+This manpage was written by Francisco Vilmar Cardoso Ruviaro for the Debian project (but may be used by others).
+.SH COPYRIGHT
+Copyright (C) 2020 Christian Muehlhaeuser <https://github.com/muesli/\fBduf\fP/issues>.
+.PP
+Released under MIT license.
