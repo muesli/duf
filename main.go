@@ -26,10 +26,10 @@ var (
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
-	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (Support Wildcard)")
+	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (supports wildcards)")
 	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
-	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (SupportWildcard)")
+	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))

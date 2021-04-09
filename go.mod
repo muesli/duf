@@ -8,7 +8,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.10
 	github.com/muesli/termenv v0.8.1
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
-	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
+	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff
 )
 
 replace git.iglou.eu/Imported/go-wilcard => github.com/IGLOU-EU/go-wilcard v1.0.0
