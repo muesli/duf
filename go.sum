@@ -1,5 +1,7 @@
 github.com/IGLOU-EU/go-wildcard v1.0.0 h1:7tYu98U0WdWg30oGP3SNlpYqMzudOgJ4YfsCOW7L6JA=
 github.com/IGLOU-EU/go-wildcard v1.0.0/go.mod h1:vPAP452SahpDUhoGuUh6HS6/r26mWB57rWNQ4UGHLSo=
+github.com/IGLOU-EU/go-wildcard v1.0.1 h1:c+fSJUP8QxS9Fyj5LT3V+sWd8XaDdsuMRBpCScrnKSA=
+github.com/IGLOU-EU/go-wildcard v1.0.1/go.mod h1:ni+caI7lkwXjCtYujDMsXUfNLKnvnyKeM5P03eaPBxA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/jedib0t/go-pretty/v6 v6.0.5 h1:oOo0/jSb3NEYKT6l1hhFXoX2UZnkanMuCE2DVT1mqnE=
