@@ -74,10 +74,20 @@ You can show and hide specific tables:
     duf --only local,network,fuse,special,loops,binds
     duf --hide local,network,fuse,special,loops,binds
 
-You can also show and hide specific filesystems:
+You can show and hide specific filesystems:
 
     duf --only-fs tmpfs,vfat
     duf --hide-fs tmpfs,vfat
+
+And You can also show hide specific mount point:
+
+    duf --only-mp /,/home,/dev
+    duf --hide-mp /,/home,/dev
+
+This option can be used with Wildcard, but must be quoted:
+
+    duf --only-mp '/,/sys*,/dev*'
+    duf --hide-mp '/,/sys*,/dev*'
 
 Sort the output:
 
