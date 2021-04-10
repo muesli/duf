@@ -69,25 +69,28 @@ If you want to list everything (including pseudo, duplicate, inaccessible file s
 
     duf --all
 
+### Filtering
+
 You can show and hide specific tables:
 
     duf --only local,network,fuse,special,loops,binds
     duf --hide local,network,fuse,special,loops,binds
 
-You can show and hide specific filesystems:
+You can also show and hide specific filesystems:
 
     duf --only-fs tmpfs,vfat
     duf --hide-fs tmpfs,vfat
 
-And You can also show hide specific mount point:
+...or specific mount points:
 
     duf --only-mp /,/home,/dev
     duf --hide-mp /,/home,/dev
 
-This option can be used with Wildcard, but must be quoted:
+Wildcards inside quotes work:
 
-    duf --only-mp '/,/sys*,/dev*'
-    duf --hide-mp '/,/sys*,/dev*'
+    duf --only-mp '/sys/*,/dev/*'
+
+### Display options
 
 Sort the output:
 
@@ -110,6 +113,8 @@ List inode information instead of block usage:
 If duf doesn't detect your terminal's colors correctly, you can set a theme:
 
     duf --theme light
+
+### Bonus
 
 If you prefer your output as JSON:
 
