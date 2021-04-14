@@ -84,20 +84,3 @@ func mounts() ([]Mount, []string, error) {
 
 	return ret, warnings, nil
 }
-
-func intToString(orig []int8) string {
-	ret := make([]byte, len(orig))
-	size := -1
-	for i, o := range orig {
-		if o == 0 {
-			size = i
-			break
-		}
-		ret[i] = byte(o)
-	}
-	if size == -1 {
-		size = len(orig)
-	}
-
-	return string(ret[0:size])
-}

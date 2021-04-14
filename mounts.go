@@ -48,3 +48,43 @@ func unescapeFstab(path string) string {
 	}
 	return escaped
 }
+
+func byteToString(orig []byte) string {
+	n := -1
+	l := -1
+	for i, b := range orig {
+		// skip left side null
+		if l == -1 && b == 0 {
+			continue
+		}
+		if l == -1 {
+			l = i
+		}
+
+		if b == 0 {
+			break
+		}
+		n = i + 1
+	}
+	if n == -1 {
+		return string(orig)
+	}
+	return string(orig[l:n])
+}
+
+func intToString(orig []int8) string {
+	ret := make([]byte, len(orig))
+	size := -1
+	for i, o := range orig {
+		if o == 0 {
+			size = i
+			break
+		}
+		ret[i] = byte(o)
+	}
+	if size == -1 {
+		size = len(orig)
+	}
+
+	return string(ret[0:size])
+}
