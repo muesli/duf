@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	wildcard "git.iglou.eu/Imported/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
 	"golang.org/x/crypto/ssh/terminal"
@@ -25,8 +26,10 @@ var (
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
+	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (supports wildcards)")
 	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
+	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
@@ -119,6 +122,17 @@ func validateGroups(m map[string]struct{}) error {
 	return nil
 }
 
+// findInKey parse a slice of pattern to match the given key.
+func findInKey(str string, km map[string]struct{}) bool {
+	for p := range km {
+		if wildcard.Match(p, str) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func main() {
 	flag.Parse()
 
@@ -198,6 +212,8 @@ func main() {
 		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
 		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
 		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
+		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
+		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
 	}
 	err = validateGroups(filters.HiddenDevices)
 	if err != nil {
