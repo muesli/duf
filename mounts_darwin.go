@@ -62,9 +62,9 @@ func mounts() ([]Mount, []string, error) {
 			opts += ",nodev"
 		}
 
-		device := intToString(stat.Mntfromname[:])
-		mountPoint := intToString(stat.Mntonname[:])
-		fsType := intToString(stat.Fstypename[:])
+		device := byteToString(stat.Mntfromname[:])
+		mountPoint := byteToString(stat.Mntonname[:])
+		fsType := byteToString(stat.Fstypename[:])
 
 		if len(device) == 0 {
 			continue
@@ -92,21 +92,4 @@ func mounts() ([]Mount, []string, error) {
 	}
 
 	return ret, warnings, nil
-}
-
-func intToString(orig []int8) string {
-	ret := make([]byte, len(orig))
-	size := -1
-	for i, o := range orig {
-		if o == 0 {
-			size = i
-			break
-		}
-		ret[i] = byte(o)
-	}
-	if size == -1 {
-		size = len(orig)
-	}
-
-	return string(ret[0:size])
 }
