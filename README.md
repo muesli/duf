@@ -2,7 +2,7 @@
 
 [![Latest Release](https://img.shields.io/github/release/muesli/duf.svg)](https://github.com/muesli/duf/releases)
 [![Build Status](https://github.com/muesli/duf/workflows/build/badge.svg)](https://github.com/muesli/duf/actions)
-[![Go ReportCard](http://goreportcard.com/badge/muesli/duf)](http://goreportcard.com/report/muesli/duf)
+[![Go ReportCard](https://goreportcard.com/badge/muesli/duf)](https://goreportcard.com/report/muesli/duf)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/muesli/duf)
 
 Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
@@ -47,7 +47,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 ### From source
 
 Make sure you have a working Go environment (Go 1.12 or higher is required).
-See the [install instructions](http://golang.org/doc/install.html).
+See the [install instructions](https://golang.org/doc/install.html).
 
 Compiling duf is easy, simply run:
 
