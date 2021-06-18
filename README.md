@@ -23,6 +23,10 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 #### Linux
 - Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
+- Gentoo ([dm9pZCAq overlay](https://github.com/gentoo-mirror/dm9pZCAq)):
+    - `sudo eselect repository enable dm9pZCAq`
+    - `sudo emerge --sync dm9pZCAq`
+    - `sudo emerge sys-fs/duf::dm9pZCAq`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Snap: `sudo snap install duf-utility` ([snapcraft.io](https://snapcraft.io/duf-utility))
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
