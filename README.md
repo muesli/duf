@@ -22,7 +22,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 ### Packages
 
 #### Linux
-- Arch Linux: [duf](https://aur.archlinux.org/packages/duf/)
+- Arch Linux: `pacman -S duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Snap: `sudo snap install duf-utility` ([snapcraft.io](https://snapcraft.io/duf-utility))
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
