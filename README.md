@@ -29,6 +29,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 #### BSD
 - FreeBSD: `pkg install duf`
+- OpenBSD: `pkg_add duf`
 
 #### macOS
 - with [Homebrew](https://brew.sh/): `brew install duf`
