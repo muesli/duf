@@ -24,6 +24,7 @@ var (
 	allowedValues = strings.Join(groups, ", ")
 
 	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
+	color       = flag.Bool("C", false, "override terminal detection of color and use color")
 	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
 	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
 	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (supports wildcards)")
@@ -151,6 +152,10 @@ func main() {
 
 		fmt.Println()
 		os.Exit(0)
+	}
+
+	if *color {
+		term = termenv.ANSI
 	}
 
 	// read mount table
