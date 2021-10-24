@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	wildcard "git.iglou.eu/Imported/go-wildcard"
@@ -36,6 +37,9 @@ var (
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+
+	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
+	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
@@ -241,6 +245,34 @@ func main() {
 		}
 
 		m = mounts
+	}
+
+	// validate availability thresholds
+	availbilityThresholds := strings.Split(*availThreshold, ",")
+	if len(availbilityThresholds) != 2 {
+		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing avail-threshold: invalid option '%s'", *availThreshold))
+		os.Exit(1)
+	}
+	for _, thresold := range availbilityThresholds {
+		_, err = stringToSize(thresold)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error parsing avail-threshold:", err)
+			os.Exit(1)
+		}
+	}
+
+	// validate usage thresholds
+	usageThresholds := strings.Split(*usageThreshold, ",")
+	if len(usageThresholds) != 2 {
+		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing usage-threshold: invalid option '%s'", *usageThreshold))
+		os.Exit(1)
+	}
+	for _, thresold := range usageThresholds {
+		_, err = strconv.ParseFloat(thresold, 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error parsing usage-threshold:", err)
+			os.Exit(1)
+		}
 	}
 
 	// print out warnings
