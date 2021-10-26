@@ -23,6 +23,11 @@ type Column struct {
 	Width     int
 }
 
+type FreeCell struct {
+	Free  uint64
+	Color termenv.Color
+}
+
 var (
 	// "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "Used", "Avail", "Use%", "Type", "Filesystem"
 	// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
@@ -102,9 +107,9 @@ func printTable(title string, m []Mount, opts TableOptions) {
 
 		tab.AppendRow([]interface{}{
 			termenv.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
-			v.Total,      // size
-			v.Used,       // used
-			v.Free,       // avail
+			v.Total, // size
+			v.Used,  // used
+			FreeCell{v.Free, colorByDiskUsage(usage)}, // avail
 			usage,        // use%
 			v.Inodes,     // inodes
 			v.InodesUsed, // inodes used
@@ -150,17 +155,10 @@ func sizeTransformer(val interface{}) string {
 
 // spaceTransformer makes a size human-readable and applies a color coding.
 func spaceTransformer(val interface{}) string {
-	free := val.(uint64)
+	cell := val.(FreeCell)
 
-	var s = termenv.String(sizeToString(free))
-	switch {
-	case free < 1<<30:
-		s = s.Foreground(theme.colorRed)
-	case free < 10*1<<30:
-		s = s.Foreground(theme.colorYellow)
-	default:
-		s = s.Foreground(theme.colorGreen)
-	}
+	var s = termenv.String(sizeToString(cell.Free))
+	s = s.Foreground(cell.Color)
 
 	return s.String()
 }
@@ -183,14 +181,7 @@ func barTransformer(val interface{}) string {
 	}
 
 	// apply color to progress-bar
-	switch {
-	case usage >= 0.9:
-		s = s.Foreground(theme.colorRed)
-	case usage >= 0.5:
-		s = s.Foreground(theme.colorYellow)
-	default:
-		s = s.Foreground(theme.colorGreen)
-	}
+	s = s.Foreground(colorByDiskUsage(usage))
 
 	return s.String()
 }
@@ -294,4 +285,16 @@ func columnIDs() []string {
 	}
 
 	return s
+}
+
+// colorByDiskUsage returns color for usage
+func colorByDiskUsage(usage float64) termenv.Color {
+	switch {
+	case usage >= 0.9:
+		return theme.colorRed
+	case usage >= 0.5:
+		return theme.colorYellow
+	default:
+		return theme.colorGreen
+	}
 }
