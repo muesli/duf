@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	wildcard "git.iglou.eu/Imported/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -36,6 +37,7 @@ var (
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+	refresh  = flag.Duration("refresh", 0, "refresh interval (e.g. 500ms, 5s, 5m)")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
@@ -262,10 +264,36 @@ func main() {
 		*width = 80
 	}
 
+	if *refresh > 0 {
+		// Clear the screen before output
+		termenv.ClearScreen()
+		fmt.Printf("refreshing every %v\n", *refresh)
+	}
+
 	// print tables
 	renderTables(m, filters, TableOptions{
 		Columns: columns,
 		SortBy:  sortCol,
 		Style:   style,
 	})
+
+	// Automatically clear the screen and refresh the output.
+	if *refresh > 0 {
+		ticker := time.NewTicker(*refresh)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				termenv.ClearScreen()
+				fmt.Printf("refreshing every %v\n", *refresh)
+
+				// print tables
+				renderTables(m, filters, TableOptions{
+					Columns: columns,
+					SortBy:  sortCol,
+					Style:   style,
+				})
+			}
+		}
+	}
 }
