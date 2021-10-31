@@ -24,7 +24,7 @@ type Column struct {
 }
 
 var (
-	// "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "Used", "Avail", "Use%", "Type", "Filesystem"
+	// "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "IUsed", "IAvail", "IUse%", "Type", "Filesystem"
 	// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
 	columns = []Column{
 		{ID: "mountpoint", Name: "Mounted on", SortIndex: 1},
@@ -33,9 +33,9 @@ var (
 		{ID: "avail", Name: "Avail", SortIndex: 14, Width: 7},
 		{ID: "usage", Name: "Use%", SortIndex: 15, Width: 6},
 		{ID: "inodes", Name: "Inodes", SortIndex: 16, Width: 7},
-		{ID: "inodes_used", Name: "Used", SortIndex: 17, Width: 7},
-		{ID: "inodes_avail", Name: "Avail", SortIndex: 18, Width: 7},
-		{ID: "inodes_usage", Name: "Use%", SortIndex: 19, Width: 6},
+		{ID: "inodes_used", Name: "IUsed", SortIndex: 17, Width: 7},
+		{ID: "inodes_avail", Name: "IAvail", SortIndex: 18, Width: 7},
+		{ID: "inodes_usage", Name: "IUse%", SortIndex: 19, Width: 6},
 		{ID: "type", Name: "Type", SortIndex: 10},
 		{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
 	}
