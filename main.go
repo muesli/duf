@@ -135,6 +135,39 @@ func findInKey(str string, km map[string]struct{}) bool {
 	return false
 }
 
+func validateMounts(m []Mount, args []string) ([]Mount, error) {
+	if len(args) > 0 {
+		var mounts []Mount
+
+		for _, v := range args {
+			fm, err := findMounts(m, v)
+			if err != nil {
+				return m, err
+			}
+
+			mounts = append(mounts, fm...)
+		}
+
+		m = mounts
+	}
+
+	return m, nil
+}
+
+func refreshMounts(m []Mount) ([]Mount, []string, error) {
+	mounts, warnings, err := mounts()
+	if err != nil {
+		return mounts, warnings, err
+	}
+
+	validatedMounts, err := validateMounts(mounts, flag.Args())
+	if err != nil {
+		return mounts, warnings, err
+	}
+
+	return validatedMounts, warnings, err
+}
+
 func main() {
 	flag.Parse()
 
@@ -229,20 +262,10 @@ func main() {
 	}
 
 	// validate arguments
-	if len(flag.Args()) > 0 {
-		var mounts []Mount
-
-		for _, v := range flag.Args() {
-			fm, err := findMounts(m, v)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			mounts = append(mounts, fm...)
-		}
-
-		m = mounts
+	m, err = validateMounts(m, flag.Args())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	// print out warnings
@@ -284,6 +307,12 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
+				// Refresh the mount information.
+				m, warnings, err := refreshMounts(m)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
 				termenv.ClearScreen()
 				fmt.Printf("refreshing every %v\n", *refresh)
 
@@ -293,6 +322,13 @@ func main() {
 					SortBy:  sortCol,
 					Style:   style,
 				})
+
+				// print out warnings
+				if *warns {
+					for _, warning := range warnings {
+						fmt.Fprintln(os.Stderr, warning)
+					}
+				}
 			}
 		}
 	}
