@@ -53,10 +53,30 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		columns[4].Width = barWidth() + 7
 		columns[8].Width = barWidth() + 7
 	}
-	twidth := tableWidth(opts.Columns, tab.Style().Options.SeparateColumns)
+
+	twidthInt := int(*width) - tableWidth(opts.Columns, tab.Style().Options.SeparateColumns)
+	twidth := float64(twidthInt)
+
+	// colMaxWidths is a mapping from percentage to maximum number of columns available for that percentage.
+	colMaxWidths := map[int]int{
+		20: int(twidth * 0.2),
+		40: int(twidth * 0.4),
+	}
+	if diff := twidthInt - (colMaxWidths[20] + 2*colMaxWidths[40]); diff > 0 {
+		switch diff {
+		case 1:
+			colMaxWidths[20]++
+		case 2:
+			colMaxWidths[40]++
+		default:
+			if *warns {
+				fmt.Fprintf(os.Stderr, "diff > 2 (%v), not adjusting maximum column widths", diff)
+			}
+		}
+	}
 
 	tab.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: int(float64(twidth) * 0.4)},
+		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: colMaxWidths[40]},
 		{Number: 2, Hidden: !inColumns(opts.Columns, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 3, Hidden: !inColumns(opts.Columns, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 4, Hidden: !inColumns(opts.Columns, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
@@ -65,8 +85,8 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		{Number: 7, Hidden: !inColumns(opts.Columns, 7), Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 8, Hidden: !inColumns(opts.Columns, 8), Align: text.AlignRight, AlignHeader: text.AlignRight},
 		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: int(float64(twidth) * 0.2)},
-		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: int(float64(twidth) * 0.4)},
+		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: colMaxWidths[20]},
+		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: colMaxWidths[40]},
 		{Number: 12, Hidden: true}, // sortBy helper for size
 		{Number: 13, Hidden: true}, // sortBy helper for used
 		{Number: 14, Hidden: true}, // sortBy helper for avail
