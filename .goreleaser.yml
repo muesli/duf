@@ -61,18 +61,6 @@ brews:
     description: "Disk Usage/Free Utility"
     # skip_upload: true
 
-snapcrafts:
-  - name: duf-utility
-    publish: true
-    summary: duf
-    description: |
-      Disk Usage/Free Utility
-
-    grade: stable
-    confinement: classic
-    license: MIT
-    base: core20
-
 signs:
   - artifacts: checksum
 
