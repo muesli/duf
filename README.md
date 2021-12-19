@@ -25,7 +25,6 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - Arch Linux: `pacman -S duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
-- Snap: `sudo snap install duf-utility` ([snapcraft.io](https://snapcraft.io/duf-utility))
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
 
 #### BSD
