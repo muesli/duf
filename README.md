@@ -115,6 +115,14 @@ If duf doesn't detect your terminal's colors correctly, you can set a theme:
 
     duf --theme light
 
+### Color-coding & Thresholds
+
+duf highlights the availability & usage columns in red, green, or yellow,
+depending on how much space is still available. You can set your own thresholds:
+
+    duf --avail-threshold="10G,1G"
+    duf --usage-threshold="0.5,0.9"
+
 ### Bonus
 
 If you prefer your output as JSON:
