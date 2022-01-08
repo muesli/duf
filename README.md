@@ -135,3 +135,10 @@ Users of `oh-my-zsh` should be aware that it already defines an alias called
 `duf`, which you will have to remove in order to use `duf`:
 
     unalias duf
+
+## Feedback
+
+Got some feedback or suggestions? Please open an issue or drop me a note!
+
+* [Twitter](https://twitter.com/mueslix)
+* [The Fediverse](https://mastodon.social/@fribbledom)
