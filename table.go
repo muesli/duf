@@ -12,12 +12,14 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// TableOptions contains all options for the table.
 type TableOptions struct {
 	Columns []int
 	SortBy  int
 	Style   table.Style
 }
 
+// Column defines a column.
 type Column struct {
 	ID        string
 	Name      string

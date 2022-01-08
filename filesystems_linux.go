@@ -5,6 +5,7 @@ package main
 
 import "strings"
 
+//nolint:revive,deadcode
 const (
 	// man statfs
 	ADFS_SUPER_MAGIC      = 0xadf5
@@ -210,6 +211,7 @@ var fsTypeMap = map[int64]string{
 	ZFS_SUPER_MAGIC:             "zfs",                 /* 0x2FC12FC1 local */
 }
 
+/*
 var localMap = map[int64]bool{
 	AFS_SUPER_MAGIC:      true,
 	BTRFS_SUPER_MAGIC:    true,
@@ -225,6 +227,7 @@ var localMap = map[int64]bool{
 	XFS_SUPER_MAGIC:      true,
 	ZFS_SUPER_MAGIC:      true,
 }
+*/
 
 var networkMap = map[int64]bool{
 	CIFS_MAGIC_NUMBER: true,
@@ -254,9 +257,11 @@ var specialMap = map[int64]bool{
 	TRACEFS_MAGIC:          true,
 }
 
+/*
 func isLocalFs(m Mount) bool {
 	return localMap[int64(m.Stat().Type)] //nolint:unconvert
 }
+*/
 
 func isFuseFs(m Mount) bool {
 	return m.Stat().Type == FUSEBLK_SUPER_MAGIC ||

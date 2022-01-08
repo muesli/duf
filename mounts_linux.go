@@ -42,6 +42,7 @@ const (
 	//mountinfoSuperOptions = 10
 )
 
+// Stat returns the mountpoint's stat information.
 func (m *Mount) Stat() unix.Statfs_t {
 	return m.Metadata.(unix.Statfs_t)
 }
