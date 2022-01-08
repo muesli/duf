@@ -30,7 +30,7 @@ func readLines(filename string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer file.Close() //nolint:errcheck // ignore error
 
 	scanner := bufio.NewScanner(file)
 	var s []string
@@ -49,6 +49,7 @@ func unescapeFstab(path string) string {
 	return escaped
 }
 
+//nolint:deadcode,unused // used on BSD
 func byteToString(orig []byte) string {
 	n := -1
 	l := -1
@@ -72,6 +73,7 @@ func byteToString(orig []byte) string {
 	return string(orig[l:n])
 }
 
+//nolint:deadcode,unused // used on OpenBSD
 func intToString(orig []int8) string {
 	ret := make([]byte, len(orig))
 	size := -1

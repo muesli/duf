@@ -6,6 +6,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// Theme defines a color theme used for printing tables.
 type Theme struct {
 	colorRed     termenv.Color
 	colorYellow  termenv.Color

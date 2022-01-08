@@ -13,6 +13,7 @@ const (
 	bindsMount    = "binds"
 )
 
+// FilterOptions contains all filters.
 type FilterOptions struct {
 	HiddenDevices map[string]struct{}
 	OnlyDevices   map[string]struct{}
