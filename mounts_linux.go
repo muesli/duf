@@ -32,20 +32,17 @@ func mounts() ([]Mount, []string, error) {
 		// 36  35  98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
 		// (1) (2) (3)   (4)   (5)      (6)      (7)   (8) (9)   (10)         (11)
 
-		// split the mountinfo line by the separator hyphen
-		parts := strings.Split(line, " - ")
-		if len(parts) != 2 {
+		// split the mountinfo line
+		fields := strings.Fields(line)
+		if len(fields) != 11 {
 			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
-		fields := strings.Fields(parts[0])
-		// blockDeviceID := fields[2]
-		mountPoint := unescapeFstab(fields[4])
-		mountOpts := fields[5]
-
-		fields = strings.Fields(parts[1])
-		fstype := unescapeFstab(fields[0])
-		device := unescapeFstab(fields[1])
+		// blockDeviceID := fields[0]             // (1) block device ID (mount ID)
+		mountPoint := unescapeFstab(fields[4]) // (5) mount point: mount point relative to the process's root
+		mountOpts := fields[5]                 // (6) mount options: per mount options
+		fstype := unescapeFstab(fields[8])     // (9) filesystem type: name of filesystem of the form
+		device := unescapeFstab(fields[9])     // (10) mount source: filesystem specific information or "none"
 
 		var stat unix.Statfs_t
 		err := unix.Statfs(mountPoint, &stat)
