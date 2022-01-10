@@ -13,6 +13,35 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const (
+	// a line of self/mountinfo has the following structure:
+	// 36  35  98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
+	// (1) (2) (3)   (4)   (5)      (6)      (7)   (8) (9)   (10)         (11)
+	//
+	// (1) mount ID: unique identifier of the mount (may be reused after umount)
+	mountinfoMountID = iota + 1
+	// (2) parent ID: ID of parent (or of self for the top of the mount tree)
+	mountinfoParentID
+	// (3) major:minor: value of st_dev for files on filesystem
+	mountinfoMajorMinor
+	// (4) root: root of the mount within the filesystem
+	mountinfoRoot
+	// (5) mount point: mount point relative to the process's root
+	mountinfoMountPoint
+	// mountinfoMountOpts (6) mount options: per mount options
+	mountinfoMountOpts
+	// (7) optional fields
+	mountinfoOptionalFields
+	// (8) separator between optional fields
+	mountinfoSeparator
+	// (9) filesystem type: name of filesystem of the form
+	mountinfoFsType
+	// (10) mount source: filesystem specific information or "none"
+	mountinfoMountSource
+	// (11) super options: per super block options
+	mountinfoSuperOptions
+)
+
 func (m *Mount) Stat() unix.Statfs_t {
 	return m.Metadata.(unix.Statfs_t)
 }
@@ -28,21 +57,22 @@ func mounts() ([]Mount, []string, error) {
 
 	ret := make([]Mount, 0, len(lines))
 	for _, line := range lines {
-		// a line of self/mountinfo has the following structure:
-		// 36  35  98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
-		// (1) (2) (3)   (4)   (5)      (6)      (7)   (8) (9)   (10)         (11)
+		// Skip commented or unusable lines
+		if len(line) < 24 || line[0] == '#' {
+			continue
+		}
 
-		// split the mountinfo line
-		fields := strings.Fields(line)
-		if len(fields) != 11 {
+		// Get fields from line
+		nb, fields := getFields(line)
+		if nb < 11 {
 			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
 
-		// blockDeviceID := fields[0]             // (1) block device ID (mount ID)
-		mountPoint := unescapeFstab(fields[4]) // (5) mount point: mount point relative to the process's root
-		mountOpts := fields[5]                 // (6) mount options: per mount options
-		fstype := unescapeFstab(fields[8])     // (9) filesystem type: name of filesystem of the form
-		device := unescapeFstab(fields[9])     // (10) mount source: filesystem specific information or "none"
+		// blockDeviceID := fields[mountinfoMountID]
+		mountPoint := unescapeFstab(fields[mountinfoMountPoint])
+		mountOpts := fields[mountinfoMountOpts]
+		fstype := unescapeFstab(fields[mountinfoFsType])
+		device := unescapeFstab(fields[mountinfoMountSource])
 
 		var stat unix.Statfs_t
 		err := unix.Statfs(mountPoint, &stat)
@@ -86,4 +116,69 @@ func mounts() ([]Mount, []string, error) {
 	}
 
 	return ret, warnings, nil
+}
+
+// getFields reads a row to extract the fields.
+// it returns the number of fields found and the fields.
+func getFields(line string) (nb int, fields [12]string) {
+	nb = 1
+	for _, f := range strings.Fields(line) {
+		if nb == mountinfoOptionalFields {
+			// (7)  optional fields: zero or more fields of the form
+			//        "tag[:value]"; see below.
+			// (8)  separator: the end of the optional fields is marked
+			//        by a single hyphen.
+			if f != "-" {
+				fields[nb] += " " + f
+				continue
+			}
+
+			nb++
+		}
+
+		// Assign the value of the field to the corresponding index
+		fields[nb] = f
+		nb++
+	}
+
+	fields[mountinfoMountPoint] = decodeName(fields[mountinfoMountPoint])
+	fields[mountinfoMountSource] = decodeName(fields[mountinfoMountSource])
+
+	return
+}
+
+// decodeName returns the decoded name
+// A name cannot contain spaces, tabs, new lines or backslashes.
+// Therefore, some programs encode them by "\040", "\011", "\012" and "\134".
+func decodeName(n string) string {
+	l := len(n)
+	for i := 0; i < l; i++ {
+		// if there is no thing to decode
+		if i+3 >= l {
+			break
+		}
+
+		// if rune is not a backslash
+		if n[i] != '\\' {
+			continue
+		}
+
+		// reading 3 bytes to decode the rune
+		switch {
+		case n[i+1] == '0' && n[i+2] == '4' && n[i+3] == '0':
+			n = n[:i] + " " + n[i+4:]
+		case n[i+1] == '0' && n[i+2] == '1' && n[i+3] == '1':
+			n = n[:i] + "\t" + n[i+4:]
+		case n[i+1] == '0' && n[i+2] == '1' && n[i+3] == '2':
+			n = n[:i] + "\n" + n[i+4:]
+		case n[i+1] == '1' && n[i+2] == '3' && n[i+3] == '4':
+			n = n[:i] + "\\" + n[i+4:]
+		default:
+			continue
+		}
+
+		l -= 3
+	}
+
+	return n
 }
