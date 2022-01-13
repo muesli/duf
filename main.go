@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	wildcard "git.iglou.eu/Imported/go-wildcard"
+	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
 	terminal "golang.org/x/term"
