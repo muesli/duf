@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           commit_message: "docs: update man page"
-          branch: manpage
+          branch: master
           commit_user_name: mango 🤖
           commit_user_email: actions@github.com
           commit_author: mango 🤖 <actions@github.com>
