@@ -46,6 +46,16 @@ func loadTheme(theme string) (Theme, error) {
 		colorCyan:    term.Color("#0087FF"),
 	}
 
+	themes["ansi"] = Theme{
+		colorRed:     term.Color("9"),
+		colorYellow:  term.Color("11"),
+		colorGreen:   term.Color("10"),
+		colorBlue:    term.Color("12"),
+		colorGray:    term.Color("7"),
+		colorMagenta: term.Color("13"),
+		colorCyan:    term.Color("8"),
+	}
+
 	if _, ok := themes[theme]; !ok {
 		return Theme{}, fmt.Errorf("Unknown theme: %s", theme)
 	}
