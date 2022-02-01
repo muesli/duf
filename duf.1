@@ -1,188 +1,178 @@
-.TH duf 1 "06 April 2021" "duf-0.6.2" "Disk Usage/Free Utility"
+.TH DUF 1 "2022-02-01" "duf" "duf - Disk Usage/Free Utility"
 .SH NAME
-\fBduf \fP- Disk Usage/Free Utility
-\fB
+duf - Disk Usage/Free Utility
 .SH SYNOPSIS
-.nf
-.fam C
-\fBduf\fP [ \fIoptions\fP ]
-
-.fam T
-.fi
-.fam T
-.fi
+\fBduf\fP [\fIoptions\&.\&.\&.\fP] [\fIargument\&.\&.\&.\fP]
 .SH DESCRIPTION
-Simple Disk Usage/Free Utility.
+Simple Disk Usage/Free Utility\&.
 .PP
 Features:
+.PP
 .RS
 .IP \(bu 3
-User-friendly, colorful output.
+User-friendly, colorful output\&.
 .IP \(bu 3
-Adjusts to your terminal's theme & width.
+Adjusts to your terminal's theme & width\&.
 .IP \(bu 3
-Sort the results according to your needs.
+Sort the results according to your needs\&.
 .IP \(bu 3
-Groups & filters devices.
+Groups & filters devices\&.
 .IP \(bu 3
-Can conveniently output JSON.
+Can conveniently output JSON\&.
 .SH OPTIONS
 .TP
-.B
 \fB-all\fP
-Include pseudo, duplicate, inaccessible file systems.
+include pseudo, duplicate, inaccessible file systems
 .TP
-.B
-\fB-hide\fP string
-Hide specific devices, separated with commas:
-local, network, fuse, special, loops, binds.
+\fB-avail-threshold\fP
+specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes
 .TP
-.B
-\fB-hide-fs\fP string
-Hide specific filesystems, separated with commas.
+\fB-hide\fP
+hide specific devices, separated with commas: local, network, fuse, special, loops, binds
 .TP
-.B
+\fB-hide-fs\fP
+hide specific filesystems, separated with commas
+.TP
+\fB-hide-mp\fP
+hide specific mount points, separated with commas (supports wildcards)
+.TP
 \fB-inodes\fP
-List inode information instead of block usage.
+list inode information instead of block usage
 .TP
-.B
 \fB-json\fP
-Output all devices in JSON format.
+output all devices in JSON format
 .TP
-.B
-\fB-only\fP string
-Show only specific devices, separated with commas:
-local, network, fuse, special, loops, binds.
+\fB-only\fP
+show only specific devices, separated with commas: local, network, fuse, special, loops, binds
 .TP
-.B
-\fB-only-fs\fP string
-Only specific filesystems, separated with commas.
+\fB-only-fs\fP
+only specific filesystems, separated with commas
 .TP
-.B
-\fB-output\fP string
-Output fields: mountpoint, size, used, avail, usage, inodes,
-inodes_used, inodes_avail, inodes_usage, type, filesys‐tem.
+\fB-only-mp\fP
+only specific mount points, separated with commas (supports wildcards)
 .TP
-.B
-\fB-sort\fP string
-Sort output by: mountpoint, size, used, avail, usage, inodes,
-inodes_used, inodes_avail, inodes_usage, type, filesys‐tem (default "mountpoint").
+\fB-output\fP
+output fields: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
 .TP
-.B
-\fB-style\fP string
-Style: unicode, ascii (default "unicode").
+\fB-sort\fP
+sort output by: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
 .TP
-.B
-\fB-theme\fP string
-Color themes: dark, light (default "dark").
+\fB-style\fP
+style: unicode, ascii
 .TP
-.B
+\fB-theme\fP
+color themes: dark, light
+.TP
+\fB-usage-threshold\fP
+specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1
+.TP
 \fB-version\fP
-Display version.
+display version
 .TP
-.B
 \fB-warnings\fP
-Output all warnings to STDERR.
+output all warnings to STDERR
 .TP
-.B
-\fB-width\fP uint
-Max output width.
+\fB-width\fP
+max output width
 .SH USAGE
-You can simply start \fBduf\fP without any command-line arguments:
+You can simply start duf without any command-line arguments:
 .PP
-.nf
-.fam C
+.PP
   $ duf
-
-.fam T
-.fi
-If you supply arguments, \fBduf\fP will only list specific devices & mount points:
 .PP
-.nf
-.fam C
+.PP
+If you supply arguments, duf will only list specific devices & mount points:
+.PP
+.PP
   $ duf /home /some/file
-
-.fam T
-.fi
+.PP
+.PP
 If you want to list everything (including pseudo, duplicate, inaccessible file systems):
 .PP
-.nf
-.fam C
+.PP
   $ duf --all
-
-.fam T
-.fi
+.PP
+.PP
 You can show and hide specific tables:
 .PP
-.nf
-.fam C
+.PP
   $ duf --only local,network,fuse,special,loops,binds
+.PP
   $ duf --hide local,network,fuse,special,loops,binds
-
-.fam T
-.fi
+.PP
+.PP
 You can also show and hide specific filesystems:
 .PP
-.nf
-.fam C
+.PP
   $ duf --only-fs tmpfs,vfat
+.PP
   $ duf --hide-fs tmpfs,vfat
-
-.fam T
-.fi
+.PP
+.PP
+\&.\&.\&.or specific mount points:
+.PP
+.PP
+  $ duf --only-mp /,/home,/dev
+.PP
+  $ duf --hide-mp /,/home,/dev
+.PP
+.PP
+Wildcards inside quotes work:
+.PP
+.PP
+  $ duf --only-mp '/sys/*,/dev/*'
+.PP
+.PP
 Sort the output:
 .PP
-.nf
-.fam C
+.PP
   $ duf --sort size
-
-  Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem.
-
-.fam T
-.fi
+.PP
+.PP
+Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem\&.
+.PP
+.PP
 Show or hide specific columns:
 .PP
-.nf
-.fam C
+.PP
   $ duf --output mountpoint,size,usage
-
-  Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem.
-
-.fam T
-.fi
+.PP
+.PP
+Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem\&.
+.PP
+.PP
 List inode information instead of block usage:
 .PP
-.nf
-.fam C
-  $ duf --inodes
-
-.fam T
-.fi
-If \fBduf\fP doesn't detect your terminal's colors correctly, you can set a theme:
 .PP
-.nf
-.fam C
+  $ duf --inodes
+.PP
+.PP
+If duf doesn't detect your terminal's colors correctly, you can set a theme:
+.PP
+.PP
   $ duf --theme light
-
-.fam T
-.fi
+.PP
+.PP
+duf highlights the availability & usage columns in red, green, or yellow, depending on how much space is still available\&. You can set your own thresholds:
+.PP
+.PP
+  $ duf --avail-threshold="10G,1G"
+.PP
+  $ duf --usage-threshold="0\&.5,0\&.9"
+.PP
+.PP
 If you prefer your output as JSON:
 .PP
-.nf
-.fam C
+.PP
   $ duf --json
-
-.fam T
-.fi
+.PP
 .SH NOTES
-Portions of \fBduf\fP's code are copied and modified from https://github.com/shirou/gopsutil.
+Portions of duf's code are copied and modified from https://github\&.com/shirou/gopsutil\&.
 .PP
-gopsutil was written by WAKAYAMA Shirou and is distributed under BSD-3-Clause.
+gopsutil was written by WAKAYAMA Shirou and is distributed under BSD-3-Clause\&.
 .SH AUTHORS
-\fBduf\fP was written by Christian Muehlhaeuser <https://github.com/muesli/\fBduf\fP/issues>.
-.PP
-This manpage was written by Francisco Vilmar Cardoso Ruviaro for the Debian project (but may be used by others).
+duf was written by Christian Muehlhaeuser <https://github\&.com/muesli/duf>
 .SH COPYRIGHT
-Copyright (C) 2020 Christian Muehlhaeuser <https://github.com/muesli/\fBduf\fP/issues>.
+Copyright (C) 2020-2022 Christian Muehlhaeuser <https://github\&.com/muesli>
 .PP
-Released under MIT license.
+Released under MIT license\&.
