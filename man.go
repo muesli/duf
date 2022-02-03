@@ -75,7 +75,7 @@ If you prefer your output as JSON:
   $ duf --json
 `
 
-	manPage := mango.NewManPage(1, "duf", "duf - Disk Usage/Free Utility").
+	manPage := mango.NewManPage(1, "duf", "Disk Usage/Free Utility").
 		WithLongDescription("Simple Disk Usage/Free Utility.\n"+
 			"Features:\n"+
 			"* User-friendly, colorful output.\n"+
