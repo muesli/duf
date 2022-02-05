@@ -3,11 +3,11 @@ module github.com/muesli/duf
 go 1.15
 
 require (
-	github.com/IGLOU-EU/go-wildcard v1.0.2-0.20220113174608-cd79808a5083
+	github.com/IGLOU-EU/go-wildcard v1.0.3
 	github.com/jedib0t/go-pretty/v6 v6.2.5
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13
-	github.com/muesli/mango v0.0.0-20220201014152-f7df5a1c5b4b
+	github.com/muesli/mango v0.1.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.11.0
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
