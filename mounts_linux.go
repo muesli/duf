@@ -57,13 +57,14 @@ func mounts() ([]Mount, []string, error) {
 
 	ret := make([]Mount, 0, len(lines))
 	for _, line := range lines {
-		// Skip commented or unusable lines
-		if len(line) < 24 || line[0] == '#' {
+		// Get fields from line
+		nb, fields := getFields(line)
+
+		// If no field finded, skip this line
+		if nb == 0 {
 			continue
 		}
 
-		// Get fields from line
-		nb, fields := getFields(line)
 		if nb < 11 {
 			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
 		}
@@ -121,6 +122,11 @@ func mounts() ([]Mount, []string, error) {
 // getFields reads a row to extract the fields.
 // it returns the number of fields found and the fields.
 func getFields(line string) (nb int, fields [12]string) {
+	// Ignore commented or empty line
+	if line == "" || line[0] == '#' {
+		return
+	}
+
 	nb = 1
 	for _, f := range strings.Fields(line) {
 		if nb == mountinfoOptionalFields {
