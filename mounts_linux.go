@@ -16,30 +16,30 @@ import (
 const (
 	// A line of self/mountinfo has the following structure:
 	// 36  35  98:0 /mnt1 /mnt2 rw,noatime master:1 - ext3 /dev/root rw,errors=continue
-	// (1) (2) (3)   (4)   (5)      (6)      (7)   (8) (9)   (10)         (11)
+	// (0) (1) (2)   (3)   (4)      (5)      (6)   (7) (8)    (9)           (10)
 	//
-	// (1) mount ID: unique identifier of the mount (may be reused after umount).
-	//mountinfoMountID = 1
-	// (2) parent ID: ID of parent (or of self for the top of the mount tree).
-	//mountinfoParentID = 2
-	// (3) major:minor: value of st_dev for files on filesystem.
-	//mountinfoMajorMinor = 3
-	// (4) root: root of the mount within the filesystem.
-	//mountinfoRoot = 4
-	// (5) mount point: mount point relative to the process's root.
-	mountinfoMountPoint = 5
-	// (6) mount options: per mount options.
-	mountinfoMountOpts = 6
-	// (7) optional fields: zero or more fields terminated by "-".
-	mountinfoOptionalFields = 7
-	// (8) separator between optional fields.
-	//mountinfoSeparator = 8
-	// (9) filesystem type: name of filesystem of the form.
-	mountinfoFsType = 9
-	// (10) mount source: filesystem specific information or "none".
-	mountinfoMountSource = 10
-	// (11) super options: per super block options.
-	//mountinfoSuperOptions = 11
+	// (0) mount ID: unique identifier of the mount (may be reused after umount).
+	//mountinfoMountID = 0
+	// (1) parent ID: ID of parent (or of self for the top of the mount tree).
+	//mountinfoParentID = 1
+	// (2) major:minor: value of st_dev for files on filesystem.
+	//mountinfoMajorMinor = 2
+	// (3) root: root of the mount within the filesystem.
+	//mountinfoRoot = 3
+	// (4) mount point: mount point relative to the process's root.
+	mountinfoMountPoint = 4
+	// (5) mount options: per mount options.
+	mountinfoMountOpts = 5
+	// (6) optional fields: zero or more fields terminated by "-".
+	mountinfoOptionalFields = 6
+	// (7) separator between optional fields.
+	//mountinfoSeparator = 7
+	// (8) filesystem type: name of filesystem of the form.
+	mountinfoFsType = 8
+	// (9) mount source: filesystem specific information or "none".
+	mountinfoMountSource = 9
+	// (10) super options: per super block options.
+	//mountinfoSuperOptions = 10
 )
 
 func (m *Mount) Stat() unix.Statfs_t {
@@ -57,26 +57,23 @@ func mounts() ([]Mount, []string, error) {
 
 	ret := make([]Mount, 0, len(lines))
 	for _, line := range lines {
-		// Get fields from line
-		nb, fields := getFields(line)
-
-		// If no field finded, skip this line
+		nb, fields := parseMountInfoLine(line)
 		if nb == 0 {
 			continue
 		}
 
-		// If the number of fields does not match with
-		// the structure of mountinfo, emit a warning and ignore the line
+		// if the number of fields does not match the structure of mountinfo,
+		// emit a warning and ignore the line.
 		if nb < 10 || nb > 11 {
-			warnings = append(warnings, fmt.Sprintf("found invalid mountinfo line in file %s: %s", filename, line))
+			warnings = append(warnings, fmt.Sprintf("found invalid mountinfo line: %s", line))
 			continue
 		}
 
 		// blockDeviceID := fields[mountinfoMountID]
-		mountPoint := unescapeFstab(fields[mountinfoMountPoint])
+		mountPoint := fields[mountinfoMountPoint]
 		mountOpts := fields[mountinfoMountOpts]
-		fstype := unescapeFstab(fields[mountinfoFsType])
-		device := unescapeFstab(fields[mountinfoMountSource])
+		fstype := fields[mountinfoFsType]
+		device := fields[mountinfoMountSource]
 
 		var stat unix.Statfs_t
 		err := unix.Statfs(mountPoint, &stat)
@@ -122,83 +119,53 @@ func mounts() ([]Mount, []string, error) {
 	return ret, warnings, nil
 }
 
-// getFields reads a row to extract the mountinfo fields.
-// it returns the number of fields found and the fields.
-func getFields(line string) (nb int, fields [12]string) {
-	// Ignore commented or empty line
-	if line == "" || line[0] == '#' {
-		return
+// parseMountInfoLine parses a line of /proc/self/mountinfo and returns the
+// amount of parsed fields and their values.
+func parseMountInfoLine(line string) (int, [11]string) {
+	var fields [11]string
+
+	if len(line) == 0 || line[0] == '#' {
+		// ignore comments and empty lines
+		return 0, fields
 	}
 
+	var i int
 	for _, f := range strings.Fields(line) {
-		// We shift the index by 1 because Linux mountinfo starts at index 1
-		index := nb + 1
-
-		// If we are at the optional fields, loop until we find the separator
-		if index == mountinfoOptionalFields {
-			// (7)  optional fields: zero or more fields of the form
+		// when parsing the optional fields, loop until we find the separator
+		if i == mountinfoOptionalFields {
+			// (6)  optional fields: zero or more fields of the form
 			//        "tag[:value]"; see below.
-			// (8)  separator: the end of the optional fields is marked
+			// (7)  separator: the end of the optional fields is marked
 			//        by a single hyphen.
 			if f != "-" {
-				if fields[index] == "" {
-					fields[index] += f
+				if fields[i] == "" {
+					fields[i] += f
 				} else {
-					fields[index] += " " + f
+					fields[i] += " " + f
 				}
 
+				// keep reading until we reach the separator
 				continue
 			}
 
-			// When it is the separator increase the counter
-			index++
-			nb++
+			// separator found, continue parsing
+			i++
 		}
 
-		// Assign the value of the field to the corresponding index
-		fields[index] = f
-		nb++
-	}
+		switch i {
+		case mountinfoMountPoint:
+			fallthrough
+		case mountinfoMountSource:
+			fallthrough
+		case mountinfoFsType:
+			fields[i] = unescapeFstab(f)
 
-	// Decode the field values if needed
-	fields[mountinfoMountPoint] = decodeName(fields[mountinfoMountPoint])
-	fields[mountinfoMountSource] = decodeName(fields[mountinfoMountSource])
-
-	return
-}
-
-// decodeName returns the decoded name
-// A name cannot contain spaces, tabs, new lines or backslashes.
-// Therefore, some programs encode them by "\040", "\011", "\012" and "\134".
-func decodeName(n string) string {
-	l := len(n)
-	for i := 0; i < l; i++ {
-		// if there is no thing to decode
-		if i+3 >= l {
-			break
-		}
-
-		// if rune is not a backslash
-		if n[i] != '\\' {
-			continue
-		}
-
-		// reading 3 bytes to decode the rune
-		switch {
-		case n[i+1] == '0' && n[i+2] == '4' && n[i+3] == '0':
-			n = n[:i] + " " + n[i+4:]
-		case n[i+1] == '0' && n[i+2] == '1' && n[i+3] == '1':
-			n = n[:i] + "\t" + n[i+4:]
-		case n[i+1] == '0' && n[i+2] == '1' && n[i+3] == '2':
-			n = n[:i] + "\n" + n[i+4:]
-		case n[i+1] == '1' && n[i+2] == '3' && n[i+3] == '4':
-			n = n[:i] + "\\" + n[i+4:]
 		default:
-			continue
+			fields[i] = f
 		}
 
-		l -= 3
+		i++
 	}
 
-	return n
+	return i, fields
 }
