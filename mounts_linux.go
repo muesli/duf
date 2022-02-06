@@ -65,8 +65,11 @@ func mounts() ([]Mount, []string, error) {
 			continue
 		}
 
-		if nb < 11 {
-			return nil, nil, fmt.Errorf("found invalid mountinfo line in file %s: %s", filename, line)
+		// If the number of fields does not match with
+		// the structure of mountinfo, emit a warning and ignore the line
+		if nb < 10 || nb > 11 {
+			warnings = append(warnings, fmt.Sprintf("found invalid mountinfo line in file %s: %s", filename, line))
+			continue
 		}
 
 		// blockDeviceID := fields[mountinfoMountID]
