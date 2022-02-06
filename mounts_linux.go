@@ -119,7 +119,7 @@ func mounts() ([]Mount, []string, error) {
 	return ret, warnings, nil
 }
 
-// getFields reads a row to extract the fields.
+// getFields reads a row to extract the mountinfo fields.
 // it returns the number of fields found and the fields.
 func getFields(line string) (nb int, fields [12]string) {
 	// Ignore commented or empty line
@@ -127,26 +127,37 @@ func getFields(line string) (nb int, fields [12]string) {
 		return
 	}
 
-	nb = 1
 	for _, f := range strings.Fields(line) {
-		if nb == mountinfoOptionalFields {
+		// We shift the index by 1 because Linux mountinfo starts at index 1
+		index := nb + 1
+
+		// If we are at the optional fields, loop until we find the separator
+		if index == mountinfoOptionalFields {
 			// (7)  optional fields: zero or more fields of the form
 			//        "tag[:value]"; see below.
 			// (8)  separator: the end of the optional fields is marked
 			//        by a single hyphen.
 			if f != "-" {
-				fields[nb] += " " + f
+				if fields[index] == "" {
+					fields[index] += f
+				} else {
+					fields[index] += " " + f
+				}
+
 				continue
 			}
 
+			// When it is the separator increase the counter
+			index++
 			nb++
 		}
 
 		// Assign the value of the field to the corresponding index
-		fields[nb] = f
+		fields[index] = f
 		nb++
 	}
 
+	// Decode the field values if needed
 	fields[mountinfoMountPoint] = decodeName(fields[mountinfoMountPoint])
 	fields[mountinfoMountSource] = decodeName(fields[mountinfoMountSource])
 
