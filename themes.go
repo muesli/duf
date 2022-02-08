@@ -27,33 +27,33 @@ func loadTheme(theme string) (Theme, error) {
 	themes := make(map[string]Theme)
 
 	themes["dark"] = Theme{
-		colorRed:     term.Color("#E88388"),
-		colorYellow:  term.Color("#DBAB79"),
-		colorGreen:   term.Color("#A8CC8C"),
-		colorBlue:    term.Color("#71BEF2"),
-		colorGray:    term.Color("#B9BFCA"),
-		colorMagenta: term.Color("#D290E4"),
-		colorCyan:    term.Color("#66C2CD"),
+		colorRed:     env.Color("#E88388"),
+		colorYellow:  env.Color("#DBAB79"),
+		colorGreen:   env.Color("#A8CC8C"),
+		colorBlue:    env.Color("#71BEF2"),
+		colorGray:    env.Color("#B9BFCA"),
+		colorMagenta: env.Color("#D290E4"),
+		colorCyan:    env.Color("#66C2CD"),
 	}
 
 	themes["light"] = Theme{
-		colorRed:     term.Color("#D70000"),
-		colorYellow:  term.Color("#FFAF00"),
-		colorGreen:   term.Color("#005F00"),
-		colorBlue:    term.Color("#000087"),
-		colorGray:    term.Color("#303030"),
-		colorMagenta: term.Color("#AF00FF"),
-		colorCyan:    term.Color("#0087FF"),
+		colorRed:     env.Color("#D70000"),
+		colorYellow:  env.Color("#FFAF00"),
+		colorGreen:   env.Color("#005F00"),
+		colorBlue:    env.Color("#000087"),
+		colorGray:    env.Color("#303030"),
+		colorMagenta: env.Color("#AF00FF"),
+		colorCyan:    env.Color("#0087FF"),
 	}
 
 	themes["ansi"] = Theme{
-		colorRed:     term.Color("9"),
-		colorYellow:  term.Color("11"),
-		colorGreen:   term.Color("10"),
-		colorBlue:    term.Color("12"),
-		colorGray:    term.Color("7"),
-		colorMagenta: term.Color("13"),
-		colorCyan:    term.Color("8"),
+		colorRed:     env.Color("9"),
+		colorYellow:  env.Color("11"),
+		colorGreen:   env.Color("10"),
+		colorBlue:    env.Color("12"),
+		colorGray:    env.Color("7"),
+		colorMagenta: env.Color("13"),
+		colorCyan:    env.Color("8"),
 	}
 
 	if _, ok := themes[theme]; !ok {

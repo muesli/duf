@@ -11,14 +11,14 @@ import (
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
-	terminal "golang.org/x/term"
+	"golang.org/x/term"
 )
 
 var (
 	Version   = ""
 	CommitSHA = ""
 
-	term  = termenv.EnvColorProfile()
+	env   = termenv.EnvColorProfile()
 	theme Theme
 
 	groups        = []string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}
@@ -180,7 +180,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if term == termenv.ANSI {
+	if env == termenv.ANSI {
 		// enforce ANSI theme for limited color support
 		theme, err = loadTheme("ansi")
 		if err != nil {
@@ -291,9 +291,9 @@ func main() {
 	}
 
 	// detect terminal width
-	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
+	isTerminal := term.IsTerminal(int(os.Stdout.Fd()))
 	if isTerminal && *width == 0 {
-		w, _, err := terminal.GetSize(int(os.Stdout.Fd()))
+		w, _, err := term.GetSize(int(os.Stdout.Fd()))
 		if err == nil {
 			*width = uint(w)
 		}
