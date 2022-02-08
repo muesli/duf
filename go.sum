@@ -3,8 +3,8 @@ github.com/IGLOU-EU/go-wildcard v1.0.3/go.mod h1:/qeV4QLmydCbwH0UMQJmXDryrFKJknW
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/jedib0t/go-pretty/v6 v6.2.5 h1:4faq6Fne+0du3qZAPOJcBFpAnt4AlxUJAKa1vAdvfrQ=
-github.com/jedib0t/go-pretty/v6 v6.2.5/go.mod h1:FMkOpgGD3EZ91cW8g/96RfxoV7bdeJyzXPYgz1L1ln0=
+github.com/jedib0t/go-pretty/v6 v6.2.7 h1:4823Lult/tJ0VI1PgW3aSKw59pMWQ6Kzv9b3Bj6MwY0=
+github.com/jedib0t/go-pretty/v6 v6.2.7/go.mod h1:FMkOpgGD3EZ91cW8g/96RfxoV7bdeJyzXPYgz1L1ln0=
 github.com/kr/pretty v0.2.0 h1:s5hAObm+yFO5uHYt5dYjxi2rXrsnmRpJx4OYvIWUaQs=
 github.com/kr/pretty v0.2.0/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
