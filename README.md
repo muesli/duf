@@ -24,7 +24,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 #### Linux
 - Arch Linux: `pacman -S duf`
-- Debian/Ubuntu: `apt install duf`
+- Ubuntu 22.04 / Debian unstable: `apt install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
