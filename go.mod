@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
-	github.com/jedib0t/go-pretty/v6 v6.3.4
+	github.com/jedib0t/go-pretty/v6 v6.3.5
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13
 	github.com/muesli/mango v0.1.0
