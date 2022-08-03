@@ -17,6 +17,7 @@ type TableOptions struct {
 	Columns []int
 	SortBy  int
 	Style   table.Style
+	Totals  bool
 }
 
 // Column defines a column.
@@ -44,6 +45,38 @@ var (
 		{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
 	}
 )
+
+// printTotals prints a small table with total sizes for all previous mounts.
+func printTotals(total_size uint64, total_used uint64, total_avail uint64, opts TableOptions) {
+	tab := table.NewWriter()
+	tab.SetAllowedRowLength(int(*width))
+	tab.SetOutputMirror(os.Stdout)
+	tab.Style().Options.SeparateColumns = true
+	tab.SetStyle(opts.Style)
+
+	tab.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 1, WidthMin: len(columns[0].Name)},
+		{Number: 2, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+	})
+
+	tab.SetTitle("grand totals")
+	tab.AppendHeader(table.Row{
+		"",
+		"Size",
+		"Used",
+		"Avail",
+	})
+	tab.AppendRow(table.Row{
+		"TOTAL",
+		total_size,
+		total_used,
+		total_avail,
+	})
+
+	tab.Render()
+}
 
 // printTable prints an individual table of mounts.
 func printTable(title string, m []Mount, opts TableOptions) {
@@ -87,8 +120,18 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	}
 	tab.AppendHeader(headers)
 
+	var total_size uint64 = 0
+	var total_used uint64 = 0
+	var total_avail uint64 = 0
+
 	for _, v := range m {
 		// spew.Dump(v)
+
+		if opts.Totals {
+			total_size += v.Total
+			total_used += v.Used
+			total_avail += v.Free
+		}
 
 		var usage, inodeUsage float64
 		if v.Total > 0 {
@@ -138,6 +181,14 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
 
 	//tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
+	if opts.Totals {
+		tab.AppendFooter(table.Row{
+			"TOTAL",
+			sizeToString(total_size),
+			sizeToString(total_used),
+			sizeToString(total_avail),
+		})
+	}
 	sortMode := table.Asc
 	if opts.SortBy >= 12 {
 		sortMode = table.AscNumeric
