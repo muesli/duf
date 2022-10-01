@@ -11,6 +11,7 @@ import (
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
+	"github.com/peterbourgon/ff/v3"
 	"golang.org/x/term"
 )
 
@@ -29,27 +30,28 @@ var (
 	groups        = []string{localDevice, networkDevice, fuseDevice, specialDevice, loopsDevice, bindsMount}
 	allowedValues = strings.Join(groups, ", ")
 
-	all         = flag.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
-	hideDevices = flag.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
-	hideFs      = flag.String("hide-fs", "", "hide specific filesystems, separated with commas")
-	hideMp      = flag.String("hide-mp", "", "hide specific mount points, separated with commas (supports wildcards)")
-	onlyDevices = flag.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
-	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
-	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
+	fs          = flag.NewFlagSet("duf", flag.ContinueOnError)
+	all         = fs.Bool("all", false, "include pseudo, duplicate, inaccessible file systems")
+	hideDevices = fs.String("hide", "", "hide specific devices, separated with commas:\n"+allowedValues)
+	hideFs      = fs.String("hide-fs", "", "hide specific filesystems, separated with commas")
+	hideMp      = fs.String("hide-mp", "", "hide specific mount points, separated with commas (supports wildcards)")
+	onlyDevices = fs.String("only", "", "show only specific devices, separated with commas:\n"+allowedValues)
+	onlyFs      = fs.String("only-fs", "", "only specific filesystems, separated with commas")
+	onlyMp      = fs.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
-	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
-	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
-	width    = flag.Uint("width", 0, "max output width")
-	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
-	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+	output   = fs.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
+	sortBy   = fs.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
+	width    = fs.Uint("width", 0, "max output width")
+	themeOpt = fs.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
+	styleOpt = fs.String("style", defaultStyleName(), "style: unicode, ascii")
 
-	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
-	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
+	availThreshold = fs.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
+	usageThreshold = fs.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
-	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
-	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
-	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
-	version    = flag.Bool("version", false, "display version")
+	inodes     = fs.Bool("inodes", false, "list inode information instead of block usage")
+	jsonOutput = fs.Bool("json", false, "output all devices in JSON format")
+	warns      = fs.Bool("warnings", false, "output all warnings to STDERR")
+	version    = fs.Bool("version", false, "display version")
 )
 
 // renderJSON encodes the JSON output and prints it.
@@ -143,7 +145,10 @@ func findInKey(str string, km map[string]struct{}) bool {
 }
 
 func main() {
-	flag.Parse()
+	if err := ff.Parse(fs, os.Args[1:], ff.WithEnvVarPrefix("DUF")); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
 
 	if *version {
 		if len(CommitSHA) > 7 {
