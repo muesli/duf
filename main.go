@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -42,6 +43,7 @@ var (
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+	refresh  = flag.Duration("refresh", 0, "refresh interval (e.g. 500ms, 5s, 5m)")
 
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
@@ -140,6 +142,39 @@ func findInKey(str string, km map[string]struct{}) bool {
 	}
 
 	return false
+}
+
+func validateMounts(m []Mount, args []string) ([]Mount, error) {
+	if len(args) > 0 {
+		var mounts []Mount
+
+		for _, v := range args {
+			fm, err := findMounts(m, v)
+			if err != nil {
+				return m, err
+			}
+
+			mounts = append(mounts, fm...)
+		}
+
+		m = mounts
+	}
+
+	return m, nil
+}
+
+func refreshMounts(m []Mount) ([]Mount, []string, error) {
+	mounts, warnings, err := mounts()
+	if err != nil {
+		return mounts, warnings, err
+	}
+
+	validatedMounts, err := validateMounts(mounts, flag.Args())
+	if err != nil {
+		return mounts, warnings, err
+	}
+
+	return validatedMounts, warnings, err
 }
 
 func main() {
@@ -244,20 +279,10 @@ func main() {
 	}
 
 	// validate arguments
-	if len(flag.Args()) > 0 {
-		var mounts []Mount
-
-		for _, v := range flag.Args() {
-			fm, err := findMounts(m, v)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-
-			mounts = append(mounts, fm...)
-		}
-
-		m = mounts
+	m, err = validateMounts(m, flag.Args())
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	// validate availability thresholds
@@ -307,10 +332,49 @@ func main() {
 		*width = 80
 	}
 
+	if *refresh > 0 {
+		// Clear the screen before output
+		termenv.ClearScreen()
+		fmt.Printf("refreshing every %v\n", *refresh)
+	}
+
 	// print tables
 	renderTables(m, filters, TableOptions{
 		Columns: columns,
 		SortBy:  sortCol,
 		Style:   style,
 	})
+
+	// Automatically clear the screen and refresh the output.
+	if *refresh > 0 {
+		ticker := time.NewTicker(*refresh)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				// Refresh the mount information.
+				m, warnings, err := refreshMounts(m)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				termenv.ClearScreen()
+				fmt.Printf("refreshing every %v\n", *refresh)
+
+				// print tables
+				renderTables(m, filters, TableOptions{
+					Columns: columns,
+					SortBy:  sortCol,
+					Style:   style,
+				})
+
+				// print out warnings
+				if *warns {
+					for _, warning := range warnings {
+						fmt.Fprintln(os.Stderr, warning)
+					}
+				}
+			}
+		}
+	}
 }
