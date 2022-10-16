@@ -27,23 +27,21 @@ type Column struct {
 	Width     int
 }
 
-var (
-	// "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "IUsed", "IAvail", "IUse%", "Type", "Filesystem"
-	// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
-	columns = []Column{
-		{ID: "mountpoint", Name: "Mounted on", SortIndex: 1},
-		{ID: "size", Name: "Size", SortIndex: 12, Width: 7},
-		{ID: "used", Name: "Used", SortIndex: 13, Width: 7},
-		{ID: "avail", Name: "Avail", SortIndex: 14, Width: 7},
-		{ID: "usage", Name: "Use%", SortIndex: 15, Width: 6},
-		{ID: "inodes", Name: "Inodes", SortIndex: 16, Width: 7},
-		{ID: "inodes_used", Name: "IUsed", SortIndex: 17, Width: 7},
-		{ID: "inodes_avail", Name: "IAvail", SortIndex: 18, Width: 7},
-		{ID: "inodes_usage", Name: "IUse%", SortIndex: 19, Width: 6},
-		{ID: "type", Name: "Type", SortIndex: 10},
-		{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
-	}
-)
+// "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "IUsed", "IAvail", "IUse%", "Type", "Filesystem"
+// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
+var columns = []Column{
+	{ID: "mountpoint", Name: "Mounted on", SortIndex: 1},
+	{ID: "size", Name: "Size", SortIndex: 12, Width: 7},
+	{ID: "used", Name: "Used", SortIndex: 13, Width: 7},
+	{ID: "avail", Name: "Avail", SortIndex: 14, Width: 7},
+	{ID: "usage", Name: "Use%", SortIndex: 15, Width: 6},
+	{ID: "inodes", Name: "Inodes", SortIndex: 16, Width: 7},
+	{ID: "inodes_used", Name: "IUsed", SortIndex: 17, Width: 7},
+	{ID: "inodes_avail", Name: "IAvail", SortIndex: 18, Width: 7},
+	{ID: "inodes_usage", Name: "IUse%", SortIndex: 19, Width: 6},
+	{ID: "type", Name: "Type", SortIndex: 10},
+	{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
+}
 
 // printTable prints an individual table of mounts.
 func printTable(title string, m []Mount, opts TableOptions) {
@@ -137,7 +135,7 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	}
 	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
 
-	//tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
+	// tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
 	if opts.SortBy >= 12 {
 		sortMode = table.AscNumeric
@@ -156,7 +154,7 @@ func sizeTransformer(val interface{}) string {
 func spaceTransformer(val interface{}) string {
 	free := val.(uint64)
 
-	var s = termenv.String(sizeToString(free))
+	s := termenv.String(sizeToString(free))
 	redAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[1])
 	yellowAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[0])
 	switch {
@@ -282,18 +280,18 @@ func stringToSize(s string) (size uint64, err error) {
 	}
 	if matches[2] != "" {
 		prefix := matches[2]
-		switch {
-		case prefix == "K":
+		switch prefix {
+		case "K":
 			size = num << 10
-		case prefix == "M":
+		case "M":
 			size = num << 20
-		case prefix == "G":
+		case "G":
 			size = num << 30
-		case prefix == "T":
+		case "T":
 			size = num << 40
-		case prefix == "P":
+		case "P":
 			size = num << 50
-		case prefix == "E":
+		case "E":
 			size = num << 60
 		default:
 			err = fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", prefix)

@@ -171,11 +171,9 @@ func main() {
 
 	// print JSON
 	if *jsonOutput {
-		err := renderJSON(m)
-		if err != nil {
+		if err = renderJSON(m); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-
 		return
 	}
 
@@ -248,7 +246,8 @@ func main() {
 		var mounts []Mount
 
 		for _, v := range flag.Args() {
-			fm, err := findMounts(m, v)
+			var fm []Mount
+			fm, err = findMounts(m, v)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

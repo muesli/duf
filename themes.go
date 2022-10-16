@@ -58,7 +58,7 @@ func loadTheme(theme string) (Theme, error) {
 	}
 
 	if _, ok := themes[theme]; !ok {
-		return Theme{}, fmt.Errorf("Unknown theme: %s", theme)
+		return Theme{}, fmt.Errorf("unknown theme: %s", theme)
 	}
 
 	return themes[theme], nil
