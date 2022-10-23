@@ -4,8 +4,30 @@
 package main
 
 import (
+	"syscall"
+	"unsafe"
+
 	"golang.org/x/sys/unix"
 )
+
+type attrlist struct {
+	bitmapcount uint16
+	reserved    uint16
+	commonattr  uint32
+	volattr     uint32
+	dirattr     uint32
+	fileattr    uint32
+	forkattr    uint32
+}
+
+type volAttrs struct {
+	length    uint32
+	spaceUsed [8]byte
+}
+
+const ATTR_BIT_MAP_COUNT = 5
+const ATTR_VOL_INFO = 0x80000000
+const ATTR_VOL_SPACEUSED = 0x00800000
 
 func (m *Mount) Stat() unix.Statfs_t {
 	return m.Metadata.(unix.Statfs_t)
@@ -71,6 +93,26 @@ func mounts() ([]Mount, []string, error) {
 			continue
 		}
 
+		used := (stat.Blocks - stat.Bfree) * uint64(stat.Bsize)
+
+		var mountPointPtr *byte
+		mountPointPtr, err = syscall.BytePtrFromString(mountPoint)
+		attrList := attrlist{
+			bitmapcount: ATTR_BIT_MAP_COUNT,
+			volattr:     ATTR_VOL_INFO | ATTR_VOL_SPACEUSED,
+		}
+		var volAttrs volAttrs
+		volAttrsRes, _, _ := syscall.Syscall6(syscall.SYS_GETATTRLIST,
+			uintptr(unsafe.Pointer(mountPointPtr)),
+			uintptr(unsafe.Pointer(&attrList)),
+			uintptr(unsafe.Pointer(&volAttrs)),
+			unsafe.Sizeof(volAttrs),
+			unix.FSOPT_NOFOLLOW,
+			0)
+		if volAttrsRes == 0 {
+			used = *(*uint64)(unsafe.Pointer(&volAttrs.spaceUsed[0]))
+		}
+
 		d := Mount{
 			Device:     device,
 			Mountpoint: mountPoint,
@@ -80,7 +122,7 @@ func mounts() ([]Mount, []string, error) {
 			Metadata:   stat,
 			Total:      stat.Blocks * uint64(stat.Bsize),
 			Free:       stat.Bavail * uint64(stat.Bsize),
-			Used:       (stat.Blocks - stat.Bfree) * uint64(stat.Bsize),
+			Used:       used,
 			Inodes:     stat.Files,
 			InodesFree: stat.Ffree,
 			InodesUsed: stat.Files - stat.Ffree,
