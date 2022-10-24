@@ -244,6 +244,7 @@ func main() {
 	// validate arguments
 	if len(flag.Args()) > 0 {
 		var mounts []Mount
+		vis := make(map[string]bool)
 
 		for _, v := range flag.Args() {
 			var fm []Mount
@@ -252,8 +253,16 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-
-			mounts = append(mounts, fm...)
+			// de-duplicate
+			var tmp []Mount
+			for _, v := range fm {
+				if _, ok := vis[v.Device]; !ok {
+					tmp = append(tmp, v)
+					vis[v.Device] = true
+				}
+			}
+			
+			mounts = append(mounts, tmp...)
 		}
 
 		m = mounts
