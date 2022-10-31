@@ -45,7 +45,7 @@ var columns = []Column{
 }
 
 // printTotals prints a small table with total sizes for all previous mounts.
-func printTotals(total_size uint64, total_used uint64, totalAvail uint64, opts TableOptions) {
+func printTotals(totalSize uint64, totalUsed uint64, totalAvail uint64, opts TableOptions) {
 	tab := table.NewWriter()
 	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
@@ -68,8 +68,8 @@ func printTotals(total_size uint64, total_used uint64, totalAvail uint64, opts T
 	})
 	tab.AppendRow(table.Row{
 		"TOTAL",
-		total_size,
-		total_used,
+		totalSize,
+		totalUsed,
 		totalAvail,
 	})
 
@@ -118,16 +118,16 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	}
 	tab.AppendHeader(headers)
 
-	var total_size uint64
-	var total_used uint64
+	var totalSize uint64
+	var totalUsed uint64
 	var totalAvail uint64
 
 	for _, v := range m {
 		// spew.Dump(v)
 
 		if opts.Totals {
-			total_size += v.Total
-			total_used += v.Used
+			totalSize += v.Total
+			totalUsed += v.Used
 			totalAvail += v.Free
 		}
 
@@ -182,8 +182,8 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	if opts.Totals {
 		tab.AppendFooter(table.Row{
 			"TOTAL",
-			sizeToString(total_size),
-			sizeToString(total_used),
+			sizeToString(totalSize),
+			sizeToString(totalUsed),
 			sizeToString(totalAvail),
 		})
 	}
