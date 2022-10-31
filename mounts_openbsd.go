@@ -54,9 +54,9 @@ func mounts() ([]Mount, []string, error) {
 			opts += ",wxallowed"
 		}
 
-		device := intToString(stat.F_mntfromname[:])
-		mountPoint := intToString(stat.F_mntonname[:])
-		fsType := intToString(stat.F_fstypename[:])
+		device := byteToString(stat.F_mntfromname[:])
+		mountPoint := byteToString(stat.F_mntonname[:])
+		fsType := byteToString(stat.F_fstypename[:])
 
 		if len(device) == 0 {
 			continue
