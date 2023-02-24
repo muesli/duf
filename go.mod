@@ -10,7 +10,7 @@ require (
 	github.com/muesli/mango v0.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.13.0
-	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab
-	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72
+	golang.org/x/sys v0.5.0
+	golang.org/x/term v0.5.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )
