@@ -1,0 +1,14 @@
+name: Publish to Winget
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    runs-on: windows-latest # Action can only run on Windows
+    steps:
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: muesli.duf
+          installers-regex: '_Windows_(arm64|armv7|i386|x86_64)\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
