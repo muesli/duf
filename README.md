@@ -49,7 +49,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 ### From source
 
-Make sure you have a working Go environment (Go 1.16 or higher is required).
+Make sure you have a working Go environment (Go 1.17 or higher is required).
 See the [install instructions](https://golang.org/doc/install.html).
 
 Compiling duf is easy, simply run:
