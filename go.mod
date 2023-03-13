@@ -9,8 +9,8 @@ require (
 	github.com/muesli/mango v0.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.14.0
-	golang.org/x/sys v0.1.0
-	golang.org/x/term v0.0.0-20210406210042-72f3dc4e9b72
+	golang.org/x/sys v0.6.0
+	golang.org/x/term v0.6.0
 )
 
 require (
