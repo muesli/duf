@@ -10,7 +10,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.15.1
 	golang.org/x/sys v0.7.0
-	golang.org/x/term v0.6.0
+	golang.org/x/term v0.7.0
 )
 
 require (
