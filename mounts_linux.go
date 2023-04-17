@@ -19,13 +19,13 @@ const (
 	// (0) (1) (2)   (3)   (4)      (5)      (6)   (7) (8)    (9)           (10)
 	//
 	// (0) mount ID: unique identifier of the mount (may be reused after umount).
-	// mountinfoMountID = 0
+	//mountinfoMountID = 0
 	// (1) parent ID: ID of parent (or of self for the top of the mount tree).
-	// mountinfoParentID = 1
+	//mountinfoParentID = 1
 	// (2) major:minor: value of st_dev for files on filesystem.
-	// mountinfoMajorMinor = 2
+	//mountinfoMajorMinor = 2
 	// (3) root: root of the mount within the filesystem.
-	// mountinfoRoot = 3
+	//mountinfoRoot = 3
 	// (4) mount point: mount point relative to the process's root.
 	mountinfoMountPoint = 4
 	// (5) mount options: per mount options.
@@ -33,13 +33,13 @@ const (
 	// (6) optional fields: zero or more fields terminated by "-".
 	mountinfoOptionalFields = 6
 	// (7) separator between optional fields.
-	// mountinfoSeparator = 7
+	//mountinfoSeparator = 7
 	// (8) filesystem type: name of filesystem of the form.
 	mountinfoFsType = 8
 	// (9) mount source: filesystem specific information or "none".
 	mountinfoMountSource = 9
 	// (10) super options: per super block options.
-	// mountinfoSuperOptions = 10
+	//mountinfoSuperOptions = 10
 )
 
 // Stat returns the mountpoint's stat information.
