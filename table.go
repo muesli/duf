@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -147,16 +147,16 @@ func printTable(title string, m []Mount, opts TableOptions) {
 
 // sizeTransformer makes a size human-readable.
 func sizeTransformer(val interface{}) string {
-	return sizeToString(val.(uint64))
+	return sizeToString(val.(uint64), *prefixSI)
 }
 
 // spaceTransformer makes a size human-readable and applies a color coding.
 func spaceTransformer(val interface{}) string {
 	free := val.(uint64)
 
-	s := termenv.String(sizeToString(free))
-	redAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[1])
-	yellowAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[0])
+	s := termenv.String(sizeToString(free, *prefixSI))
+	redAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[1], *prefixSI)
+	yellowAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[0], *prefixSI)
 	switch {
 	case free < redAvail:
 		s = s.Foreground(theme.colorRed)
@@ -242,65 +242,60 @@ func tableWidth(cols []int, separators bool) int {
 	return twidth
 }
 
-// sizeToString prettifies sizes.
-func sizeToString(size uint64) (str string) {
-	b := float64(size)
+func sizeToString(bytes uint64, SI bool) string {
+	size := float64(bytes)
 
-	switch {
-	case size >= 1<<60:
-		str = fmt.Sprintf("%.1fE", b/(1<<60))
-	case size >= 1<<50:
-		str = fmt.Sprintf("%.1fP", b/(1<<50))
-	case size >= 1<<40:
-		str = fmt.Sprintf("%.1fT", b/(1<<40))
-	case size >= 1<<30:
-		str = fmt.Sprintf("%.1fG", b/(1<<30))
-	case size >= 1<<20:
-		str = fmt.Sprintf("%.1fM", b/(1<<20))
-	case size >= 1<<10:
-		str = fmt.Sprintf("%.1fK", b/(1<<10))
-	default:
-		str = fmt.Sprintf("%dB", size)
+	unit := float64(1024)
+	prefixes := []string{"Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"}
+
+	if SI {
+		unit = float64(1000)
+		prefixes = []string{"k", "M", "G", "T", "P", "E", "Z", "Y"}
 	}
 
-	return
+	if size < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+
+	exp := int(math.Log(size) / math.Log(unit))
+	prefix := prefixes[exp-1]
+	value := size / math.Pow(unit, float64(exp))
+
+	return fmt.Sprintf("%.1f%sB", value, prefix)
 }
 
 // stringToSize transforms an SI size into a number.
-func stringToSize(s string) (size uint64, err error) {
-	regex := regexp.MustCompile(`^(\d+)([KMGTPE]?)$`)
-	matches := regex.FindStringSubmatch(s)
-	if len(matches) == 0 {
-		return 0, fmt.Errorf("'%s' is not valid, must have integer with optional SI prefix", s)
-	}
-
-	num, err := strconv.ParseUint(matches[1], 10, 64)
-	if err != nil {
+func stringToSize(s string, SI bool) (uint64, error) {
+	var prefix string
+	var num float64
+	if _, err := fmt.Sscanf(s, "%f%s", &num, &prefix); err != nil {
 		return 0, err
 	}
-	if matches[2] != "" {
-		prefix := matches[2]
-		switch prefix {
-		case "K":
-			size = num << 10
-		case "M":
-			size = num << 20
-		case "G":
-			size = num << 30
-		case "T":
-			size = num << 40
-		case "P":
-			size = num << 50
-		case "E":
-			size = num << 60
-		default:
-			err = fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", prefix)
-			return
-		}
-	} else {
-		size = num
+
+	if prefix == "" {
+		return uint64(num), nil
 	}
-	return
+
+	unit := float64(1024)
+	prefixes := []string{"", "k", "M", "G", "T", "P", "E", "Z", "Y"}
+	if SI {
+		unit = float64(1000)
+		prefixes[1] = "K"
+	}
+
+	var exp int
+	for i, p := range prefixes {
+		if p == prefix {
+			exp = i
+			break
+		}
+	}
+
+	if exp == 0 {
+		return 0, fmt.Errorf("prefix '%s' not allowed, valid prefixes are k, M, G, T, P, E, Z, Y and K with SI format", prefix)
+	}
+
+	return uint64(num * math.Pow(unit, float64(exp))), nil
 }
 
 // stringToColumn converts a column name to its index.
