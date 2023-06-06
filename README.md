@@ -27,6 +27,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - Ubuntu 22.04 / Debian unstable: `apt install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
+- Gentoo Linux: `emerge sys-fs/duf`
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
 
 #### BSD
