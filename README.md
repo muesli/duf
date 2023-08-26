@@ -25,6 +25,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 #### Linux
 - Arch Linux: `pacman -S duf`
 - Ubuntu (22.04 and later) / Debian (12 and later): `apt install duf`
+- Fedora Linux: `dnf install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
 - Gentoo Linux: `emerge sys-fs/duf`
