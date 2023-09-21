@@ -17,6 +17,7 @@ type TableOptions struct {
 	Columns []int
 	SortBy  int
 	Style   table.Style
+	Totals  bool
 }
 
 // Column defines a column.
@@ -41,6 +42,38 @@ var columns = []Column{
 	{ID: "inodes_usage", Name: "IUse%", SortIndex: 19, Width: 6},
 	{ID: "type", Name: "Type", SortIndex: 10},
 	{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
+}
+
+// printTotals prints a small table with total sizes for all previous mounts.
+func printTotals(totalSize uint64, totalUsed uint64, totalAvail uint64, opts TableOptions) {
+	tab := table.NewWriter()
+	tab.SetAllowedRowLength(int(*width))
+	tab.SetOutputMirror(os.Stdout)
+	tab.Style().Options.SeparateColumns = true
+	tab.SetStyle(opts.Style)
+
+	tab.SetColumnConfigs([]table.ColumnConfig{
+		{Number: 1, WidthMin: len(columns[0].Name)},
+		{Number: 2, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 3, Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+		{Number: 4, Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
+	})
+
+	tab.SetTitle("grand totals")
+	tab.AppendHeader(table.Row{
+		"",
+		"Size",
+		"Used",
+		"Avail",
+	})
+	tab.AppendRow(table.Row{
+		"TOTAL",
+		totalSize,
+		totalUsed,
+		totalAvail,
+	})
+
+	tab.Render()
 }
 
 // printTable prints an individual table of mounts.
@@ -85,8 +118,18 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	}
 	tab.AppendHeader(headers)
 
+	var totalSize uint64
+	var totalUsed uint64
+	var totalAvail uint64
+
 	for _, v := range m {
 		// spew.Dump(v)
+
+		if opts.Totals {
+			totalSize += v.Total
+			totalUsed += v.Used
+			totalAvail += v.Free
+		}
 
 		var usage, inodeUsage float64
 		if v.Total > 0 {
@@ -136,6 +179,14 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
 
 	// tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
+	if opts.Totals {
+		tab.AppendFooter(table.Row{
+			"TOTAL",
+			sizeToString(totalSize),
+			sizeToString(totalUsed),
+			sizeToString(totalAvail),
+		})
+	}
 	sortMode := table.Asc
 	if opts.SortBy >= 12 {
 		sortMode = table.AscNumeric
