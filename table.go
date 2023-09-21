@@ -14,9 +14,10 @@ import (
 
 // TableOptions contains all options for the table.
 type TableOptions struct {
-	Columns []int
-	SortBy  int
-	Style   table.Style
+	Columns       []int
+	SortBy        int
+	Style         table.Style
+	combinedTable bool
 }
 
 // Column defines a column.

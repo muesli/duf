@@ -61,6 +61,10 @@ List inode information instead of block usage:
 
   $ duf --inodes
 
+Display all mount points in one table:
+
+  $ duf --combine
+
 If duf doesn't detect your terminal's colors correctly, you can set a theme:
 
   $ duf --theme light

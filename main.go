@@ -43,6 +43,8 @@ var (
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
 
+	combinedTable = flag.Bool("combine", false, "display only one table for all mount points")
+
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
@@ -308,8 +310,9 @@ func main() {
 
 	// print tables
 	renderTables(m, filters, TableOptions{
-		Columns: columns,
-		SortBy:  sortCol,
-		Style:   style,
+		Columns:       columns,
+		SortBy:        sortCol,
+		Style:         style,
+		combinedTable: *combinedTable,
 	})
 }
