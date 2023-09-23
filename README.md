@@ -29,6 +29,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
 - Gentoo Linux: `emerge sys-fs/duf`
+- Solus: `eopkg it duf`
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
 
 #### BSD
