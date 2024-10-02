@@ -5,6 +5,7 @@ env:
 before:
   hooks:
     - go mod tidy
+    - gzip duf.1
 builds:
   - binary: duf
     flags:
@@ -64,6 +65,9 @@ brews:
       email: "muesli@gmail.com"
     homepage: "https://fribbledom.com/"
     description: "Disk Usage/Free Utility"
+    install: |
+      bin.install "duf"      
+      man1.install "duf.1.gz"
     # skip_upload: true
 
 signs:
