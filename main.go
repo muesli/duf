@@ -184,8 +184,8 @@ func main() {
 		os.Exit(1)
 	}
 	if env == termenv.ANSI {
-		// enforce ANSI theme for limited color support
-		theme, err = loadTheme("ansi")
+		// enforce ANSI/light/dark theme for limited color support
+		theme, err = loadTheme(*themeOpt)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
