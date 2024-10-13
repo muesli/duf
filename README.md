@@ -113,6 +113,10 @@ Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 List inode information instead of block usage:
 
     duf --inodes
+    
+Do not display the bar in USE%:
+
+    duf --no-bars
 
 If duf doesn't detect your terminal's colors correctly, you can set a theme:
 

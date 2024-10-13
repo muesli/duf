@@ -47,6 +47,7 @@ var (
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
+	noBars     = flag.Bool("no-bars", false, "do not show bars in USE%")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
 	version    = flag.Bool("version", false, "display version")
