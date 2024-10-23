@@ -27,3 +27,8 @@ linters:
     - unconvert
     - unparam
     - whitespace
+
+linters-settings:
+  gosec:
+    exclude-rules:
+      - G115
