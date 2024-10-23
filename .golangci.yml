@@ -15,7 +15,7 @@ issues:
 linters:
   enable:
     - bodyclose
-    - exportloopref
+    - copyloopvar
     - goimports
     - gosec
     - nilerr
