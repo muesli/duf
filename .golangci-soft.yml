@@ -20,10 +20,8 @@ linters:
     - goconst
     - godot
     - godox
-    - gomnd
     - gomoddirectives
     - goprintffuncname
-    - ifshort
     # - lll
     - misspell
     - nakedret
@@ -35,13 +33,10 @@ linters:
 
   # disable default linters, they are already enabled in .golangci.yml
   disable:
-    - deadcode
     - errcheck
     - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - structcheck
     - typecheck
     - unused
-    - varcheck

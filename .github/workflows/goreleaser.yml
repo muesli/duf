@@ -17,5 +17,6 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
-          version: latest
-          args: release --snapshot --skip-publish --skip-sign --rm-dist
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --snapshot --skip=publish --skip=sign --clean
