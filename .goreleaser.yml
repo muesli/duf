@@ -30,11 +30,11 @@ archives:
   - format_overrides:
       - goos: windows
         format: zip
-    replacements:
-      windows: Windows
-      darwin: Darwin
-      386: i386
-      amd64: x86_64
+    # replacements:
+    #   windows: Windows
+    #   darwin: Darwin
+    #   386: i386
+    #   amd64: x86_64
 
 nfpms:
   - builds:
@@ -50,16 +50,16 @@ nfpms:
       - rpm
     bindir: /usr/bin
 
-brews:
-  - goarm: 6
-    tap:
-      owner: muesli
-      name: homebrew-tap
-    commit_author:
-      name: "Christian Muehlhaeuser"
-      email: "muesli@gmail.com"
-    homepage: "https://fribbledom.com/"
-    description: "Disk Usage/Free Utility"
+# brews:
+#   - goarm: 6
+#     tap:
+#       owner: muesli
+#       name: homebrew-tap
+#     commit_author:
+#       name: "Christian Muehlhaeuser"
+#       email: "muesli@gmail.com"
+#     homepage: "https://fribbledom.com/"
+#     description: "Disk Usage/Free Utility"
     # skip_upload: true
 
 signs:
@@ -68,7 +68,7 @@ signs:
 checksum:
   name_template: "checksums.txt"
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  version_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
   filters:
