@@ -28,6 +28,5 @@
       "automergeType": "pr",
       "platformAutomerge": true
     }
-  ],
-  "schedule": ["every hour"]
+  ]
 }
