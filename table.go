@@ -46,7 +46,7 @@ var columns = []Column{
 // printTable prints an individual table of mounts.
 func printTable(title string, m []Mount, opts TableOptions) {
 	tab := table.NewWriter()
-	tab.SetAllowedRowLength(int(*width))
+	tab.SetAllowedRowLength(int(*width)) // #nosec G115
 	tab.SetOutputMirror(os.Stdout)
 	tab.Style().Options.SeparateColumns = true
 	tab.SetStyle(opts.Style)
