@@ -13,8 +13,8 @@
   "platformAutomerge": true,
   "packageRules": [
     {
-      "description": "Automerge non-major updates",
-      "matchUpdateTypes": ["minor", "patch"],
+      "description": "Automerge all updates",
+      "matchUpdateTypes": ["minor", "patch", "major"],
       "enabled": true,
       "automerge": true,
       "automergeType": "pr",
