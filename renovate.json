@@ -29,5 +29,5 @@
       "platformAutomerge": true
     }
   ],
-  "schedule": ["every 10 minutes"]
+  "schedule": ["every hour"]
 }
