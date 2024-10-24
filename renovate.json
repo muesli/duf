@@ -28,5 +28,6 @@
       "automergeType": "pr",
       "platformAutomerge": true
     }
-  ]
+  ],
+  "schedule": ["every 10 minutes"]
 }
