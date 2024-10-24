@@ -294,14 +294,14 @@ func main() {
 		}
 	}
 
-    // detect terminal width
-    isTerminal := term.IsTerminal(int(os.Stdout.Fd()))
-    if isTerminal && *width == 0 {
-        w, _, err := term.GetSize(int(os.Stdout.Fd()))
-        if err == nil && w >= 0 {
-            *width = uint(w)
-        }
-    }
+	// detect terminal width
+	isTerminal := term.IsTerminal(int(os.Stdout.Fd()))
+	if isTerminal && *width == 0 {
+		w, _, err := term.GetSize(int(os.Stdout.Fd()))
+		if err == nil && w >= 0 {
+			*width = uint(w)
+		}
+	}
 	if *width == 0 {
 		*width = 80
 	}

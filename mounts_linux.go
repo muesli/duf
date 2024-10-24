@@ -94,14 +94,14 @@ func mounts() ([]Mount, []string, error) {
 			Type:       fsTypeMap[int64(stat.Type)], //nolint:unconvert
 			Opts:       mountOpts,
 			Metadata:   stat,
-			Total:      (uint64(stat.Blocks) * uint64(stat.Bsize)),                      //nolint:unconvert
-			Free:       (uint64(stat.Bavail) * uint64(stat.Bsize)),                      //nolint:unconvert
-			Used:       (uint64(stat.Blocks) - uint64(stat.Bfree)) * uint64(stat.Bsize), //nolint:unconvert
+			Total:      (uint64(stat.Blocks) * uint64(stat.Bsize)),                      //nolint:unconvert //nolint:unconvert
+			Free:       (uint64(stat.Bavail) * uint64(stat.Bsize)),                      //nolint:unconvert //nolint:unconvert
+			Used:       (uint64(stat.Blocks) - uint64(stat.Bfree)) * uint64(stat.Bsize), //nolint:unconvert //nolint:unconvert
 			Inodes:     stat.Files,
 			InodesFree: stat.Ffree,
 			InodesUsed: stat.Files - stat.Ffree,
 			Blocks:     uint64(stat.Blocks), //nolint:unconvert
-			BlockSize:  uint64(stat.Bsize),
+			BlockSize:  uint64(stat.Bsize),  //nolint:unconvert
 		}
 		d.DeviceType = deviceType(d)
 
