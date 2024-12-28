@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -42,6 +45,7 @@ var (
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+	norcOpt  = flag.Bool("norc", false, "ignore dufrc file, falling back to default settings")
 
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
@@ -142,8 +146,40 @@ func findInKey(str string, km map[string]struct{}) bool {
 	return false
 }
 
-func main() {
+func parseFlags() error {
+	configHome := os.Getenv("XDG_CONFIG_HOME")
+	if configHome == "" {
+		configHome = filepath.Join(os.Getenv("HOME"), ".config")
+	}
+	rcFilePath := filepath.Join(configHome, "dufrc")
+	file, err := os.Open(rcFilePath)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to open dufrc file at %s: %s", rcFilePath, err)
+	}
+
+	for _, arg := range os.Args {
+		// checking this manually to not avoid calling flag.Parse() twice -- not sure how defaults would react
+		if arg == "-norc" || arg == "--norc" {
+			flag.Parse()
+			return nil
+		}
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		os.Args = append(os.Args, strings.TrimSpace(scanner.Text()))
+	}
 	flag.Parse()
+	return nil
+}
+
+func main() {
+	err := parseFlags()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	if *version {
 		if len(CommitSHA) > 7 {
