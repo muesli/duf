@@ -147,9 +147,9 @@ func findInKey(str string, km map[string]struct{}) bool {
 }
 
 func parseFlags() error {
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		configHome = filepath.Join(os.Getenv("HOME"), ".config")
+	configHome, err := os.UserConfigDir()
+	if err != nil {
+		return fmt.Errorf("failed to determine user config directory: %s", err)
 	}
 	rcFilePath := filepath.Join(configHome, "dufrc")
 	file, err := os.Open(rcFilePath)
