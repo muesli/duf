@@ -266,7 +266,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing avail-threshold: invalid option '%s'", *availThreshold))
 		os.Exit(1)
 	}
-	for _, thresold := range availbilityThresholds {
+
+	for _, threshold := range availbilityThresholds {
 		_, err = stringToSize(thresold, *prefixSI)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error parsing avail-threshold:", err)
@@ -280,8 +281,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing usage-threshold: invalid option '%s'", *usageThreshold))
 		os.Exit(1)
 	}
-	for _, thresold := range usageThresholds {
-		_, err = strconv.ParseFloat(thresold, 64)
+	for _, threshold := range usageThresholds {
+		_, err = strconv.ParseFloat(threshold, 64)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error parsing usage-threshold:", err)
 			os.Exit(1)
