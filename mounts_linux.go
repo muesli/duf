@@ -126,41 +126,36 @@ func parseMountInfoLine(line string) (int, [11]string) {
 	var fields [11]string
 
 	if len(line) == 0 || line[0] == '#' {
-		// ignore comments and empty lines
+		// Ignore comments and empty lines
 		return 0, fields
 	}
 
+	// Fix unescaped Windows paths (e.g., "C:\Program Files").
+	// e.g. when running in wsl
+	line = fixWindowsPaths(line)
+
 	var i int
 	for _, f := range strings.Fields(line) {
-		// when parsing the optional fields, loop until we find the separator
+		if i >= len(fields) {
+			fmt.Printf("Warning: too many fields in line: %s\n", line)
+			break // Avoid out-of-bounds error
+		}
+
 		if i == mountinfoOptionalFields {
-			// (6)  optional fields: zero or more fields of the form
-			//        "tag[:value]"; see below.
-			// (7)  separator: the end of the optional fields is marked
-			//        by a single hyphen.
 			if f != "-" {
 				if fields[i] == "" {
 					fields[i] += f
 				} else {
 					fields[i] += " " + f
 				}
-
-				// keep reading until we reach the separator
 				continue
 			}
-
-			// separator found, continue parsing
 			i++
 		}
 
 		switch i {
-		case mountinfoMountPoint:
-			fallthrough
-		case mountinfoMountSource:
-			fallthrough
-		case mountinfoFsType:
+		case mountinfoMountPoint, mountinfoMountSource, mountinfoFsType:
 			fields[i] = unescapeFstab(f)
-
 		default:
 			fields[i] = f
 		}
@@ -169,4 +164,15 @@ func parseMountInfoLine(line string) (int, [11]string) {
 	}
 
 	return i, fields
+}
+
+// Helper function to fix Windows-style paths with unescaped spaces
+func fixWindowsPaths(line string) string {
+	// Regular expression to match Windows-style paths like "C:\Program Files"
+	re := regexp.MustCompile(`\b([A-Z]:\\[^ ]* [^ ]*)`)
+
+	// Replace spaces in Windows-style paths with escaped "\040"
+	return re.ReplaceAllStringFunc(line, func(match string) string {
+		return strings.ReplaceAll(match, " ", `\040`)
+	})
 }
