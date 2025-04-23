@@ -166,6 +166,10 @@ func parseMountInfoLine(line string) (int, [11]string) {
 		}
 
 		i++
+		// Prevent writing past the end of the array if a line has too many fields
+		if i >= len(fields) {
+			break
+		}
 	}
 
 	return i, fields
