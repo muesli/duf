@@ -1,6 +1,8 @@
 module github.com/muesli/duf
 
-go 1.17
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
@@ -10,7 +12,7 @@ require (
 	github.com/muesli/mango v0.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.16.0
-	golang.org/x/sys v0.30.0
+	golang.org/x/sys v0.32.0
 	golang.org/x/term v0.29.0
 )
 
