@@ -1,0 +1,113 @@
+// .devcontainer/devcontainer.json
+{
+  // Updated name for the environment
+  "name": "Go Development",
+  // Start with a base image. Using the base image + features is flexible.
+  // Alternatively, you could use "mcr.microsoft.com/devcontainers/go:1-ubuntu"
+  // but using features gives more control over versions and additions.
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  // --- Features ---
+  // Use "Features" to add tools and configurations to the base image.
+  "features": {
+    // Install Go, tools, and configure paths
+    "ghcr.io/devcontainers/features/go:1": {
+      // Specify the Go version (e.g., "latest", "1.21", "1.20")
+      "version": "latest"
+      // Installs Go, sets GOROOT, GOPATH (defaults to /go), adds Go bin to PATH
+    },
+    // (Optional) Add other useful features
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {}, // If you need to build/run containers inside
+    // "ghcr.io/devcontainers/features/node:1": {},          // If your Go project involves frontend tools
+    "ghcr.io/devcontainers/features/common-utils:2": { // Installs common utilities like curl, git, zsh, etc.
+      "installZsh": "true",
+      "configureZshAsDefaultShell": "true", // Use zsh + Oh My Zsh if installed
+      "installOhMyZsh": "true",
+      "upgradePackages": "true" // Keep packages up-to-date
+    }
+    // (Optional) If you frequently work with Protocol Buffers
+    // "ghcr.io/devcontainers-contrib/features/protobuf:1": {
+    //   "version": "latest"
+    // }
+  },
+  // --- VS Code Specific Settings ---
+  "customizations": {
+    "vscode": {
+      // Set *default* container specific settings.json values on container create.
+      "settings": {
+        // General settings
+        "editor.formatOnSave": true,
+        // Go specific settings
+        "go.toolsManagement.autoUpdate": true, // Auto update Go tools installed by the extension
+        "go.useLanguageServer": true, // Ensure gopls (Go language server) is enabled
+        "go.lintTool": "golangci-lint", // Use golangci-lint (install in postCreateCommand)
+        "go.lintFlags": [
+          "--fast"
+        ], // Optional flags for the linter
+        "[go]": {
+          "editor.formatOnSave": true, // Ensure format on save is enabled for Go files
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit" // Run goimports on save
+          },
+          "editor.defaultFormatter": "golang.go" // Explicitly set Go extension as formatter
+        },
+        "[go.mod]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit" // Runs `go mod tidy` on save for go.mod
+          }
+        }
+        // If using Docker-in-Docker feature
+        // "docker.dockerPath": "/usr/local/sdk/docker/bin/docker",
+        // "docker.dockerComposePath": "/usr/local/sdk/docker/docker-compose"
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": [
+        // Essential Go extension (LSP, debug, test, format)
+        "golang.go",
+        "fill-labs.dependi", // Helps manage dependencies in Cargo.toml
+        // Useful general extensions
+        "mutantdino.resourcemonitor",
+        "github.copilot",
+        "github.copilot-chat",
+        "github.vscode-pull-request-github",
+        // Optional: Nice Go testing UI
+        "premparihar.gotestexplorer",
+        // Optional: If using Docker features
+        // "ms-azuretools.vscode-docker",
+        // Optional: If using Protobufs
+        // "zxh404.vscode-proto3"
+      ]
+    }
+  },
+  // --- Container Lifecycle ---
+  // Use 'forwardPorts' to make ports inside the container available locally.
+  // Common ports for Go web services are 8080, 8000, 3000
+  "forwardPorts": [
+    8080,
+    8000
+  ],
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // Useful for installing Go tools not managed by the VS Code extension automatically.
+  // Installs delve (debugger), golangci-lint (linter aggregator)
+  "postCreateCommand": "go install github.com/go-delve/delve/cmd/dlv@latest && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest",
+  // You could also add other tools like:
+  // go install golang.org/x/tools/cmd/goimports@latest
+  // go install mvdan.cc/gofumpt@latest
+  // "postCreateCommand": "bash .devcontainer/post-create.sh", // Or run a script for more complex setup
+  // Use 'postAttachCommand' to run commands after VS Code attaches.
+  // "postAttachCommand": {
+  //   "server": "echo 'Attached to Go Dev Container!'"
+  // }
+  // By default, you connect as the 'vscode' user created by the base image.
+  "remoteUser": "vscode",
+  // "remoteUser": "root" // Connect as root (use with caution)
+  // --- Environment Variables ---
+  // Set environment variables for the container. GOROOT and GOPATH are usually
+  // set correctly by the Go feature. GOPATH defaults to /go inside the container.
+  "remoteEnv": {
+    // Example: Set a custom GOPROXY
+    // "GOPROXY": "https://proxy.golang.org,direct",
+    // Example: Set private repo paths
+    // "GOPRIVATE": "*.internal.example.com"
+  }
+}
