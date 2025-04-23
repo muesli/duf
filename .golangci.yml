@@ -30,5 +30,5 @@ linters:
 
 linters-settings:
   gosec:
-    exclude-rules:
+    excludes:
       - G115
