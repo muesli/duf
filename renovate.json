@@ -1,9 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
-  "includeForks": true,
+  "forkProcessing": "enabled",
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true,
@@ -14,19 +14,28 @@
   "packageRules": [
     {
       "description": "Automerge all updates",
-      "matchUpdateTypes": ["minor", "patch", "major"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "major"
+      ],
       "enabled": true,
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true
     },
     {
-      "matchDepTypes": ["devDependencies"],
-      "matchPackagePatterns": ["lint", "prettier"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "enabled": true,
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true
+      "platformAutomerge": true,
+      "matchPackageNames": [
+        "/lint/",
+        "/prettier/"
+      ]
     }
   ]
 }
