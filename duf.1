@@ -42,6 +42,10 @@ list inode information instead of block usage
 \fB-json\fP
 output all devices in JSON format
 .TP
+\fB-norc\fP
+do not process default arguments from a dufrc file (see
+.BR CONFIGURATION )
+.TP
 \fB-only\fP
 show only specific devices, separated with commas: local, network, fuse, special, loops, binds
 .TP
@@ -165,6 +169,16 @@ If you prefer your output as JSON:
 .PP
 .PP
   $ duf --json
+.PP
+.SH CONFIGURATION
+You can put default arguments to be picked up by duf in a \fIdufrc\/\fR file, placed in \fIXDG_CONFIG_HOME\/\fR
+(e.g. ~/.config/dufrc).
+Each option needs to be put in a separate line, like so:
+
+  -only
+  local
+
+\fI-norc\/\fR command-line argument can be used to disable loading of the \fIdufrc\/\fR file.
 .PP
 .SH NOTES
 Portions of duf's code are copied and modified from https://github\&.com/shirou/gopsutil\&.

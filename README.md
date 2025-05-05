@@ -126,6 +126,17 @@ depending on how much space is still available. You can set your own thresholds:
     duf --avail-threshold="10G,1G"
     duf --usage-threshold="0.5,0.9"
 
+### Configuration
+
+You can put default arguments to be picked up by duf in a `dufrc` file, placed in `XDG_CONFIG_HOME`
+(e.g. `~/.config/dufrc`).
+Each option needs to be put in a separate line, like so:
+
+    -only
+    local
+
+`-norc` command-line argument can be used to disable loading of the `dufrc` file.
+
 ### Bonus
 
 If you prefer your output as JSON:
