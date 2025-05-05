@@ -7,12 +7,12 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
+	gap "github.com/muesli/go-app-paths"
 	"github.com/muesli/termenv"
 	"golang.org/x/term"
 )
@@ -147,11 +147,10 @@ func findInKey(str string, km map[string]struct{}) bool {
 }
 
 func parseFlags() error {
-	configHome, err := os.UserConfigDir()
+	rcFilePath, err := gap.NewScope(gap.User, "").ConfigPath("dufrc")
 	if err != nil {
-		return fmt.Errorf("failed to determine user config directory: %s", err)
+		return fmt.Errorf("failed to determine user config file location: %s", err)
 	}
-	rcFilePath := filepath.Join(configHome, "dufrc")
 	file, err := os.Open(rcFilePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("failed to open dufrc file at %s: %s", rcFilePath, err)
