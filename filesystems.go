@@ -1,3 +1,5 @@
+// Package main provides utilities for working with file systems, including
+// functions to find mount points and determine device types.
 package main
 
 import (
