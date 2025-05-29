@@ -6,7 +6,6 @@ toolchain go1.24.3
 
 require (
 	github.com/IGLOU-EU/go-wildcard/v2 v2.1.0
-	github.com/IGLOU-EU/go-wildcard/v2 v2.1.0
 	github.com/jedib0t/go-pretty/v6 v6.6.7
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/muesli/mango v0.2.0
@@ -17,6 +16,7 @@ require (
 )
 
 require (
+	github.com/IGLOU-EU/go-wildcard v1.0.3 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
