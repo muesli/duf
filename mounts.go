@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"bufio"
 	"os"
 	"strconv"
@@ -28,7 +29,7 @@ type Mount struct {
 func readLines(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file %s: %w", filename, err)
 	}
 	defer file.Close() //nolint:errcheck // ignore error
 
@@ -38,7 +39,10 @@ func readLines(filename string) ([]string, error) {
 		s = append(s, scanner.Text())
 	}
 
-	return s, scanner.Err()
+	if err := scanner.Err(); err != nil {
+		return s, fmt.Errorf("error reading lines from %s: %w", filename, err)
+	}
+	return s, nil
 }
 
 func unescapeFstab(path string) string {

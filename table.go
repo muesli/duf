@@ -28,7 +28,7 @@ type Column struct {
 }
 
 // "Mounted on", "Size", "Used", "Avail", "Use%", "Inodes", "IUsed", "IAvail", "IUse%", "Type", "Filesystem"
-// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
+// mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem.
 var columns = []Column{
 	{ID: "mountpoint", Name: "Mounted on", SortIndex: 1},
 	{ID: "size", Name: "Size", SortIndex: 12, Width: 7},
@@ -232,7 +232,7 @@ func tableWidth(cols []int, separators bool) int {
 		sw = 1
 	}
 
-	twidth := int(*width) //nolint:all
+	twidth := int(*width) 
 	for i := 0; i < len(columns); i++ {
 		if inColumns(cols, i+1) {
 			twidth -= 2 + sw + columns[i].Width
@@ -267,7 +267,7 @@ func sizeToString(size uint64) (str string) {
 }
 
 // stringToSize transforms an SI size into a number.
-func stringToSize(s string) (size uint64, err error) {
+func stringToSize(s string) (uint64, error) {
 	regex := regexp.MustCompile(`^(\d+)([KMGTPE]?)$`)
 	matches := regex.FindStringSubmatch(s)
 	if len(matches) == 0 {
@@ -276,8 +276,10 @@ func stringToSize(s string) (size uint64, err error) {
 
 	num, err := strconv.ParseUint(matches[1], 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to parse number '%s': %w", matches[1], err)
 	}
+
+	var size uint64
 	if matches[2] != "" {
 		prefix := matches[2]
 		switch prefix {
@@ -294,13 +296,13 @@ func stringToSize(s string) (size uint64, err error) {
 		case "E":
 			size = num << 60
 		default:
-			err = fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", prefix)
-			return
+			return 0, fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", prefix)
 		}
 	} else {
 		size = num
 	}
-	return
+
+	return size, nil
 }
 
 // stringToColumn converts a column name to its index.
