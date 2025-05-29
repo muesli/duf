@@ -1,4 +1,4 @@
-module github.com/muesli/duf
+module github.com/Migelo/duf
 
 go 1.23.0
 
