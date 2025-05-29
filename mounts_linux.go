@@ -39,7 +39,7 @@ const (
 	// (9) mount source: filesystem specific information or "none".
 	mountinfoMountSource = 9
 	// (10) super options: per super block options.
-	//mountinfoSuperOptions = 10
+	//mountinfoSuperOptions = 10.
 )
 
 // Stat returns the mountpoint's stat information.

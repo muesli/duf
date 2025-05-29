@@ -232,7 +232,7 @@ func tableWidth(cols []int, separators bool) int {
 		sw = 1
 	}
 
-	twidth := int(*width) 
+	twidth := int(*width)
 	for i := 0; i < len(columns); i++ {
 		if inColumns(cols, i+1) {
 			twidth -= 2 + sw + columns[i].Width

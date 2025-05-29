@@ -28,7 +28,7 @@ func TestGetFields(t *testing.T) {
 			number: 0,
 		},
 		{
-			input: "	",
+			input:  "	",
 			number: 0,
 		},
 
@@ -42,7 +42,7 @@ func TestGetFields(t *testing.T) {
 			number: 0,
 		},
 		{
-			input: "#	",
+			input:  "#	",
 			number: 0,
 		},
 		{
@@ -57,17 +57,17 @@ func TestGetFields(t *testing.T) {
 			expected: [11]string{"1", "2"},
 		},
 		{
-			input: "1	2",
+			input:    "1	2",
 			number:   2,
 			expected: [11]string{"1", "2"},
 		},
 		{
-			input: "1	2		3",
+			input:    "1	2		3",
 			number:   3,
 			expected: [11]string{"1", "2", "3"},
 		},
 		{
-			input: "1	2		3   4",
+			input:    "1	2		3   4",
 			number:   4,
 			expected: [11]string{"1", "2", "3", "4"},
 		},

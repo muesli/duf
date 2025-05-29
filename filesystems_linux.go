@@ -7,7 +7,7 @@ import "strings"
 
 //nolint:revive
 const (
-	// man statfs
+	// man statfs.
 	ADFS_SUPER_MAGIC      = 0xadf5
 	AFFS_SUPER_MAGIC      = 0xADFF
 	AUTOFS_SUPER_MAGIC    = 0x0187
@@ -114,7 +114,7 @@ const (
 	ZFS_SUPER_MAGIC             = 0x2FC12FC1
 )
 
-// coreutils/src/stat.c
+// coreutils/src/stat.c.
 var fsTypeMap = map[int64]string{
 	ADFS_SUPER_MAGIC:            "adfs",                /* 0xADF5 local */
 	AFFS_SUPER_MAGIC:            "affs",                /* 0xADFF local */
