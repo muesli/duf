@@ -1,8 +1,8 @@
 name: goreleaser
 
 on:
-  pull_request:
   push:
+  pull_request:
 
 jobs:
   goreleaser:
@@ -13,10 +13,20 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v5.5.0
-      - name: Run GoReleaser
+        uses: actions/setup-go@v5
+      - name: GoReleaser Dry Run (non-tag)
+        if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: "~> v2"
           args: release --snapshot --skip=publish --skip=sign --clean
+      - name: GoReleaser Full Release (on tag)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
