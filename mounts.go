@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -28,7 +29,7 @@ type Mount struct {
 func readLines(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open file %s: %w", filename, err)
 	}
 	defer file.Close() //nolint:errcheck // ignore error
 
@@ -38,7 +39,10 @@ func readLines(filename string) ([]string, error) {
 		s = append(s, scanner.Text())
 	}
 
-	return s, scanner.Err()
+	if err := scanner.Err(); err != nil {
+		return s, fmt.Errorf("error reading lines from %s: %w", filename, err)
+	}
+	return s, nil
 }
 
 func unescapeFstab(path string) string {
@@ -49,7 +53,7 @@ func unescapeFstab(path string) string {
 	return escaped
 }
 
-//nolint:deadcode,unused // used on BSD
+//nolint:unused // used on BSD
 func byteToString(orig []byte) string {
 	n := -1
 	l := -1
@@ -73,7 +77,7 @@ func byteToString(orig []byte) string {
 	return string(orig[l:n])
 }
 
-//nolint:deadcode,unused // used on OpenBSD
+//nolint:unused // used on OpenBSD
 func intToString(orig []int8) string {
 	ret := make([]byte, len(orig))
 	size := -1

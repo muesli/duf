@@ -1,28 +1,14 @@
+version: "2"
 run:
   tests: false
-
-issues:
-  include:
-    - EXC0001
-    - EXC0005
-    - EXC0011
-    - EXC0012
-    - EXC0013
-
-  max-issues-per-linter: 0
-  max-same-issues: 0
-
 linters:
   enable:
-    # - dupl
     - exhaustive
-    # - exhaustivestruct
     - goconst
     - godot
     - godox
     - gomoddirectives
     - goprintffuncname
-    # - lll
     - misspell
     - nakedret
     - nestif
@@ -30,13 +16,27 @@ linters:
     - nolintlint
     - prealloc
     - wrapcheck
-
-  # disable default linters, they are already enabled in .golangci.yml
   disable:
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

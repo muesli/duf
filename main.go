@@ -65,9 +65,10 @@ func renderJSON(m []Mount) error {
 
 // parseColumns parses the supplied output flag into a slice of column indices.
 func parseColumns(cols string) ([]int, error) {
-	var i []int
-
 	s := strings.Split(cols, ",")
+	i := make([]int, 0, len(s))
+	count := 0
+
 	for _, v := range s {
 		v = strings.TrimSpace(v)
 		if len(v) == 0 {
@@ -80,6 +81,12 @@ func parseColumns(cols string) ([]int, error) {
 		}
 
 		i = append(i, col)
+		count++
+	}
+
+	// Trim i to the actual number of appended columns
+	if count < len(i) {
+		i = i[:count]
 	}
 
 	return i, nil

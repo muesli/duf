@@ -1,6 +1,9 @@
+// Package main provides utilities for working with file systems, including
+// functions to find mount points and determine device types.
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,17 +13,17 @@ func findMounts(mounts []Mount, path string) ([]Mount, error) {
 	var err error
 	path, err = filepath.Abs(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get absolute path: %w", err)
 	}
 
 	path, err = filepath.EvalSymlinks(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to evaluate symlinks: %w", err)
 	}
 
 	_, err = os.Stat(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to stat path: %w", err)
 	}
 
 	var m []Mount
