@@ -151,6 +151,8 @@ func parseMountInfoLine(line string) (int, [11]string) {
 
 			// separator found, continue parsing
 			i++
+		} else if i >= 11 {
+			break
 		}
 
 		switch i {
