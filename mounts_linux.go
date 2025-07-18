@@ -151,6 +151,10 @@ func parseMountInfoLine(line string) (int, [11]string) {
 				continue
 			}
 			i++
+			if i >= len(fields) {
+				fmt.Printf("Warning: too many fields in line: %s\n", line)
+				break // Avoid out-of-bounds error
+			}
 		}
 
 		switch i {
