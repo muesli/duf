@@ -28,6 +28,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
 - Gentoo Linux: `emerge sys-fs/duf`
+- with [gah](https://github.com/marverix/gah): `gah install duf`
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
 
 #### BSD
@@ -37,6 +38,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 #### macOS
 - with [Homebrew](https://brew.sh/): `brew install duf`
 - with [MacPorts](https://www.macports.org): `sudo port selfupdate && sudo port install duf`
+- with [gah](https://github.com/marverix/gah): `gah install duf`
 
 #### Windows
 - with [Chocolatey](https://chocolatey.org/): `choco install duf`
