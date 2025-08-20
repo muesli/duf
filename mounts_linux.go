@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/sys/unix"
@@ -120,6 +121,42 @@ func mounts() ([]Mount, []string, error) {
 	return ret, warnings, nil
 }
 
+func splitMountInfoFields(line string) []string {
+	var fields []string
+	var buf strings.Builder
+	esc := false
+
+	for i := 0; i < len(line); i++ {
+		c := line[i]
+
+		if c == ' ' && !esc {
+			if buf.Len() > 0 {
+				fields = append(fields, buf.String())
+				buf.Reset()
+			}
+			continue
+		}
+
+		if c == '\\' && i+3 < len(line) {
+			// Potential octal escape
+			oct := line[i+1 : i+4]
+			if v, err := strconv.ParseInt(oct, 8, 0); err == nil {
+				buf.WriteByte(byte(v))
+				i += 3
+				continue
+			}
+		}
+
+		buf.WriteByte(c)
+	}
+
+	if buf.Len() > 0 {
+		fields = append(fields, buf.String())
+	}
+
+	return fields
+}
+
 // parseMountInfoLine parses a line of /proc/self/mountinfo and returns the
 // amount of parsed fields and their values.
 func parseMountInfoLine(line string) (int, [11]string) {
@@ -130,8 +167,14 @@ func parseMountInfoLine(line string) (int, [11]string) {
 		return 0, fields
 	}
 
+	all := splitMountInfoFields(line)
+
 	var i int
-	for _, f := range strings.Fields(line) {
+	for _, f := range all {
+		if i >= len(fields) {
+			break
+		}
+
 		// when parsing the optional fields, loop until we find the separator
 		if i == mountinfoOptionalFields {
 			// (6)  optional fields: zero or more fields of the form
@@ -154,11 +197,7 @@ func parseMountInfoLine(line string) (int, [11]string) {
 		}
 
 		switch i {
-		case mountinfoMountPoint:
-			fallthrough
-		case mountinfoMountSource:
-			fallthrough
-		case mountinfoFsType:
+		case mountinfoMountPoint, mountinfoMountSource, mountinfoFsType:
 			fields[i] = unescapeFstab(f)
 
 		default:
