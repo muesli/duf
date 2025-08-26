@@ -174,7 +174,7 @@ func barTransformer(val interface{}) string {
 	usage := val.(float64)
 	s := termenv.String()
 	if usage > 0 {
-		if barWidth() > 0 {
+		if barWidth() > 0 && !*noBars {
 			bw := barWidth() - 2
 			s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
 				strings.Repeat("#", int(usage*float64(bw))),
