@@ -162,10 +162,21 @@ func TestGetFields(t *testing.T) {
 			number:   11,
 			expected: [11]string{"1111", "2", "3:3", "/", "/mnt/a\"b", "rw", "shared:7", "-", "tmpfs", "-", "rw,inode64"},
 		},
+		// WSL2 9p mount table line.
 		{
-			input:  "504 383 0:131 / /Docker/host rw,noatime - 9p C:\\134Program\\040Files\\134Docker\\134Docker\\134resources rw,dirsync,aname=drvfs;path=C:\\Program Files\\Docker\\Docker\\resources;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=3,wfd=3",
+			input:    `380 383 0:33 / /usr/lib/wsl/drivers ro,nosuid,nodev,noatime - 9p drivers ro,dirsync,aname=drivers;fmask=222;dmask=222,mmap,access=client,msize=65536,trans=fd,rfd=8,wfd=8`,
+			number:   11,
+			expected: [11]string{"380", "383", "0:33", "/", "/usr/lib/wsl/drivers", "ro,nosuid,nodev,noatime", "", "-", "9p", "drivers", "ro,dirsync,aname=drivers;fmask=222;dmask=222,mmap,access=client,msize=65536,trans=fd,rfd=8,wfd=8"},
+		},
+		{
+			input:    `488 383 0:128 / /mnt/c rw,noatime - 9p C:\134 rw,dirsync,aname=drvfs;path=C:\;uid=1000;gid=1000;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=5,wfd=5`,
+			number:   11,
+			expected: [11]string{"488", "383", "0:128", "/", "/mnt/c", "rw,noatime", "", "-", "9p", "C:\\", "rw,dirsync,aname=drvfs;path=C:\\;uid=1000;gid=1000;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=5,wfd=5"},
+		},
+		{
+			input:  `516 78 0:136 / /Docker/host rw,noatime - 9p C:\134Program\040Files\134Docker\134Docker\134resources rw,dirsync,aname=drvfs;path=C:\Program Files\Docker\Docker\resources;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=3,wfd=3`,
 			number: 11,
-			expected: [11]string{"504", "383", "0:131", "/", "/Docker/host", "rw,noatime", "", "-", "9p", "C:\\Program Files\\Docker\\Docker\\resources", "rw,dirsync,aname=drvfs;path=C:\\Program"},
+			expected: [11]string{"516", "78", "0:136", "/", "/Docker/host", "rw,noatime", "", "-", "9p", "C:\\Program Files\\Docker\\Docker\\resources", "rw,dirsync,aname=drvfs;path=C:\\Program Files\\Docker\\Docker\\resources;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=3,wfd=3"},
 		},
 	}
 
