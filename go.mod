@@ -1,6 +1,6 @@
 module github.com/muesli/duf
 
-go 1.17
+go 1.18
 
 require (
 	github.com/IGLOU-EU/go-wildcard v1.0.3
