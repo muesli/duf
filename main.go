@@ -255,9 +255,9 @@ func main() {
 			}
 			// de-duplicate
 			for _, v := range fm {
-				if _, ok := vis[v.Device]; !ok {
+				if _, ok := vis[v.Mountpoint]; !ok {
 					mounts = append(mounts, v)
-					vis[v.Device] = struct{}{}
+					vis[v.Mountpoint] = struct{}{}
 				}
 			}
 		}
