@@ -102,16 +102,9 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 		}
 
 		t := deviceType(v)
-		deviceMounts[t] = append(deviceMounts[t], v)
-	}
-
-	// print tables
-	for _, devType := range groups {
-		mounts := deviceMounts[devType]
-
 		shouldPrint := *all
-		if !shouldPrint {
-			switch devType {
+		if !shouldPrint || *all == true {
+			switch t {
 			case localDevice:
 				shouldPrint = (hasOnlyDevices && onlyLocal) || (!hasOnlyDevices && !hideLocal)
 			case networkDevice:
@@ -121,9 +114,23 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 			case specialDevice:
 				shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
 			}
+			if shouldPrint {
+				if *combinedTable {
+					t = "combined"
+				}
+				deviceMounts[t] = append(deviceMounts[t], v)
+			}
 		}
 
-		if shouldPrint {
+	}
+
+	if *combinedTable {
+		// print combined table
+		printTable("total", deviceMounts["combined"], opts)
+	} else {
+		// print tables
+		for _, devType := range groups {
+			mounts := deviceMounts[devType]
 			printTable(devType, mounts, opts)
 		}
 	}

@@ -75,6 +75,10 @@ If you want to list everything (including pseudo, duplicate, inaccessible file s
 
     duf --all
 
+If you want to display all mount points in just one table:
+
+    duf --combine
+
 ### Filtering
 
 You can show and hide specific tables:
