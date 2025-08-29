@@ -35,6 +35,7 @@ var (
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
+	totals   = flag.Bool("totals", false, "print size totals for every group, as well as grand totals")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
 
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
@@ -346,5 +347,6 @@ func main() {
 		Columns: columns,
 		SortBy:  sortCol,
 		Style:   style,
+		Totals:  *totals,
 	})
 }
