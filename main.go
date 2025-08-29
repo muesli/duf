@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -15,14 +17,6 @@ import (
 )
 
 var (
-	// Version contains the application version number. It's set via ldflags
-	// when building.
-	Version = ""
-
-	// CommitSHA contains the SHA of the commit that this application was built
-	// against. It's set via ldflags when building.
-	CommitSHA = ""
-
 	env   = termenv.EnvColorProfile()
 	theme Theme
 
@@ -142,23 +136,58 @@ func findInKey(str string, km map[string]struct{}) bool {
 	return false
 }
 
+func printVersion() {
+	var version string
+	var commitSHA string
+
+	info, ok := debug.ReadBuildInfo()
+	var buildTime time.Time
+	if ok {
+		vs := strings.Split(info.Main.Version, "-")
+		if len(vs) >= 1 {
+			version = vs[0]
+		}
+		if len(vs) >= 3 {
+			commitSHA = vs[2]
+		}
+
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				/*
+					CommitSHA = setting.Value
+					if len(CommitSHA) > 7 {
+						CommitSHA = CommitSHA[:7]
+					}
+				*/
+			case "vcs.time":
+				buildTime, _ = time.Parse(time.RFC3339, setting.Value)
+			case "vcs.modified":
+				// modified = true
+			}
+		}
+	}
+
+	if version == "" || version == "(devel)" {
+		version = "(built from source)"
+	}
+
+	fmt.Printf("duf %s", version)
+	if len(commitSHA) > 0 {
+		fmt.Printf(" (%s)", commitSHA)
+	}
+	if !buildTime.IsZero() {
+		fmt.Printf(" (built on %s)", buildTime.Format("2006-01-02"))
+	}
+
+	fmt.Println()
+}
+
 func main() {
 	flag.Parse()
 
 	if *version {
-		if len(CommitSHA) > 7 {
-			CommitSHA = CommitSHA[:7]
-		}
-		if Version == "" {
-			Version = "(built from source)"
-		}
-
-		fmt.Printf("duf %s", Version)
-		if len(CommitSHA) > 0 {
-			fmt.Printf(" (%s)", CommitSHA)
-		}
-
-		fmt.Println()
+		printVersion()
 		os.Exit(0)
 	}
 
