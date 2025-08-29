@@ -141,8 +141,8 @@ func splitMountInfoFields(line string) []string {
 		}
 
 		if c == '\\' && i+3 < len(line) {
-		    oct := line[i+1 : i+4]
-		    if v, err := strconv.ParseInt(oct, 8, 0); err == nil {
+			oct := line[i+1 : i+4]
+			if v, err := strconv.ParseInt(oct, 8, 0); err == nil {
 				switch byte(v) {
 				case ' ', '\t', '\n':
 					buf.WriteByte(byte(v))
@@ -154,7 +154,7 @@ func splitMountInfoFields(line string) []string {
 					i += 3
 					continue
 				}
-		    }
+			}
 		}
 
 		buf.WriteByte(c)
@@ -211,10 +211,10 @@ func parseMountInfoLine(line string) (int, [11]string) {
 
 		// Default case: copy with unescape for certain fields
 		switch i {
-			case mountinfoMountPoint, mountinfoMountSource, mountinfoFsType:
-				fields[i] = unescapeFstab(f)
-			default:
-				fields[i] = f
+		case mountinfoMountPoint, mountinfoMountSource, mountinfoFsType:
+			fields[i] = unescapeFstab(f)
+		default:
+			fields[i] = f
 		}
 		i++
 	}
@@ -236,4 +236,3 @@ func parseMountInfoLine(line string) (int, [11]string) {
 
 	return i, fields
 }
-
