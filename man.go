@@ -65,10 +65,16 @@ If duf doesn't detect your terminal's colors correctly, you can set a theme:
 
   $ duf --theme light
 
-duf highlights the availability & usage columns in red, green, or yellow, depending on how much space is still available. You can set your own thresholds:
+duf highlights the availability & usage columns in red, green, or yellow, depending on how much space is still available. Use --si to use SI instead of IEC conventions units. You can set your own thresholds:
 
   $ duf --avail-threshold="10G,1G"
   $ duf --usage-threshold="0.5,0.9"
+
+Valid prefixes are: k, M, G, T, P, E, Z, Y, but k are replaced with K when using SI units format.
+
+To use SI units (powers of 1000) instead of IEC units (powers of 1024), use:
+
+  $ duf --si
 
 If you prefer your output as JSON:
 

@@ -37,9 +37,10 @@ var (
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
 
-	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
+	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with prefixes, combine it with --si to use SI instead of IEC conventions")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
+	prefixSI   = flag.Bool("si", false, "use SI units (powers of 1000) instead of IEC units (powers of 1024)")
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
@@ -300,8 +301,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, fmt.Errorf("error parsing avail-threshold: invalid option '%s'", *availThreshold))
 		os.Exit(1)
 	}
+
 	for _, threshold := range availbilityThresholds {
-		_, err = stringToSize(threshold)
+		_, err = stringToSize(thresold, *prefixSI)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error parsing avail-threshold:", err)
 			os.Exit(1)
