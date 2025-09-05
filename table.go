@@ -406,11 +406,11 @@ func printTable(title string, m []Mount, opts TableOptions) {
 					var bgColor termenv.Color
 					switch {
 					case usage >= redUsage:
-						bgColor = env.Color("#2d1b1b") // dark red background
+						bgColor = theme.colorBgRed
 					case usage >= yellowUsage:
-						bgColor = env.Color("#2d2d1b") // dark yellow background
+						bgColor = theme.colorBgYellow
 					default:
-						bgColor = env.Color("#1b2d1b") // dark green background
+						bgColor = theme.colorBgGreen
 					}
 					filledPart = filledPart.Background(bgColor).Foreground(fgColor)
 					// Use a neutral background for empty areas
