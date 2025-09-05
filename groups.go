@@ -106,6 +106,9 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 	}
 
 	// print tables
+	var totalSize uint64
+	var totalUsed uint64
+	var totalAvail uint64
 	for _, devType := range groups {
 		mounts := deviceMounts[devType]
 
@@ -125,6 +128,17 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 
 		if shouldPrint {
 			printTable(devType, mounts, opts)
+			if opts.Totals {
+				for _, v := range mounts {
+					totalSize += v.Total
+					totalUsed += v.Used
+					totalAvail += v.Free
+				}
+			}
 		}
+	}
+
+	if opts.Totals {
+		printTotals(totalSize, totalUsed, totalAvail, opts)
 	}
 }
