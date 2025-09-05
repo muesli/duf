@@ -50,11 +50,6 @@ func initializeTable(tab table.Writer, opts TableOptions) {
 	tab.SetOutputMirror(os.Stdout)
 	tab.Style().Options.SeparateColumns = true
 	tab.SetStyle(opts.Style)
-
-	if barWidth() > 0 {
-		columns[4].Width = barWidth() + 7
-		columns[8].Width = barWidth() + 7
-	}
 }
 
 // appendHeaders adds the header row to the table.
@@ -115,7 +110,6 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 	for _, ci := range visibleCols {
 		maxColContent[ci] = runewidth.StringWidth(columns[ci-1].Name)
 	}
-	bars := barWidth() > 0
 	for _, v := range m {
 		if inColumns(opts.Columns, 1) {
 			if w := runewidth.StringWidth(v.Mountpoint); w > maxColContent[1] {
@@ -138,22 +132,15 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 			}
 		}
 		if inColumns(opts.Columns, 5) {
-			if bars {
-				// width is barWidth()+7
-				if w := barWidth() + 7; w > maxColContent[5] {
-					maxColContent[5] = w
+			var usage float64
+			if v.Total > 0 {
+				usage = float64(v.Used) / float64(v.Total)
+				if usage > 1.0 {
+					usage = 1.0
 				}
-			} else {
-				var usage float64
-				if v.Total > 0 {
-					usage = float64(v.Used) / float64(v.Total)
-					if usage > 1.0 {
-						usage = 1.0
-					}
-				}
-				if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[5] {
-					maxColContent[5] = w
-				}
+			}
+			if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[5] {
+				maxColContent[5] = w
 			}
 		}
 		if inColumns(opts.Columns, 6) {
@@ -172,21 +159,15 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 			}
 		}
 		if inColumns(opts.Columns, 9) {
-			if bars {
-				if w := barWidth() + 7; w > maxColContent[9] {
-					maxColContent[9] = w
+			var usage float64
+			if v.Inodes > 0 {
+				usage = float64(v.InodesUsed) / float64(v.Inodes)
+				if usage > 1.0 {
+					usage = 1.0
 				}
-			} else {
-				var usage float64
-				if v.Inodes > 0 {
-					usage = float64(v.InodesUsed) / float64(v.Inodes)
-					if usage > 1.0 {
-						usage = 1.0
-					}
-				}
-				if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[9] {
-					maxColContent[9] = w
-				}
+			}
+			if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[9] {
+				maxColContent[9] = w
 			}
 		}
 		if inColumns(opts.Columns, 10) {
@@ -204,7 +185,7 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 }
 
 // computeAssignedWidths computes the assigned widths for dynamic columns (1, 10, 11).
-func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) map[int]int {
+func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) (map[int]int, int) {
 	visibleCols := append([]int{}, opts.Columns...)
 	nVis := len(visibleCols)
 
@@ -273,46 +254,29 @@ func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) map[int
 			assigned[bestCol] += take
 			remainder -= take
 		}
-		// Final slack distribution if any
-		predictedTotal := overhead + fixedContentWidth
-		for _, t := range targets {
-			predictedTotal += assigned[t]
-		}
-		slack := totalAllowed - predictedTotal
-		if slack > 0 {
-			bestCol := 0
-			bestNeed := 0
-			for _, t := range targets {
-				need := maxColContent[t] - assigned[t]
-				if need > bestNeed {
-					bestNeed = need
-					bestCol = t
-				}
-			}
-			if bestCol != 0 && bestNeed > 0 {
-				add := slack
-				if add > bestNeed {
-					add = bestNeed
-				}
-				assigned[bestCol] += add
-			}
-		}
 	}
-	return assigned
+
+	// Calculate final slack
+	predictedTotal := overhead + fixedContentWidth
+	for _, t := range targets {
+		predictedTotal += assigned[t]
+	}
+	slack := totalAllowed - predictedTotal
+	return assigned, slack
 }
 
 // setColumnConfigs configures the columns for the table.
-func setColumnConfigs(tab table.Writer, maxColContent map[int]int, assigned map[int]int, opts TableOptions) {
+func setColumnConfigs(tab table.Writer, maxColContent map[int]int, assigned map[int]int, opts TableOptions, barTransformerFunc func(interface{}) string) {
 	cfgs := []table.ColumnConfig{
 		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: assigned[1]},
 		{Number: 2, Hidden: !inColumns(opts.Columns, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[2]},
 		{Number: 3, Hidden: !inColumns(opts.Columns, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[3]},
 		{Number: 4, Hidden: !inColumns(opts.Columns, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[4]},
-		{Number: 5, Hidden: !inColumns(opts.Columns, 5), Transformer: barTransformer, AlignHeader: text.AlignCenter, WidthMax: maxColContent[5]},
+		{Number: 5, Hidden: !inColumns(opts.Columns, 5), Transformer: barTransformerFunc, AlignHeader: text.AlignCenter, WidthMax: maxColContent[5]},
 		{Number: 6, Hidden: !inColumns(opts.Columns, 6), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[6]},
 		{Number: 7, Hidden: !inColumns(opts.Columns, 7), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[7]},
 		{Number: 8, Hidden: !inColumns(opts.Columns, 8), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[8]},
-		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformer, AlignHeader: text.AlignCenter, WidthMax: maxColContent[9]},
+		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformerFunc, AlignHeader: text.AlignCenter, WidthMax: maxColContent[9]},
 		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: assigned[10]},
 		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: assigned[11]},
 		{Number: 12, Hidden: true}, // sortBy helper for size
@@ -339,8 +303,60 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	}
 
 	maxColContent := computeMaxContentWidths(m, opts)
-	assigned := computeAssignedWidths(maxColContent, opts)
-	setColumnConfigs(tab, maxColContent, assigned, opts)
+	assigned, slack := computeAssignedWidths(maxColContent, opts)
+
+	barWidth := 0
+	numBars := 0
+	if inColumns(opts.Columns, 5) {
+		numBars++
+	}
+	if inColumns(opts.Columns, 9) {
+		numBars++
+	}
+	if numBars > 0 && slack >= 6 {
+		barWidth = min((slack-1)/numBars, 20)
+		if inColumns(opts.Columns, 5) {
+			maxColContent[5] = barWidth + 7
+		}
+		if inColumns(opts.Columns, 9) {
+			maxColContent[9] = barWidth + 7
+		}
+		// No recomputation - bars use the existing slack space
+	}
+
+	// Define barTransformerFunc
+	barTransformerFunc := func(val interface{}) string {
+		usage := val.(float64)
+		s := termenv.String()
+		if usage > 0 {
+			if barWidth > 0 {
+				bw := barWidth - 2
+				s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
+					strings.Repeat("#", int(usage*float64(bw))),
+					strings.Repeat(".", bw-int(usage*float64(bw))),
+					usage*100,
+				))
+			} else {
+				s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
+			}
+		}
+
+		// apply color to progress-bar
+		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
+		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
+		switch {
+		case usage >= redUsage:
+			s = s.Foreground(theme.colorRed)
+		case usage >= yellowUsage:
+			s = s.Foreground(theme.colorYellow)
+		default:
+			s = s.Foreground(theme.colorGreen)
+		}
+
+		return s.String()
+	}
+
+	setColumnConfigs(tab, maxColContent, assigned, opts, barTransformerFunc)
 
 	suffix := "device"
 	if tab.Length() > 1 {
@@ -382,38 +398,6 @@ func spaceTransformer(val interface{}) string {
 	return s.String()
 }
 
-// barTransformer transforms a percentage into a progress-bar.
-func barTransformer(val interface{}) string {
-	usage := val.(float64)
-	s := termenv.String()
-	if usage > 0 {
-		if barWidth() > 0 {
-			bw := barWidth() - 2
-			s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
-				strings.Repeat("#", int(usage*float64(bw))),
-				strings.Repeat(".", bw-int(usage*float64(bw))),
-				usage*100,
-			))
-		} else {
-			s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
-		}
-	}
-
-	// apply color to progress-bar
-	redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
-	yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
-	switch {
-	case usage >= redUsage:
-		s = s.Foreground(theme.colorRed)
-	case usage >= yellowUsage:
-		s = s.Foreground(theme.colorYellow)
-	default:
-		s = s.Foreground(theme.colorGreen)
-	}
-
-	return s.String()
-}
-
 // inColumns return true if the column with index i is in the slice of visible
 // columns cols.
 func inColumns(cols []int, i int) bool {
@@ -424,18 +408,6 @@ func inColumns(cols []int, i int) bool {
 	}
 
 	return false
-}
-
-// barWidth returns the width of progress-bars for the given render width.
-func barWidth() int {
-	switch {
-	case *width < 100:
-		return 0
-	case *width < 120:
-		return 12
-	default:
-		return 22
-	}
 }
 
 // sizeToString prettifies sizes.
