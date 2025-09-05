@@ -41,7 +41,7 @@ You can also show and hide specific filesystems:
   $ duf --only-mp /,/home,/dev
   $ duf --hide-mp /,/home,/dev
 
-Wildcards inside quotes work:
+Wildcards inside quotes work and are case-sensitive:
 
   $ duf --only-mp '/sys/*,/dev/*'
 
