@@ -140,7 +140,8 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 					usage = 1.0
 				}
 			}
-			if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[5] {
+			percentStr := fmt.Sprintf("%.1f%%", usage*100)
+			if w := runewidth.StringWidth(percentStr); w > maxColContent[5] {
 				maxColContent[5] = w
 			}
 		}
@@ -167,7 +168,8 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 					usage = 1.0
 				}
 			}
-			if w := runewidth.StringWidth(fmt.Sprintf("%5.1f%%", usage*100)); w > maxColContent[9] {
+			percentStr := fmt.Sprintf("%.1f%%", usage*100)
+			if w := runewidth.StringWidth(percentStr); w > maxColContent[9] {
 				maxColContent[9] = w
 			}
 		}
@@ -306,6 +308,13 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	maxColContent := computeMaxContentWidths(m, opts)
 	assigned, slack := computeAssignedWidths(maxColContent, opts)
 
+	origPercentWidth5 := maxColContent[5]
+	origPercentWidth9 := maxColContent[9]
+	percentWidth := origPercentWidth5
+	if origPercentWidth9 > percentWidth {
+		percentWidth = origPercentWidth9
+	}
+
 	barWidth := 0
 	numBars := 0
 	if inColumns(opts.Columns, 5) {
@@ -317,10 +326,10 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	if numBars > 0 && slack >= 6 {
 		barWidth = min((slack-1)/numBars, 20)
 		if inColumns(opts.Columns, 5) {
-			maxColContent[5] = barWidth + 7
+			maxColContent[5] = barWidth + 1 + percentWidth
 		}
 		if inColumns(opts.Columns, 9) {
-			maxColContent[9] = barWidth + 7
+			maxColContent[9] = barWidth + 1 + percentWidth
 		}
 		// No recomputation - bars use the existing slack space
 	}
@@ -365,9 +374,9 @@ func printTable(title string, m []Mount, opts TableOptions) {
 
 				var format string
 				if opts.StyleName == "unicode" {
-					format = "%s%s %5.1f%%"
+					format = "%s%s %*s"
 				} else {
-					format = "[%s%s] %5.1f%%"
+					format = "[%s%s] %*s"
 				}
 
 				// Apply colors
@@ -403,9 +412,11 @@ func printTable(title string, m []Mount, opts TableOptions) {
 					emptyPart = emptyPart.Background(bgColor)
 				}
 
-				s = termenv.String(fmt.Sprintf(format, filledPart, emptyPart, usage*100))
+				percentStr := fmt.Sprintf("%.1f%%", usage*100)
+				s = termenv.String(fmt.Sprintf(format, filledPart, emptyPart, percentWidth, percentStr))
 			} else {
-				s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
+				percentStr := fmt.Sprintf("%.1f%%", usage*100)
+				s = termenv.String(fmt.Sprintf("%*s", percentWidth, percentStr))
 			}
 		}
 
