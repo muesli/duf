@@ -343,8 +343,9 @@ func main() {
 
 	// print tables
 	renderTables(m, filters, TableOptions{
-		Columns: columns,
-		SortBy:  sortCol,
-		Style:   style,
+		Columns:   columns,
+		SortBy:    sortCol,
+		Style:     style,
+		StyleName: *styleOpt,
 	})
 }
