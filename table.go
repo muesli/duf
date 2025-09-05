@@ -324,14 +324,19 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		numBars++
 	}
 	if numBars > 0 && slack >= 6 {
-		barWidth = min((slack-1)/numBars, 20)
-		if inColumns(opts.Columns, 5) {
-			maxColContent[5] = barWidth + 1 + percentWidth
+		// Each bar consumes: barWidth + 1 (for space)
+		// So for numBars, total consumption is: numBars * (barWidth + 1)
+		maxBarWidth := min((slack/numBars)-1, 20)
+
+		if maxBarWidth > 0 {
+			barWidth = maxBarWidth
+			if inColumns(opts.Columns, 5) {
+				maxColContent[5] = barWidth + 1 + percentWidth
+			}
+			if inColumns(opts.Columns, 9) {
+				maxColContent[9] = barWidth + 1 + percentWidth
+			}
 		}
-		if inColumns(opts.Columns, 9) {
-			maxColContent[9] = barWidth + 1 + percentWidth
-		}
-		// No recomputation - bars use the existing slack space
 	}
 
 	// Define barTransformerFunc
