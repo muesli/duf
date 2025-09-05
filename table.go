@@ -15,9 +15,10 @@ import (
 
 // TableOptions contains all options for the table.
 type TableOptions struct {
-	Columns []int
-	SortBy  int
-	Style   table.Style
+	Columns   []int
+	SortBy    int
+	Style     table.Style
+	StyleName string
 }
 
 // Column defines a column.
@@ -330,27 +331,82 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		s := termenv.String()
 		if usage > 0 {
 			if barWidth > 0 {
-				bw := barWidth - 2
-				s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
-					strings.Repeat("#", int(usage*float64(bw))),
-					strings.Repeat(".", bw-int(usage*float64(bw))),
-					usage*100,
-				))
+				bw := barWidth
+				var filledChar, halfChar, emptyChar string
+				if opts.StyleName == "unicode" {
+					filledChar = "█"
+					halfChar = "▌"
+					emptyChar = " "
+				} else {
+					bw -= 2
+					filledChar = "#"
+					halfChar = "#"
+					emptyChar = "."
+				}
+
+				filled := int(usage * float64(bw))
+				partial := usage*float64(bw) - float64(filled)
+				empty := bw - filled
+
+				var filledStr, emptyStr string
+				if partial >= 0.5 {
+					if filled > 0 {
+						filledStr = strings.Repeat(filledChar, filled-1) + halfChar
+						emptyStr = strings.Repeat(emptyChar, empty)
+					} else {
+						filledStr = halfChar
+						emptyStr = strings.Repeat(emptyChar, empty-1)
+						empty -= 1
+					}
+				} else {
+					filledStr = strings.Repeat(filledChar, filled)
+					emptyStr = strings.Repeat(emptyChar, empty)
+				}
+
+				var format string
+				if opts.StyleName == "unicode" {
+					format = "%s%s %5.1f%%"
+				} else {
+					format = "[%s%s] %5.1f%%"
+				}
+
+				// Apply colors
+				redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
+				yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
+
+				var fgColor termenv.Color
+				switch {
+				case usage >= redUsage:
+					fgColor = theme.colorRed
+				case usage >= yellowUsage:
+					fgColor = theme.colorYellow
+				default:
+					fgColor = theme.colorGreen
+				}
+
+				filledPart := termenv.String(filledStr).Foreground(fgColor)
+				emptyPart := termenv.String(emptyStr)
+				if opts.StyleName == "unicode" {
+					// Add background to filled part to prevent black spaces in half blocks
+					// Use a background color that complements the foreground
+					var bgColor termenv.Color
+					switch {
+					case usage >= redUsage:
+						bgColor = env.Color("#2d1b1b") // dark red background
+					case usage >= yellowUsage:
+						bgColor = env.Color("#2d2d1b") // dark yellow background
+					default:
+						bgColor = env.Color("#1b2d1b") // dark green background
+					}
+					filledPart = filledPart.Background(bgColor).Foreground(fgColor)
+					// Use a neutral background for empty areas
+					emptyPart = emptyPart.Background(bgColor)
+				}
+
+				s = termenv.String(fmt.Sprintf(format, filledPart, emptyPart, usage*100))
 			} else {
 				s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
 			}
-		}
-
-		// apply color to progress-bar
-		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
-		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
-		switch {
-		case usage >= redUsage:
-			s = s.Foreground(theme.colorRed)
-		case usage >= yellowUsage:
-			s = s.Foreground(theme.colorYellow)
-		default:
-			s = s.Foreground(theme.colorGreen)
 		}
 
 		return s.String()
