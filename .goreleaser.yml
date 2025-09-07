@@ -1,10 +1,12 @@
 version: 2
+
 env:
-  - GO111MODULE=on
   - CGO_ENABLED=0
+
 before:
   hooks:
     - go mod tidy
+
 builds:
   - binary: duf
     flags:
@@ -25,11 +27,25 @@ builds:
     goarm:
       - 6
       - 7
+    ignore:
+      - goos: windows
+        goarm: "6"
+      - goos: windows
+        goarm: "7"
 
 archives:
   - format_overrides:
       - goos: windows
         formats: ['zip']
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    files:
+      - duf.1
 
 nfpms:
   - ids:
@@ -54,7 +70,9 @@ homebrew_casks:
       email: "muesli@gmail.com"
     homepage: "https://fribbledom.com/"
     description: "Disk Usage/Free Utility"
-    # skip_upload: true
+    manpages:
+      - duf.1
+    skip_upload: true
 
 signs:
   - artifacts: checksum
