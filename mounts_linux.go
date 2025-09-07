@@ -167,6 +167,8 @@ func splitMountInfoFields(line string) []string {
 	return fields
 }
 
+// parseMountInfoLine parses a line of /proc/self/mountinfo and returns the
+// amount of parsed fields and their values.
 func parseMountInfoLine(line string) (int, [11]string) {
 	var fields [11]string
 
