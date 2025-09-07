@@ -342,89 +342,84 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	// Define barTransformerFunc
 	barTransformerFunc := func(val interface{}) string {
 		usage := val.(float64)
-		s := termenv.String()
-		if usage > 0 {
-			if barWidth > 0 {
-				bw := barWidth
-				var filledChar, halfChar, emptyChar string
-				if opts.StyleName == "unicode" {
-					filledChar = "█"
-					halfChar = "▌"
-					emptyChar = " "
-				} else {
-					bw -= 2
-					filledChar = "#"
-					halfChar = "#"
-					emptyChar = "."
-				}
-
-				filled := int(usage * float64(bw))
-				partial := usage*float64(bw) - float64(filled)
-				empty := bw - filled
-
-				var filledStr, emptyStr string
-				filledStr = strings.Repeat(filledChar, filled)
-
-				// If we have a sufficiently large partial, render a half block.
-				if partial >= 0.5 {
-					filledStr += halfChar
-					empty--
-				}
-
-				if empty < 0 {
-					empty = 0
-				}
-				emptyStr = strings.Repeat(emptyChar, empty)
-
-				var format string
-				if opts.StyleName == "unicode" {
-					format = "%s%s %*s"
-				} else {
-					format = "[%s%s] %*s"
-				}
-
-				// Apply colors
-				redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
-				yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
-
-				var fgColor termenv.Color
-				switch {
-				case usage >= redUsage:
-					fgColor = theme.colorRed
-				case usage >= yellowUsage:
-					fgColor = theme.colorYellow
-				default:
-					fgColor = theme.colorGreen
-				}
-
-				filledPart := termenv.String(filledStr).Foreground(fgColor)
-				emptyPart := termenv.String(emptyStr)
-				if opts.StyleName == "unicode" {
-					// Add background to filled part to prevent black spaces in half blocks
-					// Use a background color that complements the foreground
-					var bgColor termenv.Color
-					switch {
-					case usage >= redUsage:
-						bgColor = theme.colorBgRed
-					case usage >= yellowUsage:
-						bgColor = theme.colorBgYellow
-					default:
-						bgColor = theme.colorBgGreen
-					}
-					filledPart = filledPart.Background(bgColor).Foreground(fgColor)
-					// Use a neutral background for empty areas
-					emptyPart = emptyPart.Background(bgColor)
-				}
-
-				percentStr := fmt.Sprintf("%.1f%%", usage*100)
-				s = termenv.String(fmt.Sprintf(format, filledPart, emptyPart, percentWidth, percentStr))
-			} else {
-				percentStr := fmt.Sprintf("%.1f%%", usage*100)
-				s = termenv.String(fmt.Sprintf("%*s", percentWidth, percentStr))
-			}
+		if barWidth <= 0 {
+			s := fmt.Sprintf("%*s", percentWidth, fmt.Sprintf("%.1f%%", usage*100))
+			return termenv.String(s).String()
 		}
 
-		return s.String()
+		bw := barWidth
+		var filledChar, halfChar, emptyChar string
+		if opts.StyleName == "unicode" {
+			filledChar = "█"
+			halfChar = "▌"
+			emptyChar = " "
+		} else {
+			bw -= 2
+			filledChar = "#"
+			halfChar = "#"
+			emptyChar = "."
+		}
+
+		filled := int(usage * float64(bw))
+		partial := usage*float64(bw) - float64(filled)
+		empty := bw - filled
+
+		var filledStr, emptyStr string
+		filledStr = strings.Repeat(filledChar, filled)
+
+		// If we have a sufficiently large partial, render a half block.
+		if partial >= 0.5 {
+			filledStr += halfChar
+			empty--
+		}
+
+		if empty < 0 {
+			empty = 0
+		}
+		emptyStr = strings.Repeat(emptyChar, empty)
+
+		var format string
+		if opts.StyleName == "unicode" {
+			format = "%s%s %*s"
+		} else {
+			format = "[%s%s] %*s"
+		}
+
+		// Apply colors
+		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
+		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
+
+		var fgColor termenv.Color
+		switch {
+		case usage >= redUsage:
+			fgColor = theme.colorRed
+		case usage >= yellowUsage:
+			fgColor = theme.colorYellow
+		default:
+			fgColor = theme.colorGreen
+		}
+
+		filledPart := termenv.String(filledStr).Foreground(fgColor)
+		emptyPart := termenv.String(emptyStr)
+		if opts.StyleName == "unicode" {
+			// Add background to filled part to prevent black spaces in half blocks
+			// Use a background color that complements the foreground
+			var bgColor termenv.Color
+			switch {
+			case usage >= redUsage:
+				bgColor = theme.colorBgRed
+			case usage >= yellowUsage:
+				bgColor = theme.colorBgYellow
+			default:
+				bgColor = theme.colorBgGreen
+			}
+			filledPart = filledPart.Background(bgColor).Foreground(fgColor)
+			// Use a neutral background for empty areas
+			emptyPart = emptyPart.Background(bgColor)
+		}
+
+		s := fmt.Sprintf(format, filledPart, emptyPart, percentWidth, fmt.Sprintf("%.1f%%", usage*100))
+		return termenv.String(s).String()
 	}
 
 	setColumnConfigs(tab, maxColContent, assigned, opts, barTransformerFunc)
