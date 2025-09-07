@@ -363,19 +363,18 @@ func printTable(title string, m []Mount, opts TableOptions) {
 				empty := bw - filled
 
 				var filledStr, emptyStr string
+				filledStr = strings.Repeat(filledChar, filled)
+
+				// If we have a sufficiently large partial, render a half block.
 				if partial >= 0.5 {
-					if filled > 0 {
-						filledStr = strings.Repeat(filledChar, filled-1) + halfChar
-						emptyStr = strings.Repeat(emptyChar, empty)
-					} else {
-						filledStr = halfChar
-						emptyStr = strings.Repeat(emptyChar, empty-1)
-						empty -= 1
-					}
-				} else {
-					filledStr = strings.Repeat(filledChar, filled)
-					emptyStr = strings.Repeat(emptyChar, empty)
+					filledStr += halfChar
+					empty--
 				}
+
+				if empty < 0 {
+					empty = 0
+				}
+				emptyStr = strings.Repeat(emptyChar, empty)
 
 				var format string
 				if opts.StyleName == "unicode" {
