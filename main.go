@@ -17,6 +17,14 @@ import (
 )
 
 var (
+	// Version contains the application version number. It's set via ldflags
+	// when building.
+	Version = ""
+
+	// CommitSHA contains the SHA of the commit that this application was built
+	// against. It's set via ldflags when building.
+	CommitSHA = ""
+
 	env   = termenv.EnvColorProfile()
 	theme Theme
 
@@ -137,44 +145,44 @@ func findInKey(str string, km map[string]struct{}) bool {
 }
 
 func printVersion() {
-	var version string
-	var commitSHA string
-
 	info, ok := debug.ReadBuildInfo()
 	var buildTime time.Time
+	var modified bool
 	if ok {
-		vs := strings.Split(info.Main.Version, "-")
-		if len(vs) >= 1 {
-			version = vs[0]
-		}
-		if len(vs) >= 3 {
-			commitSHA = vs[2]
+		if len(Version) == 0 {
+			vs := strings.Split(info.Main.Version, "-")
+			if len(vs) >= 1 {
+				Version = vs[0]
+			}
 		}
 
 		for _, setting := range info.Settings {
 			switch setting.Key {
 			case "vcs.revision":
-				/*
+				if len(CommitSHA) == 0 {
 					CommitSHA = setting.Value
-					if len(CommitSHA) > 7 {
-						CommitSHA = CommitSHA[:7]
+					if len(CommitSHA) > 12 {
+						CommitSHA = CommitSHA[:12]
 					}
-				*/
+				}
 			case "vcs.time":
 				buildTime, _ = time.Parse(time.RFC3339, setting.Value)
 			case "vcs.modified":
-				// modified = true
+				modified = true
 			}
 		}
 	}
 
-	if version == "" || version == "(devel)" {
-		version = "(built from source)"
+	if Version == "" || Version == "(devel)" {
+		Version = "(built from source)"
 	}
 
-	fmt.Printf("duf %s", version)
-	if len(commitSHA) > 0 {
-		fmt.Printf(" (%s)", commitSHA)
+	fmt.Printf("duf %s", Version)
+	if len(CommitSHA) > 0 {
+		if modified {
+			CommitSHA += "+modified"
+		}
+		fmt.Printf(" (%s)", CommitSHA)
 	}
 	if !buildTime.IsZero() {
 		fmt.Printf(" (built on %s)", buildTime.Format("2006-01-02"))
