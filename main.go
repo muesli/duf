@@ -48,6 +48,7 @@ var (
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
+	human      = flag.Bool("h", false, "ignored, just for backwards compatibility")
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
