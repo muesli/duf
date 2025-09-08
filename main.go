@@ -168,7 +168,7 @@ func printVersion() {
 			case "vcs.time":
 				buildTime, _ = time.Parse(time.RFC3339, setting.Value)
 			case "vcs.modified":
-				modified = true
+				modified, _ = strconv.ParseBool(setting.Value)
 			}
 		}
 	}
