@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 	"runtime/debug"
@@ -13,6 +12,7 @@ import (
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
+	flag "github.com/spf13/pflag"
 	"golang.org/x/term"
 )
 
@@ -48,6 +48,7 @@ var (
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
+	_          = flag.BoolP("human-readable", "h", false, "ignored, just for df compatibility")
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
@@ -192,6 +193,8 @@ func printVersion() {
 }
 
 func main() {
+	// hide -h from help, it's just for df compatibility
+	_ = flag.CommandLine.MarkHidden("human-readable")
 	flag.Parse()
 
 	if *version {
