@@ -19,6 +19,64 @@ Sort the results according to your needs\&.
 Groups & filters devices\&.
 .IP \(bu 3
 Can conveniently output JSON\&.
+.SH OPTIONS
+.TP
+\fB--all\fP
+include pseudo, duplicate, inaccessible file systems
+.TP
+\fB--avail-threshold\fP
+specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes
+.TP
+\fB--hide\fP
+hide specific devices, separated with commas: local, network, fuse, special, loops, binds
+.TP
+\fB--hide-fs\fP
+hide specific filesystems, separated with commas
+.TP
+\fB--hide-mp\fP
+hide specific mount points, separated with commas (supports wildcards)
+.TP
+\fB-h, --human-readable\fP
+ignored, just for df compatibility
+.TP
+\fB--inodes\fP
+list inode information instead of block usage
+.TP
+\fB--json\fP
+output all devices in JSON format
+.TP
+\fB--only\fP
+show only specific devices, separated with commas: local, network, fuse, special, loops, binds
+.TP
+\fB--only-fs\fP
+only specific filesystems, separated with commas
+.TP
+\fB--only-mp\fP
+only specific mount points, separated with commas (supports wildcards)
+.TP
+\fB--output\fP
+output fields: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
+.TP
+\fB--sort\fP
+sort output by: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
+.TP
+\fB--style\fP
+style: unicode, ascii
+.TP
+\fB--theme\fP
+color themes: dark, light, ansi
+.TP
+\fB--usage-threshold\fP
+specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1
+.TP
+\fB--version\fP
+display version
+.TP
+\fB--warnings\fP
+output all warnings to STDERR
+.TP
+\fB--width\fP
+max output width
 .SH USAGE
 You can simply start duf without any command-line arguments:
 .PP
