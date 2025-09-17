@@ -500,10 +500,25 @@ func sizeToString(size uint64) (str string) {
 	return
 }
 
+var (
+	sizeRegex  = regexp.MustCompile(`^(\d+)([KMGTPE]?)$`)
+	sizeShifts = map[byte]uint{
+		'K': 10,
+		'M': 20,
+		'G': 30,
+		'T': 40,
+		'P': 50,
+		'E': 60,
+	}
+)
+
 // stringToSize transforms an SI size into a number.
-func stringToSize(s string) (size uint64, err error) {
-	regex := regexp.MustCompile(`^(\d+)([KMGTPE]?)$`)
-	matches := regex.FindStringSubmatch(s)
+func stringToSize(s string) (uint64, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty string")
+	}
+
+	matches := sizeRegex.FindStringSubmatch(s)
 	if len(matches) == 0 {
 		return 0, fmt.Errorf("'%s' is not valid, must have integer with optional SI prefix", s)
 	}
@@ -512,29 +527,16 @@ func stringToSize(s string) (size uint64, err error) {
 	if err != nil {
 		return 0, err
 	}
-	if matches[2] != "" {
-		prefix := matches[2]
-		switch prefix {
-		case "K":
-			size = num << 10
-		case "M":
-			size = num << 20
-		case "G":
-			size = num << 30
-		case "T":
-			size = num << 40
-		case "P":
-			size = num << 50
-		case "E":
-			size = num << 60
-		default:
-			err = fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", prefix)
-			return
-		}
-	} else {
-		size = num
+
+	if matches[2] == "" {
+		return num, nil
 	}
-	return
+
+	if shift, ok := sizeShifts[matches[2][0]]; ok {
+		return num << shift, nil
+	}
+
+	return 0, fmt.Errorf("prefix '%s' not allowed, valid prefixes are K, M, G, T, P, E", matches[2])
 }
 
 // stringToColumn converts a column name to its index.
