@@ -42,7 +42,8 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 #### Windows
 - with [Chocolatey](https://chocolatey.org/): `choco install duf`
-- with [scoop](https://scoop.sh/): `scoop install duf`
+- with [Scoop](https://scoop.sh/): `scoop install duf`
+- with [Winget](https://learn.microsoft.com/en-us/windows/package-manager/): `winget install muesli.duf`
 
 #### Android
 - Android (via termux): `pkg install duf`
