@@ -91,10 +91,44 @@ func parseColumns(cols string) ([]int, error) {
 // parseStyle converts user-provided style option into a table.Style.
 func parseStyle(styleOpt string) (table.Style, error) {
 	switch styleOpt {
-	case "unicode":
+	case "unicode", "round":
 		return table.StyleRounded, nil
 	case "ascii":
 		return table.StyleDefault, nil
+	case "bold":
+		return table.StyleBold, nil
+	case "square":
+		return table.StyleLight, nil
+	case "double":
+		return table.StyleDouble, nil
+	case "color-bright":
+		return table.StyleColoredBright, nil
+	case "color-dark":
+		return table.StyleColoredDark, nil
+	case "color-bright-blue":
+		return table.StyleColoredBlackOnBlueWhite, nil
+	case "color-bright-cyan":
+		return table.StyleColoredBlackOnCyanWhite, nil
+	case "color-bright-green":
+		return table.StyleColoredBlackOnGreenWhite, nil
+	case "color-bright-magenta":
+		return table.StyleColoredBlackOnMagentaWhite, nil
+	case "color-bright-yellow":
+		return table.StyleColoredBlackOnYellowWhite, nil
+	case "color-bright-red":
+		return table.StyleColoredBlackOnRedWhite, nil
+	case "color-dark-blue":
+		return table.StyleColoredBlueWhiteOnBlack, nil
+	case "color-dark-cyan":
+		return table.StyleColoredCyanWhiteOnBlack, nil
+	case "color-dark-green":
+		return table.StyleColoredGreenWhiteOnBlack, nil
+	case "color-dark-magenta":
+		return table.StyleColoredMagentaWhiteOnBlack, nil
+	case "color-dark-red":
+		return table.StyleColoredRedWhiteOnBlack, nil
+	case "color-dark-yellow":
+		return table.StyleColoredYellowWhiteOnBlack, nil
 	default:
 		return table.Style{}, fmt.Errorf("unknown style option: %s", styleOpt)
 	}
