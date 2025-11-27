@@ -101,7 +101,7 @@ func parseStyle(styleOpt string) (table.Style, error) {
 }
 
 // parseCommaSeparatedValues parses comma separated string into a map.
-func parseCommaSeparatedValues(values string) map[string]struct{} {
+func parseCommaSeparatedValues(values string, toLower bool) map[string]struct{} {
 	m := make(map[string]struct{})
 	for _, v := range strings.Split(values, ",") {
 		v = strings.TrimSpace(v)
@@ -109,7 +109,10 @@ func parseCommaSeparatedValues(values string) map[string]struct{} {
 			continue
 		}
 
-		v = strings.ToLower(v)
+		if toLower {
+			v = strings.ToLower(v)
+		}
+
 		m[v] = struct{}{}
 	}
 	return m
@@ -263,12 +266,12 @@ func main() {
 
 	// validate filters
 	filters := FilterOptions{
-		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
-		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
-		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
-		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
-		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
-		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
+		HiddenDevices:     parseCommaSeparatedValues(*hideDevices, true),
+		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices, true),
+		HiddenFilesystems: parseCommaSeparatedValues(*hideFs, true),
+		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs, true),
+		HiddenMountPoints: parseCommaSeparatedValues(*hideMp, false),
+		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp, false),
 	}
 	err = validateGroups(filters.HiddenDevices)
 	if err != nil {
