@@ -79,14 +79,22 @@ func mounts() ([]Mount, []string, error) {
 		device := fields[mountinfoMountSource]
 
 		var stat unix.Statfs_t
-		err := unix.Statfs(mountPoint, &stat)
-		if err != nil {
-			if err != os.ErrPermission {
-				warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
-				continue
+		if fstype == "autofs" {
+			// Avoid calling statfs on autofs mount points as this triggers the
+			// automount.
+			stat = unix.Statfs_t{
+				Type: AUTOFS_SUPER_MAGIC,
 			}
+		} else {
+			err := unix.Statfs(mountPoint, &stat)
+			if err != nil {
+				if err != os.ErrPermission {
+					warnings = append(warnings, fmt.Sprintf("%s: %s", mountPoint, err))
+					continue
+				}
 
-			stat = unix.Statfs_t{}
+				stat = unix.Statfs_t{}
+			}
 		}
 
 		d := Mount{
