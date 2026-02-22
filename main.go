@@ -41,6 +41,7 @@ var (
 
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
+	reverse  = flag.Bool("reverse", false, "reverse sort order")
 	width    = flag.Uint("width", 0, "max output width")
 	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
 	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
@@ -356,6 +357,7 @@ func main() {
 	renderTables(m, filters, TableOptions{
 		Columns:   columns,
 		SortBy:    sortCol,
+		Reverse:   *reverse,
 		Style:     style,
 		StyleName: *styleOpt,
 	})
