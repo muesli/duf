@@ -205,7 +205,7 @@ func parseMountInfoLine(line string) (int, [11]string) {
 		}
 
 		if i == mountinfoSuperOptions {
-			// join tokens with spaces for WSL2 path=... they are splitted around spaces.
+			// join tokens with spaces for WSL2 path=... they are split around spaces.
 			fields[i] = strings.TrimSpace(fields[i] + " " + f)
 			sawSup = true
 			continue
