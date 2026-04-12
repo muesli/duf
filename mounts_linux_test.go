@@ -33,6 +33,10 @@ func TestResolveMapperDevice(t *testing.T) {
 
 		// No separator (single partition name) — returned unchanged.
 		{input: "/dev/mapper/control", expected: "/dev/mapper/control"},
+
+		// Degenerate: empty VG or LV — returned unchanged.
+		{input: "/dev/mapper/-lv", expected: "/dev/mapper/-lv"},
+		{input: "/dev/mapper/vg-", expected: "/dev/mapper/vg-"},
 	}
 
 	for _, tc := range tt {

@@ -135,6 +135,9 @@ func resolveMapperDevice(device string) string {
 
 	vg := strings.ReplaceAll(parts[0], placeholder, "-")
 	lv := strings.ReplaceAll(parts[1], placeholder, "-")
+	if vg == "" || lv == "" {
+		return device
+	}
 	return filepath.Join("/dev", vg, lv)
 }
 
