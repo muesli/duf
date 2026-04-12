@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -108,18 +107,35 @@ func mounts() ([]Mount, []string, error) {
 		d.DeviceType = deviceType(d)
 
 		// Resolve /dev/mapper/* device names.
-		if strings.HasPrefix(d.Device, "/dev/mapper/") {
-			re := regexp.MustCompile(`^/dev/mapper/(.*)-(.*)`)
-			match := re.FindAllStringSubmatch(d.Device, -1)
-			if len(match) > 0 && len(match[0]) == 3 {
-				d.Device = filepath.Join("/dev", match[0][1], match[0][2])
-			}
-		}
+		d.Device = resolveMapperDevice(d.Device)
 
 		ret = append(ret, d)
 	}
 
 	return ret, warnings, nil
+}
+
+// resolveMapperDevice resolves /dev/mapper/* device names to /dev/<VG>/<LV>.
+// LVM escapes hyphens in VG/LV names by doubling them (--).
+// A single hyphen separates the VG name from the LV name.
+func resolveMapperDevice(device string) string {
+	if !strings.HasPrefix(device, "/dev/mapper/") {
+		return device
+	}
+
+	name := strings.TrimPrefix(device, "/dev/mapper/")
+	// Replace escaped double-hyphens with a placeholder so we can
+	// split on the real single-hyphen separator.
+	const placeholder = "\x00"
+	escaped := strings.ReplaceAll(name, "--", placeholder)
+	parts := strings.SplitN(escaped, "-", 2)
+	if len(parts) != 2 {
+		return device
+	}
+
+	vg := strings.ReplaceAll(parts[0], placeholder, "-")
+	lv := strings.ReplaceAll(parts[1], placeholder, "-")
+	return filepath.Join("/dev", vg, lv)
 }
 
 // splitMountInfoFields splits a mountinfo line into its fields.

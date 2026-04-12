@@ -8,6 +8,41 @@ import (
 	"testing"
 )
 
+func TestResolveMapperDevice(t *testing.T) {
+	var tt = []struct {
+		input    string
+		expected string
+	}{
+		// Non-mapper devices are returned unchanged.
+		{input: "/dev/sda1", expected: "/dev/sda1"},
+		{input: "/dev/nvme0n1p1", expected: "/dev/nvme0n1p1"},
+
+		// Simple VG-LV (no hyphens in names).
+		{input: "/dev/mapper/vg0-root", expected: "/dev/vg0/root"},
+		{input: "/dev/mapper/vg0-swap", expected: "/dev/vg0/swap"},
+
+		// Hyphens in LV name (escaped as --).
+		{input: "/dev/mapper/vg0-var--log", expected: "/dev/vg0/var-log"},
+		{input: "/dev/mapper/vg0-var--log--audit", expected: "/dev/vg0/var-log-audit"},
+
+		// Hyphens in VG name (escaped as --).
+		{input: "/dev/mapper/my--vg-root", expected: "/dev/my-vg/root"},
+
+		// Hyphens in both VG and LV names.
+		{input: "/dev/mapper/my--vg-my--lv", expected: "/dev/my-vg/my-lv"},
+
+		// No separator (single partition name) — returned unchanged.
+		{input: "/dev/mapper/control", expected: "/dev/mapper/control"},
+	}
+
+	for _, tc := range tt {
+		actual := resolveMapperDevice(tc.input)
+		if actual != tc.expected {
+			t.Errorf("resolveMapperDevice(%q) == %q, expected %q", tc.input, actual, tc.expected)
+		}
+	}
+}
+
 func TestGetFields(t *testing.T) {
 	var tt = []struct {
 		input    string
