@@ -80,7 +80,7 @@ func appendRows(tab table.Writer, m []Mount) {
 		}
 
 		tab.AppendRow([]interface{}{
-			termenv.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
+			env.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
 			v.Total,      // size
 			v.Used,       // used
 			v.Free,       // avail
@@ -89,8 +89,8 @@ func appendRows(tab table.Writer, m []Mount) {
 			v.InodesUsed, // inodes used
 			v.InodesFree, // inodes avail
 			inodeUsage,   // inodes use%
-			termenv.String(v.Fstype).Foreground(theme.colorGray), // type
-			termenv.String(v.Device).Foreground(theme.colorGray), // filesystem
+			env.String(v.Fstype).Foreground(theme.colorGray), // type
+			env.String(v.Device).Foreground(theme.colorGray), // filesystem
 			v.Total,      // size sorting helper
 			v.Used,       // used sorting helper
 			v.Free,       // avail sorting helper
@@ -344,7 +344,7 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		usage := val.(float64)
 		if barWidth <= 0 {
 			s := fmt.Sprintf("%*s", percentWidth, fmt.Sprintf("%.1f%%", usage*100))
-			return termenv.String(s).String()
+			return env.String(s).String()
 		}
 
 		bw := barWidth
@@ -399,8 +399,8 @@ func printTable(title string, m []Mount, opts TableOptions) {
 			fgColor = theme.colorGreen
 		}
 
-		filledPart := termenv.String(filledStr).Foreground(fgColor)
-		emptyPart := termenv.String(emptyStr)
+		filledPart := env.String(filledStr).Foreground(fgColor)
+		emptyPart := env.String(emptyStr)
 		if opts.StyleName == "unicode" {
 			// Add background to filled part to prevent black spaces in half blocks
 			// Use a background color that complements the foreground
@@ -419,7 +419,7 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		}
 
 		s := fmt.Sprintf(format, filledPart, emptyPart, percentWidth, fmt.Sprintf("%.1f%%", usage*100))
-		return termenv.String(s).String()
+		return env.String(s).String()
 	}
 
 	setColumnConfigs(tab, maxColContent, assigned, opts, barTransformerFunc)
@@ -449,7 +449,7 @@ func sizeTransformer(val interface{}) string {
 func spaceTransformer(val interface{}) string {
 	free := val.(uint64)
 
-	s := termenv.String(sizeToString(free))
+	s := env.String(sizeToString(free))
 	redAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[1])
 	yellowAvail, _ := stringToSize(strings.Split(*availThreshold, ",")[0])
 	switch {
