@@ -2,7 +2,7 @@
 
 Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
-duf is a user-friendly disk usage utility.
+duf is a user-friendly disk usage utility for Linux, BSD, macOS & Windows.
 
 ![duf](/duf.png)
 
@@ -14,6 +14,8 @@ duf is a user-friendly disk usage utility.
 - Groups devices by type
 
 ## Installation
+
+Supports multiple platforms.
 
 ### Packages
 
