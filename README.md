@@ -8,11 +8,10 @@ duf is a user-friendly disk usage utility.
 
 ## Features
 
-- [x] User-friendly, colorful output
-- [x] Adjusts to your terminal's theme & width
-- [x] Sort the results according to your needs
-- [x] Groups & filters devices
-- [x] Can conveniently output JSON
+- User-friendly, colorful output
+- Adjusts to your terminal theme & width
+- Sort and filter results
+- Groups devices by type
 
 ## Installation
 
