@@ -8,6 +8,38 @@ import (
 	"testing"
 )
 
+func TestResolveMapperDevice(t *testing.T) {
+	tests := map[string]struct {
+		device string
+		want   string
+	}{
+		"logical volume hyphen": {
+			device: "/dev/mapper/vg-var--log",
+			want:   "/dev/vg/var-log",
+		},
+		"volume group and logical volume hyphens": {
+			device: "/dev/mapper/vg--name-lv--name",
+			want:   "/dev/vg-name/lv-name",
+		},
+		"non mapper device": {
+			device: "/dev/sda1",
+			want:   "/dev/sda1",
+		},
+		"mapper name without separator": {
+			device: "/dev/mapper/volume",
+			want:   "/dev/mapper/volume",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := resolveMapperDevice(tt.device); got != tt.want {
+				t.Fatalf("resolveMapperDevice(%q) = %q, want %q", tt.device, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestGetFields(t *testing.T) {
 	var tt = []struct {
 		input    string
