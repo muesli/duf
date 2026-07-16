@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -108,18 +107,46 @@ func mounts() ([]Mount, []string, error) {
 		d.DeviceType = deviceType(d)
 
 		// Resolve /dev/mapper/* device names.
-		if strings.HasPrefix(d.Device, "/dev/mapper/") {
-			re := regexp.MustCompile(`^/dev/mapper/(.*)-(.*)`)
-			match := re.FindAllStringSubmatch(d.Device, -1)
-			if len(match) > 0 && len(match[0]) == 3 {
-				d.Device = filepath.Join("/dev", match[0][1], match[0][2])
-			}
-		}
+		d.Device = resolveMapperDevice(d.Device)
 
 		ret = append(ret, d)
 	}
 
 	return ret, warnings, nil
+}
+
+// resolveMapperDevice converts device-mapper's escaped VG-LV naming back to
+// the conventional /dev/<volume-group>/<logical-volume> path.
+func resolveMapperDevice(device string) string {
+	const prefix = "/dev/mapper/"
+	if !strings.HasPrefix(device, prefix) {
+		return device
+	}
+
+	name := strings.TrimPrefix(device, prefix)
+	var vg, lv strings.Builder
+	part := &vg
+	for i := 0; i < len(name); i++ {
+		if name[i] != '-' {
+			part.WriteByte(name[i])
+			continue
+		}
+		if i+1 < len(name) && name[i+1] == '-' {
+			part.WriteByte('-')
+			i++
+			continue
+		}
+		if part == &vg {
+			part = &lv
+			continue
+		}
+		part.WriteByte('-')
+	}
+
+	if vg.Len() == 0 || lv.Len() == 0 {
+		return device
+	}
+	return filepath.Join("/dev", vg.String(), lv.String())
 }
 
 // splitMountInfoFields splits a mountinfo line into its fields.
