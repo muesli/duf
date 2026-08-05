@@ -4,16 +4,18 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	gap "github.com/muesli/go-app-paths"
 	"github.com/muesli/termenv"
+	flag "github.com/spf13/pflag"
 	"golang.org/x/term"
 )
 
@@ -50,6 +52,7 @@ var (
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
 
+	_          = flag.BoolP("human-readable", "h", false, "ignored, just for df compatibility")
 	inodes     = flag.Bool("inodes", false, "list inode information instead of block usage")
 	jsonOutput = flag.Bool("json", false, "output all devices in JSON format")
 	warns      = flag.Bool("warnings", false, "output all warnings to STDERR")
@@ -173,7 +176,56 @@ func parseFlags() error {
 	return nil
 }
 
+func printVersion() {
+	info, ok := debug.ReadBuildInfo()
+	var buildTime time.Time
+	var modified bool
+	if ok {
+		if len(Version) == 0 {
+			vs := strings.Split(info.Main.Version, "-")
+			if len(vs) >= 1 {
+				Version = vs[0]
+			}
+		}
+
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				if len(CommitSHA) == 0 {
+					CommitSHA = setting.Value
+					if len(CommitSHA) > 12 {
+						CommitSHA = CommitSHA[:12]
+					}
+				}
+			case "vcs.time":
+				buildTime, _ = time.Parse(time.RFC3339, setting.Value)
+			case "vcs.modified":
+				modified, _ = strconv.ParseBool(setting.Value)
+			}
+		}
+	}
+
+	if Version == "" || Version == "(devel)" {
+		Version = "(built from source)"
+	}
+
+	fmt.Printf("duf %s", Version)
+	if len(CommitSHA) > 0 {
+		if modified {
+			CommitSHA += "+modified"
+		}
+		fmt.Printf(" (%s)", CommitSHA)
+	}
+	if !buildTime.IsZero() {
+		fmt.Printf(" (built on %s)", buildTime.Format("2006-01-02"))
+	}
+
+	fmt.Println()
+}
+
 func main() {
+	// hide -h from help, it's just for df compatibility
+	_ = flag.CommandLine.MarkHidden("human-readable")
 	err := parseFlags()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -181,19 +233,7 @@ func main() {
 	}
 
 	if *version {
-		if len(CommitSHA) > 7 {
-			CommitSHA = CommitSHA[:7]
-		}
-		if Version == "" {
-			Version = "(built from source)"
-		}
-
-		fmt.Printf("duf %s", Version)
-		if len(CommitSHA) > 0 {
-			fmt.Printf(" (%s)", CommitSHA)
-		}
-
-		fmt.Println()
+		printVersion()
 		os.Exit(0)
 	}
 
@@ -279,6 +319,7 @@ func main() {
 	// validate arguments
 	if len(flag.Args()) > 0 {
 		var mounts []Mount
+		vis := map[string]struct{}{}
 
 		for _, v := range flag.Args() {
 			var fm []Mount
@@ -287,8 +328,13 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-
-			mounts = append(mounts, fm...)
+			// de-duplicate
+			for _, v := range fm {
+				if _, ok := vis[v.Mountpoint]; !ok {
+					mounts = append(mounts, v)
+					vis[v.Mountpoint] = struct{}{}
+				}
+			}
 		}
 
 		m = mounts
@@ -343,8 +389,9 @@ func main() {
 
 	// print tables
 	renderTables(m, filters, TableOptions{
-		Columns: columns,
-		SortBy:  sortCol,
-		Style:   style,
+		Columns:   columns,
+		SortBy:    sortCol,
+		Style:     style,
+		StyleName: *styleOpt,
 	})
 }

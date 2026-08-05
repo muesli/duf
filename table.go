@@ -9,14 +9,16 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
+	"github.com/mattn/go-runewidth"
 	"github.com/muesli/termenv"
 )
 
 // TableOptions contains all options for the table.
 type TableOptions struct {
-	Columns []int
-	SortBy  int
-	Style   table.Style
+	Columns   []int
+	SortBy    int
+	Style     table.Style
+	StyleName string
 }
 
 // Column defines a column.
@@ -43,51 +45,26 @@ var columns = []Column{
 	{ID: "filesystem", Name: "Filesystem", SortIndex: 11},
 }
 
-// printTable prints an individual table of mounts.
-func printTable(title string, m []Mount, opts TableOptions) {
-	tab := table.NewWriter()
+// initializeTable sets up the table writer with initial configurations.
+func initializeTable(tab table.Writer, opts TableOptions) {
 	tab.SetAllowedRowLength(int(*width))
 	tab.SetOutputMirror(os.Stdout)
 	tab.Style().Options.SeparateColumns = true
 	tab.SetStyle(opts.Style)
+}
 
-	if barWidth() > 0 {
-		columns[4].Width = barWidth() + 7
-		columns[8].Width = barWidth() + 7
-	}
-	twidth := tableWidth(opts.Columns, tab.Style().Options.SeparateColumns)
-
-	tab.SetColumnConfigs([]table.ColumnConfig{
-		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: int(float64(twidth) * 0.4)},
-		{Number: 2, Hidden: !inColumns(opts.Columns, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 3, Hidden: !inColumns(opts.Columns, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 4, Hidden: !inColumns(opts.Columns, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 5, Hidden: !inColumns(opts.Columns, 5), Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 6, Hidden: !inColumns(opts.Columns, 6), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 7, Hidden: !inColumns(opts.Columns, 7), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 8, Hidden: !inColumns(opts.Columns, 8), Align: text.AlignRight, AlignHeader: text.AlignRight},
-		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformer, AlignHeader: text.AlignCenter},
-		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: int(float64(twidth) * 0.2)},
-		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: int(float64(twidth) * 0.4)},
-		{Number: 12, Hidden: true}, // sortBy helper for size
-		{Number: 13, Hidden: true}, // sortBy helper for used
-		{Number: 14, Hidden: true}, // sortBy helper for avail
-		{Number: 15, Hidden: true}, // sortBy helper for usage
-		{Number: 16, Hidden: true}, // sortBy helper for inodes size
-		{Number: 17, Hidden: true}, // sortBy helper for inodes used
-		{Number: 18, Hidden: true}, // sortBy helper for inodes avail
-		{Number: 19, Hidden: true}, // sortBy helper for inodes usage
-	})
-
+// appendHeaders adds the header row to the table.
+func appendHeaders(tab table.Writer) {
 	headers := table.Row{}
 	for _, v := range columns {
 		headers = append(headers, v.Name)
 	}
 	tab.AppendHeader(headers)
+}
 
+// appendRows adds data rows to the table for each mount.
+func appendRows(tab table.Writer, m []Mount) {
 	for _, v := range m {
-		// spew.Dump(v)
-
 		var usage, inodeUsage float64
 		if v.Total > 0 {
 			usage = float64(v.Used) / float64(v.Total)
@@ -124,10 +101,328 @@ func printTable(title string, m []Mount, opts TableOptions) {
 			inodeUsage,   // inodes use% sorting helper
 		})
 	}
+}
+
+// computeMaxContentWidths calculates the maximum content width for each visible column.
+func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
+	visibleCols := append([]int{}, opts.Columns...)
+	maxColContent := map[int]int{}
+	// Seed with headers
+	for _, ci := range visibleCols {
+		maxColContent[ci] = runewidth.StringWidth(columns[ci-1].Name)
+	}
+	for _, v := range m {
+		if inColumns(opts.Columns, 1) {
+			if w := runewidth.StringWidth(v.Mountpoint); w > maxColContent[1] {
+				maxColContent[1] = w
+			}
+		}
+		if inColumns(opts.Columns, 2) {
+			if w := runewidth.StringWidth(sizeToString(v.Total)); w > maxColContent[2] {
+				maxColContent[2] = w
+			}
+		}
+		if inColumns(opts.Columns, 3) {
+			if w := runewidth.StringWidth(sizeToString(v.Used)); w > maxColContent[3] {
+				maxColContent[3] = w
+			}
+		}
+		if inColumns(opts.Columns, 4) {
+			if w := runewidth.StringWidth(sizeToString(v.Free)); w > maxColContent[4] {
+				maxColContent[4] = w
+			}
+		}
+		if inColumns(opts.Columns, 5) {
+			var usage float64
+			if v.Total > 0 {
+				usage = float64(v.Used) / float64(v.Total)
+				if usage > 1.0 {
+					usage = 1.0
+				}
+			}
+			percentStr := fmt.Sprintf("%.1f%%", usage*100)
+			if w := runewidth.StringWidth(percentStr); w > maxColContent[5] {
+				maxColContent[5] = w
+			}
+		}
+		if inColumns(opts.Columns, 6) {
+			if w := runewidth.StringWidth(strconv.FormatUint(v.Inodes, 10)); w > maxColContent[6] {
+				maxColContent[6] = w
+			}
+		}
+		if inColumns(opts.Columns, 7) {
+			if w := runewidth.StringWidth(strconv.FormatUint(v.InodesUsed, 10)); w > maxColContent[7] {
+				maxColContent[7] = w
+			}
+		}
+		if inColumns(opts.Columns, 8) {
+			if w := runewidth.StringWidth(strconv.FormatUint(v.InodesFree, 10)); w > maxColContent[8] {
+				maxColContent[8] = w
+			}
+		}
+		if inColumns(opts.Columns, 9) {
+			var usage float64
+			if v.Inodes > 0 {
+				usage = float64(v.InodesUsed) / float64(v.Inodes)
+				if usage > 1.0 {
+					usage = 1.0
+				}
+			}
+			percentStr := fmt.Sprintf("%.1f%%", usage*100)
+			if w := runewidth.StringWidth(percentStr); w > maxColContent[9] {
+				maxColContent[9] = w
+			}
+		}
+		if inColumns(opts.Columns, 10) {
+			if w := runewidth.StringWidth(v.Fstype); w > maxColContent[10] {
+				maxColContent[10] = w
+			}
+		}
+		if inColumns(opts.Columns, 11) {
+			if w := runewidth.StringWidth(v.Device); w > maxColContent[11] {
+				maxColContent[11] = w
+			}
+		}
+	}
+	return maxColContent
+}
+
+// computeAssignedWidths computes the assigned widths for dynamic columns (1, 10, 11).
+func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) (map[int]int, int) {
+	visibleCols := append([]int{}, opts.Columns...)
+	nVis := len(visibleCols)
+
+	// Non-content overhead
+	sepWidth := 1
+	paddingPerCol := 2
+	overhead := (nVis+1)*sepWidth + nVis*paddingPerCol
+	totalAllowed := int(*width)
+
+	// Determine targets and their need
+	targets := []int{}
+	weights := map[int]float64{1: 0.4, 10: 0.2, 11: 0.4}
+	weightSum := 0.0
+	for _, t := range []int{1, 10, 11} {
+		if inColumns(opts.Columns, t) {
+			targets = append(targets, t)
+			weightSum += weights[t]
+		}
+	}
+
+	// Sum fixed widths of non-target visible columns
+	fixedContentWidth := 0
+	for _, ci := range visibleCols {
+		if ci == 1 || ci == 10 || ci == 11 {
+			continue
+		}
+		fixedContentWidth += maxColContent[ci]
+	}
+
+	availableContent := totalAllowed - overhead - fixedContentWidth
+	if availableContent < 0 {
+		availableContent = 0
+	}
+
+	// Cap target allocations by their max content need
+	assigned := map[int]int{}
+	used := 0
+	if availableContent > 0 && len(targets) > 0 {
+		for _, t := range targets {
+			share := int(float64(availableContent) * (weights[t] / weightSum))
+			if share > maxColContent[t] {
+				share = maxColContent[t]
+			}
+			assigned[t] = share
+			used += share
+		}
+		// remainder distribution
+		remainder := availableContent - used
+		for remainder > 0 {
+			bestCol := 0
+			bestNeed := 0
+			for _, t := range targets {
+				need := maxColContent[t] - assigned[t]
+				if need > bestNeed {
+					bestNeed = need
+					bestCol = t
+				}
+			}
+			if bestNeed <= 0 {
+				break
+			}
+			take := remainder
+			if take > bestNeed {
+				take = bestNeed
+			}
+			assigned[bestCol] += take
+			remainder -= take
+		}
+	}
+
+	// Calculate final slack
+	predictedTotal := overhead + fixedContentWidth
+	for _, t := range targets {
+		predictedTotal += assigned[t]
+	}
+	slack := totalAllowed - predictedTotal
+	return assigned, slack
+}
+
+// setColumnConfigs configures the columns for the table.
+func setColumnConfigs(tab table.Writer, maxColContent map[int]int, assigned map[int]int, opts TableOptions, barTransformerFunc func(interface{}) string) {
+	cfgs := []table.ColumnConfig{
+		{Number: 1, Hidden: !inColumns(opts.Columns, 1), WidthMax: assigned[1]},
+		{Number: 2, Hidden: !inColumns(opts.Columns, 2), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[2]},
+		{Number: 3, Hidden: !inColumns(opts.Columns, 3), Transformer: sizeTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[3]},
+		{Number: 4, Hidden: !inColumns(opts.Columns, 4), Transformer: spaceTransformer, Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[4]},
+		{Number: 5, Hidden: !inColumns(opts.Columns, 5), Transformer: barTransformerFunc, AlignHeader: text.AlignCenter, WidthMax: maxColContent[5]},
+		{Number: 6, Hidden: !inColumns(opts.Columns, 6), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[6]},
+		{Number: 7, Hidden: !inColumns(opts.Columns, 7), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[7]},
+		{Number: 8, Hidden: !inColumns(opts.Columns, 8), Align: text.AlignRight, AlignHeader: text.AlignRight, WidthMax: maxColContent[8]},
+		{Number: 9, Hidden: !inColumns(opts.Columns, 9), Transformer: barTransformerFunc, AlignHeader: text.AlignCenter, WidthMax: maxColContent[9]},
+		{Number: 10, Hidden: !inColumns(opts.Columns, 10), WidthMax: assigned[10]},
+		{Number: 11, Hidden: !inColumns(opts.Columns, 11), WidthMax: assigned[11]},
+		{Number: 12, Hidden: true}, // sortBy helper for size
+		{Number: 13, Hidden: true}, // sortBy helper for used
+		{Number: 14, Hidden: true}, // sortBy helper for avail
+		{Number: 15, Hidden: true}, // sortBy helper for usage
+		{Number: 16, Hidden: true}, // sortBy helper for inodes size
+		{Number: 17, Hidden: true}, // sortBy helper for inodes used
+		{Number: 18, Hidden: true}, // sortBy helper for inodes avail
+		{Number: 19, Hidden: true}, // sortBy helper for inodes usage
+	}
+	tab.SetColumnConfigs(cfgs)
+}
+
+// printTable prints an individual table of mounts.
+func printTable(title string, m []Mount, opts TableOptions) {
+	tab := table.NewWriter()
+	initializeTable(tab, opts)
+	appendHeaders(tab)
+	appendRows(tab, m)
 
 	if tab.Length() == 0 {
 		return
 	}
+
+	maxColContent := computeMaxContentWidths(m, opts)
+	assigned, slack := computeAssignedWidths(maxColContent, opts)
+
+	origPercentWidth5 := maxColContent[5]
+	origPercentWidth9 := maxColContent[9]
+	percentWidth := origPercentWidth5
+	if origPercentWidth9 > percentWidth {
+		percentWidth = origPercentWidth9
+	}
+
+	barWidth := 0
+	numBars := 0
+	if inColumns(opts.Columns, 5) {
+		numBars++
+	}
+	if inColumns(opts.Columns, 9) {
+		numBars++
+	}
+	if numBars > 0 && slack >= 6 {
+		// Each bar consumes: barWidth + 1 (for space)
+		// So for numBars, total consumption is: numBars * (barWidth + 1)
+		maxBarWidth := min((slack/numBars)-1, 20)
+
+		if maxBarWidth > 0 {
+			barWidth = maxBarWidth
+			if inColumns(opts.Columns, 5) {
+				maxColContent[5] = barWidth + 1 + percentWidth
+			}
+			if inColumns(opts.Columns, 9) {
+				maxColContent[9] = barWidth + 1 + percentWidth
+			}
+		}
+	}
+
+	// Define barTransformerFunc
+	barTransformerFunc := func(val interface{}) string {
+		usage := val.(float64)
+		if barWidth <= 0 {
+			s := fmt.Sprintf("%*s", percentWidth, fmt.Sprintf("%.1f%%", usage*100))
+			return termenv.String(s).String()
+		}
+
+		bw := barWidth
+		var filledChar, halfChar, emptyChar string
+		if opts.StyleName == "unicode" {
+			filledChar = "█"
+			halfChar = "▌"
+			emptyChar = " "
+		} else {
+			bw -= 2
+			filledChar = "#"
+			halfChar = "#"
+			emptyChar = "."
+		}
+
+		filled := int(usage * float64(bw))
+		partial := usage*float64(bw) - float64(filled)
+		empty := bw - filled
+
+		var filledStr, emptyStr string
+		filledStr = strings.Repeat(filledChar, filled)
+
+		// If we have a sufficiently large partial, render a half block.
+		if partial >= 0.5 {
+			filledStr += halfChar
+			empty--
+		}
+
+		if empty < 0 {
+			empty = 0
+		}
+		emptyStr = strings.Repeat(emptyChar, empty)
+
+		var format string
+		if opts.StyleName == "unicode" {
+			format = "%s%s %*s"
+		} else {
+			format = "[%s%s] %*s"
+		}
+
+		// Apply colors
+		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
+		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
+
+		var fgColor termenv.Color
+		switch {
+		case usage >= redUsage:
+			fgColor = theme.colorRed
+		case usage >= yellowUsage:
+			fgColor = theme.colorYellow
+		default:
+			fgColor = theme.colorGreen
+		}
+
+		filledPart := termenv.String(filledStr).Foreground(fgColor)
+		emptyPart := termenv.String(emptyStr)
+		if opts.StyleName == "unicode" {
+			// Add background to filled part to prevent black spaces in half blocks
+			// Use a background color that complements the foreground
+			var bgColor termenv.Color
+			switch {
+			case usage >= redUsage:
+				bgColor = theme.colorBgRed
+			case usage >= yellowUsage:
+				bgColor = theme.colorBgYellow
+			default:
+				bgColor = theme.colorBgGreen
+			}
+			filledPart = filledPart.Background(bgColor).Foreground(fgColor)
+			// Use a neutral background for empty areas
+			emptyPart = emptyPart.Background(bgColor)
+		}
+
+		s := fmt.Sprintf(format, filledPart, emptyPart, percentWidth, fmt.Sprintf("%.1f%%", usage*100))
+		return termenv.String(s).String()
+	}
+
+	setColumnConfigs(tab, maxColContent, assigned, opts, barTransformerFunc)
 
 	suffix := "device"
 	if tab.Length() > 1 {
@@ -169,38 +464,6 @@ func spaceTransformer(val interface{}) string {
 	return s.String()
 }
 
-// barTransformer transforms a percentage into a progress-bar.
-func barTransformer(val interface{}) string {
-	usage := val.(float64)
-	s := termenv.String()
-	if usage > 0 {
-		if barWidth() > 0 {
-			bw := barWidth() - 2
-			s = termenv.String(fmt.Sprintf("[%s%s] %5.1f%%",
-				strings.Repeat("#", int(usage*float64(bw))),
-				strings.Repeat(".", bw-int(usage*float64(bw))),
-				usage*100,
-			))
-		} else {
-			s = termenv.String(fmt.Sprintf("%5.1f%%", usage*100))
-		}
-	}
-
-	// apply color to progress-bar
-	redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
-	yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
-	switch {
-	case usage >= redUsage:
-		s = s.Foreground(theme.colorRed)
-	case usage >= yellowUsage:
-		s = s.Foreground(theme.colorYellow)
-	default:
-		s = s.Foreground(theme.colorGreen)
-	}
-
-	return s.String()
-}
-
 // inColumns return true if the column with index i is in the slice of visible
 // columns cols.
 func inColumns(cols []int, i int) bool {
@@ -211,35 +474,6 @@ func inColumns(cols []int, i int) bool {
 	}
 
 	return false
-}
-
-// barWidth returns the width of progress-bars for the given render width.
-func barWidth() int {
-	switch {
-	case *width < 100:
-		return 0
-	case *width < 120:
-		return 12
-	default:
-		return 22
-	}
-}
-
-// tableWidth returns the required minimum table width for the given columns.
-func tableWidth(cols []int, separators bool) int {
-	var sw int
-	if separators {
-		sw = 1
-	}
-
-	twidth := int(*width)
-	for i := 0; i < len(columns); i++ {
-		if inColumns(cols, i+1) {
-			twidth -= 2 + sw + columns[i].Width
-		}
-	}
-
-	return twidth
 }
 
 // sizeToString prettifies sizes.

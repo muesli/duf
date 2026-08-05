@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/sys/unix"
@@ -39,7 +40,7 @@ const (
 	// (9) mount source: filesystem specific information or "none".
 	mountinfoMountSource = 9
 	// (10) super options: per super block options.
-	//mountinfoSuperOptions = 10
+	mountinfoSuperOptions = 10
 )
 
 // Stat returns the mountpoint's stat information.
@@ -53,7 +54,8 @@ func mounts() ([]Mount, []string, error) {
 	filename := "/proc/self/mountinfo"
 	lines, err := readLines(filename)
 	if err != nil {
-		return nil, nil, err
+		// wrapcheck: add context to the error.
+		return nil, nil, fmt.Errorf("reading mountinfo %q: %w", filename, err)
 	}
 
 	ret := make([]Mount, 0, len(lines))
@@ -105,9 +107,9 @@ func mounts() ([]Mount, []string, error) {
 		}
 		d.DeviceType = deviceType(d)
 
-		// resolve /dev/mapper/* device names
+		// Resolve /dev/mapper/* device names.
 		if strings.HasPrefix(d.Device, "/dev/mapper/") {
-			re := regexp.MustCompile(`^\/dev\/mapper\/(.*)-(.*)`)
+			re := regexp.MustCompile(`^/dev/mapper/(.*)-(.*)`)
 			match := re.FindAllStringSubmatch(d.Device, -1)
 			if len(match) > 0 && len(match[0]) == 3 {
 				d.Device = filepath.Join("/dev", match[0][1], match[0][2])
@@ -120,6 +122,51 @@ func mounts() ([]Mount, []string, error) {
 	return ret, warnings, nil
 }
 
+// splitMountInfoFields splits a mountinfo line into its fields.
+// It treats spaces and tabs as field separators and decodes certain octal escapes.
+func splitMountInfoFields(line string) []string {
+	var fields []string
+	var buf strings.Builder
+
+	for i := 0; i < len(line); i++ {
+		c := line[i]
+
+		// Treat both space and tab as separators
+		if c == ' ' || c == '\t' {
+			if buf.Len() > 0 {
+				fields = append(fields, buf.String())
+				buf.Reset()
+			}
+			continue
+		}
+
+		if c == '\\' && i+3 < len(line) {
+			oct := line[i+1 : i+4]
+			if v, err := strconv.ParseInt(oct, 8, 0); err == nil {
+				switch byte(v) {
+				case ' ', '\t', '\n':
+					buf.WriteByte(byte(v))
+					i += 3
+					continue
+				default:
+					// keep unknown escapes as-is
+					buf.WriteString("\\" + oct)
+					i += 3
+					continue
+				}
+			}
+		}
+
+		buf.WriteByte(c)
+	}
+
+	if buf.Len() > 0 {
+		fields = append(fields, buf.String())
+	}
+
+	return fields
+}
+
 // parseMountInfoLine parses a line of /proc/self/mountinfo and returns the
 // amount of parsed fields and their values.
 func parseMountInfoLine(line string) (int, [11]string) {
@@ -130,42 +177,63 @@ func parseMountInfoLine(line string) (int, [11]string) {
 		return 0, fields
 	}
 
+	all := splitMountInfoFields(line)
+
 	var i int
-	for _, f := range strings.Fields(line) {
-		// when parsing the optional fields, loop until we find the separator
-		if i == mountinfoOptionalFields {
-			// (6)  optional fields: zero or more fields of the form
-			//        "tag[:value]"; see below.
-			// (7)  separator: the end of the optional fields is marked
-			//        by a single hyphen.
-			if f != "-" {
-				if fields[i] == "" {
-					fields[i] += f
-				} else {
-					fields[i] += " " + f
-				}
+	sawSep := false
+	sawSup := false
 
-				// keep reading until we reach the separator
-				continue
-			}
-
-			// separator found, continue parsing
-			i++
+	for _, f := range all {
+		if i >= len(fields) {
+			break
 		}
 
-		switch i {
-		case mountinfoMountPoint:
-			fallthrough
-		case mountinfoMountSource:
-			fallthrough
-		case mountinfoFsType:
-			fields[i] = unescapeFstab(f)
+		if i == mountinfoOptionalFields {
+			// (6)  optional fields: zero or more fields of the form "tag[:value]"; see below.
+			// (7)  separator: the end of the optional fields is marked by a single hyphen.
+			if f != "-" {
+				// Join tokens with spaces for mountinfoOptionalFields.
+				fields[i] = strings.TrimSpace(fields[i] + " " + f)
+				continue
+			}
+			// Found separator.
+			sawSep = true
+			i++
+			fields[i] = f
+			i++
+			continue
+		}
 
+		if i == mountinfoSuperOptions {
+			// join tokens with spaces for WSL2 path=... they are splitted around spaces.
+			fields[i] = strings.TrimSpace(fields[i] + " " + f)
+			sawSup = true
+			continue
+		}
+
+		// Default case: copy with unescape for certain fields
+		switch i {
+		case mountinfoMountPoint, mountinfoMountSource, mountinfoFsType:
+			fields[i] = unescapeFstab(f)
 		default:
 			fields[i] = f
 		}
-
 		i++
+	}
+
+	// Handle malformed line (no "-" found).
+	if !sawSep && len(all) > mountinfoOptionalFields {
+		i = mountinfoOptionalFields
+	}
+
+	// When super options are present, the index is one less than 11.
+	if sawSup {
+		i++
+	}
+
+	// clear trailing empties.
+	for j := i + 1; j < len(fields); j++ {
+		fields[j] = ""
 	}
 
 	return i, fields

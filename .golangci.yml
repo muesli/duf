@@ -1,22 +1,9 @@
+version: "2"
 run:
   tests: false
-
-issues:
-  include:
-    - EXC0001
-    - EXC0005
-    - EXC0011
-    - EXC0012
-    - EXC0013
-
-  max-issues-per-linter: 0
-  max-same-issues: 0
-
 linters:
   enable:
     - bodyclose
-    - exportloopref
-    - goimports
     - gosec
     - nilerr
     - predeclared
@@ -27,3 +14,15 @@ linters:
     - unconvert
     - unparam
     - whitespace
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax

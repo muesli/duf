@@ -5,7 +5,7 @@ package main
 
 import "strings"
 
-//nolint:revive,deadcode
+//nolint:revive
 const (
 	// man statfs
 	ADFS_SUPER_MAGIC      = 0xadf5

@@ -1,6 +1,8 @@
 name: lint-soft
 on:
   push:
+    branches:
+      - master
   pull_request:
 
 permissions:
@@ -13,9 +15,12 @@ jobs:
     name: lint-soft
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6.0.0
+        with:
+          go-version: stable
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v8
         with:
           # Optional: golangci-lint command line arguments.
           args: --config .golangci-soft.yml --issues-exit-code=0

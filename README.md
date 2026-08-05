@@ -24,10 +24,12 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 #### Linux
 - Arch Linux: `pacman -S duf`
-- Ubuntu 22.04 / Debian unstable: `apt install duf`
+- Ubuntu (22.04 and later) / Debian (12 and later): `apt install duf`
+- Fedora Linux: `dnf install duf`
 - Nix: `nix-env -iA nixpkgs.duf`
 - Void Linux: `xbps-install -S duf`
 - Gentoo Linux: `emerge sys-fs/duf`
+- Solus: `eopkg it duf`
 - [Packages](https://github.com/muesli/duf/releases) in Alpine, Debian & RPM formats
 
 #### BSD
@@ -50,7 +52,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 
 ### From source
 
-Make sure you have a working Go environment (Go 1.17 or higher is required).
+Make sure you have a working Go environment (Go 1.23 or higher is required).
 See the [install instructions](https://golang.org/doc/install.html).
 
 Compiling duf is easy, simply run:

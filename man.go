@@ -4,13 +4,13 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	"github.com/muesli/mango"
-	"github.com/muesli/mango/mflag"
+	mpflag "github.com/muesli/mango-pflag"
 	"github.com/muesli/roff"
+	flag "github.com/spf13/pflag"
 )
 
 func init() {
@@ -90,7 +90,7 @@ If you prefer your output as JSON:
 		WithSection("Copyright", "Copyright (C) 2020-2022 Christian Muehlhaeuser <https://github.com/muesli>\n"+
 			"Released under MIT license.")
 
-	flag.VisitAll(mflag.FlagVisitor(manPage))
+	flag.VisitAll(mpflag.PFlagVisitor(manPage))
 	fmt.Println(manPage.Build(roff.NewDocument()))
 	os.Exit(0)
 }
