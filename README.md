@@ -43,6 +43,7 @@ Disk Usage/Free Utility (Linux, BSD, macOS & Windows)
 #### Windows
 - with [Chocolatey](https://chocolatey.org/): `choco install duf`
 - with [scoop](https://scoop.sh/): `scoop install duf`
+- After Chocolatey or Scoop, open a **new** terminal so `PATH` picks up `duf`.
 
 #### Android
 - Android (via termux): `pkg install duf`
