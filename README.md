@@ -96,6 +96,11 @@ Wildcards inside quotes work:
 
     duf --only-mp '/sys/*,/dev/*'
 
+By default, duf renders a separate table per device group (local, network,
+fuse, ...). Combine them into a single table with:
+
+    duf --combine
+
 ### Display options
 
 Sort the output:
