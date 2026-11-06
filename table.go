@@ -19,6 +19,7 @@ type TableOptions struct {
 	SortBy    int
 	Style     table.Style
 	StyleName string
+	Combine   bool
 }
 
 // Column defines a column.
@@ -428,7 +429,11 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	if tab.Length() > 1 {
 		suffix = "devices"
 	}
-	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
+	if title == "" {
+		tab.SetTitle("%d %s", tab.Length(), suffix)
+	} else {
+		tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
+	}
 
 	// tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
