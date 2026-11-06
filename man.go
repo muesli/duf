@@ -45,6 +45,10 @@ Wildcards inside quotes work:
 
   $ duf --only-mp '/sys/*,/dev/*'
 
+Hide the device count in table titles:
+
+  $ duf --hide-device-count
+
 Sort the output:
 
   $ duf --sort size

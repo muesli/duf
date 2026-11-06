@@ -98,6 +98,10 @@ Wildcards inside quotes work:
 
 ### Display options
 
+Hide the device count in table titles:
+
+    duf --hide-device-count
+
 Sort the output:
 
     duf --sort size

@@ -15,10 +15,11 @@ import (
 
 // TableOptions contains all options for the table.
 type TableOptions struct {
-	Columns   []int
-	SortBy    int
-	Style     table.Style
-	StyleName string
+	Columns         []int
+	SortBy          int
+	Style           table.Style
+	StyleName       string
+	HideDeviceCount bool
 }
 
 // Column defines a column.
@@ -428,7 +429,11 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	if tab.Length() > 1 {
 		suffix = "devices"
 	}
-	tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
+	if opts.HideDeviceCount {
+		tab.SetTitle("%s %s", title, suffix)
+	} else {
+		tab.SetTitle("%d %s %s", tab.Length(), title, suffix)
+	}
 
 	// tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
