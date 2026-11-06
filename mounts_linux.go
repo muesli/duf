@@ -34,7 +34,7 @@ const (
 	// (6) optional fields: zero or more fields terminated by "-".
 	mountinfoOptionalFields = 6
 	// (7) separator between optional fields.
-	//mountinfoSeparator = 7
+	// mountinfoSeparator = 7
 	// (8) filesystem type: name of filesystem of the form.
 	mountinfoFsType = 8
 	// (9) mount source: filesystem specific information or "none".
@@ -42,6 +42,8 @@ const (
 	// (10) super options: per super block options.
 	mountinfoSuperOptions = 10
 )
+
+var statRegex = regexp.MustCompile(`^/dev/mapper/(.*)-(.*)`)
 
 // Stat returns the mountpoint's stat information.
 func (m *Mount) Stat() unix.Statfs_t {
@@ -109,8 +111,7 @@ func mounts() ([]Mount, []string, error) {
 
 		// Resolve /dev/mapper/* device names.
 		if strings.HasPrefix(d.Device, "/dev/mapper/") {
-			re := regexp.MustCompile(`^/dev/mapper/(.*)-(.*)`)
-			match := re.FindAllStringSubmatch(d.Device, -1)
+			match := statRegex.FindAllStringSubmatch(d.Device, -1)
 			if len(match) > 0 && len(match[0]) == 3 {
 				d.Device = filepath.Join("/dev", match[0][1], match[0][2])
 			}
