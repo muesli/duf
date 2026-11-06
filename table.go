@@ -17,6 +17,7 @@ import (
 type TableOptions struct {
 	Columns   []int
 	SortBy    int
+	Reverse   bool
 	Style     table.Style
 	StyleName string
 }
@@ -432,8 +433,15 @@ func printTable(title string, m []Mount, opts TableOptions) {
 
 	// tab.AppendFooter(table.Row{fmt.Sprintf("%d %s", tab.Length(), title)})
 	sortMode := table.Asc
-	if opts.SortBy >= 12 {
-		sortMode = table.AscNumeric
+	if opts.Reverse {
+		sortMode = table.Dsc
+		if opts.SortBy >= 12 {
+			sortMode = table.DscNumeric
+		}
+	} else {
+		if opts.SortBy >= 12 {
+			sortMode = table.AscNumeric
+		}
 	}
 
 	tab.SortBy([]table.SortBy{{Number: opts.SortBy, Mode: sortMode}})
