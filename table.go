@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -63,6 +64,16 @@ func appendHeaders(tab table.Writer) {
 	tab.AppendHeader(headers)
 }
 
+// terminalText neutralizes terminal controls without changing the mount metadata.
+func terminalText(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return unicode.ReplacementChar
+		}
+		return r
+	}, s)
+}
+
 // appendRows adds data rows to the table for each mount.
 func appendRows(tab table.Writer, m []Mount) {
 	for _, v := range m {
@@ -81,7 +92,7 @@ func appendRows(tab table.Writer, m []Mount) {
 		}
 
 		tab.AppendRow([]interface{}{
-			termenv.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
+			termenv.String(terminalText(v.Mountpoint)).Foreground(theme.colorBlue), // mounted on
 			v.Total,      // size
 			v.Used,       // used
 			v.Free,       // avail
@@ -90,8 +101,8 @@ func appendRows(tab table.Writer, m []Mount) {
 			v.InodesUsed, // inodes used
 			v.InodesFree, // inodes avail
 			inodeUsage,   // inodes use%
-			termenv.String(v.Fstype).Foreground(theme.colorGray), // type
-			termenv.String(v.Device).Foreground(theme.colorGray), // filesystem
+			termenv.String(terminalText(v.Fstype)).Foreground(theme.colorGray), // type
+			termenv.String(terminalText(v.Device)).Foreground(theme.colorGray), // filesystem
 			v.Total,      // size sorting helper
 			v.Used,       // used sorting helper
 			v.Free,       // avail sorting helper
@@ -114,7 +125,7 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 	}
 	for _, v := range m {
 		if inColumns(opts.Columns, 1) {
-			if w := runewidth.StringWidth(v.Mountpoint); w > maxColContent[1] {
+			if w := runewidth.StringWidth(terminalText(v.Mountpoint)); w > maxColContent[1] {
 				maxColContent[1] = w
 			}
 		}
@@ -175,12 +186,12 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 			}
 		}
 		if inColumns(opts.Columns, 10) {
-			if w := runewidth.StringWidth(v.Fstype); w > maxColContent[10] {
+			if w := runewidth.StringWidth(terminalText(v.Fstype)); w > maxColContent[10] {
 				maxColContent[10] = w
 			}
 		}
 		if inColumns(opts.Columns, 11) {
-			if w := runewidth.StringWidth(v.Device); w > maxColContent[11] {
+			if w := runewidth.StringWidth(terminalText(v.Device)); w > maxColContent[11] {
 				maxColContent[11] = w
 			}
 		}
