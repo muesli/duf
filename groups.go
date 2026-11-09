@@ -105,10 +105,8 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 		deviceMounts[t] = append(deviceMounts[t], v)
 	}
 
-	// print tables
-	for _, devType := range groups {
-		mounts := deviceMounts[devType]
-
+	// determine which groups should be printed
+	shouldPrintGroup := func(devType string) bool {
 		shouldPrint := *all
 		if !shouldPrint {
 			switch devType {
@@ -122,9 +120,25 @@ func renderTables(m []Mount, filters FilterOptions, opts TableOptions) {
 				shouldPrint = (hasOnlyDevices && onlySpecial) || (!hasOnlyDevices && !hideSpecial)
 			}
 		}
+		return shouldPrint
+	}
 
-		if shouldPrint {
-			printTable(devType, mounts, opts)
+	// combine all visible groups into a single table
+	if opts.Combine {
+		var combined []Mount
+		for _, devType := range groups {
+			if shouldPrintGroup(devType) {
+				combined = append(combined, deviceMounts[devType]...)
+			}
+		}
+		printTable("", combined, opts)
+		return
+	}
+
+	// print tables
+	for _, devType := range groups {
+		if shouldPrintGroup(devType) {
+			printTable(devType, deviceMounts[devType], opts)
 		}
 	}
 }

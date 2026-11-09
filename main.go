@@ -39,6 +39,7 @@ var (
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
+	combine  = flag.Bool("combine", false, "combine all device groups into a single table")
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	reverse  = flag.Bool("reverse", false, "reverse sort order")
@@ -360,5 +361,6 @@ func main() {
 		Reverse:   *reverse,
 		Style:     style,
 		StyleName: *styleOpt,
+		Combine:   *combine,
 	})
 }
