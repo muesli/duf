@@ -210,9 +210,29 @@ func main() {
 		os.Exit(1)
 	}
 
+	// validate filters
+	filters := FilterOptions{
+		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
+		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
+		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
+		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
+		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
+		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
+	}
+	err = validateGroups(filters.HiddenDevices)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = validateGroups(filters.OnlyDevices)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	// print JSON
 	if *jsonOutput {
-		if err = renderJSON(m); err != nil {
+		if err = renderJSON(filterMounts(m, filters)); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 		return
@@ -259,26 +279,6 @@ func main() {
 	sortCol, err := stringToSortIndex(*sortBy)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	// validate filters
-	filters := FilterOptions{
-		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
-		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
-		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
-		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
-		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
-		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
-	}
-	err = validateGroups(filters.HiddenDevices)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	err = validateGroups(filters.OnlyDevices)
-	if err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 
