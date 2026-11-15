@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   golangci:
+    if: github.server_url == 'https://github.com'
     name: lint
     runs-on: ubuntu-latest
     steps:

@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         go-version: [~1.23, ^1]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ github.server_url == 'https://github.com' && fromJSON('["ubuntu-latest", "macos-latest", "windows-latest"]') || fromJSON('["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: "on"
