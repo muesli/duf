@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
 	flag "github.com/spf13/pflag"
+	"gitlab.com/iglou.eu/goulc/wildcard"
 	"golang.org/x/term"
 )
 
@@ -138,7 +138,7 @@ func validateGroups(m map[string]struct{}) error {
 // findInKey parse a slice of pattern to match the given key.
 func findInKey(str string, km map[string]struct{}) bool {
 	for p := range km {
-		if wildcard.Match(p, str) {
+		if wildcard.MatchByRune(p, str) {
 			return true
 		}
 	}

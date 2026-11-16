@@ -1,9 +1,8 @@
 module github.com/muesli/duf
 
-go 1.23.0
+go 1.24.0
 
 require (
-	github.com/IGLOU-EU/go-wildcard v1.0.3
 	github.com/jedib0t/go-pretty/v6 v6.6.8
 	github.com/mattn/go-runewidth v0.0.19
 	github.com/muesli/mango v0.2.0
@@ -11,6 +10,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/spf13/pflag v1.0.10
+	gitlab.com/iglou.eu/goulc v1.0.1
 	golang.org/x/sys v0.35.0
 	golang.org/x/term v0.34.0
 )
