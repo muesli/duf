@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	wildcard "github.com/IGLOU-EU/go-wildcard"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/muesli/termenv"
 	flag "github.com/spf13/pflag"
+	"gitlab.com/iglou.eu/goulc/wildcard"
 	"golang.org/x/term"
 )
 
@@ -101,7 +101,8 @@ func parseStyle(styleOpt string) (table.Style, error) {
 	}
 }
 
-// parseCommaSeparatedValues parses comma separated string into a map.
+// parseCommaSeparatedValues parses comma separated string into a map, keeping
+// the case of each value.
 func parseCommaSeparatedValues(values string) map[string]struct{} {
 	m := make(map[string]struct{})
 	for _, v := range strings.Split(values, ",") {
@@ -110,7 +111,6 @@ func parseCommaSeparatedValues(values string) map[string]struct{} {
 			continue
 		}
 
-		v = strings.ToLower(v)
 		m[v] = struct{}{}
 	}
 	return m
@@ -138,7 +138,7 @@ func validateGroups(m map[string]struct{}) error {
 // findInKey parse a slice of pattern to match the given key.
 func findInKey(str string, km map[string]struct{}) bool {
 	for p := range km {
-		if wildcard.Match(p, str) {
+		if wildcard.MatchByRune(p, str) {
 			return true
 		}
 	}
@@ -264,10 +264,10 @@ func main() {
 
 	// validate filters
 	filters := FilterOptions{
-		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
-		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
-		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
-		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
+		HiddenDevices:     parseCommaSeparatedValues(strings.ToLower(*hideDevices)),
+		OnlyDevices:       parseCommaSeparatedValues(strings.ToLower(*onlyDevices)),
+		HiddenFilesystems: parseCommaSeparatedValues(strings.ToLower(*hideFs)),
+		OnlyFilesystems:   parseCommaSeparatedValues(strings.ToLower(*onlyFs)),
 		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
 		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
 	}

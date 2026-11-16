@@ -96,6 +96,8 @@ Wildcards inside quotes work:
 
     duf --only-mp '/sys/*,/dev/*'
 
+`*` matches any number of characters, `?` matches zero or one character, and `.` matches exactly one character, a dot included.
+
 ### Display options
 
 Sort the output:
