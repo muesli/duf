@@ -1,6 +1,36 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
+
+func TestParseCommaSeparatedValues(t *testing.T) {
+	var tt = []struct {
+		input    string
+		expected map[string]struct{}
+	}{
+		// Empty values are skipped
+		{input: "", expected: map[string]struct{}{}},
+		{input: " , ,", expected: map[string]struct{}{}},
+
+		// Values are trimmed and deduplicated
+		{input: "local,network", expected: map[string]struct{}{"local": {}, "network": {}}},
+		{input: " local , network ", expected: map[string]struct{}{"local": {}, "network": {}}},
+		{input: "/home,/home", expected: map[string]struct{}{"/home": {}}},
+
+		// The case of each value is kept
+		{input: "/mnt/PrimLine", expected: map[string]struct{}{"/mnt/PrimLine": {}}},
+		{input: "/Volumes/*,/volumes/*", expected: map[string]struct{}{"/Volumes/*": {}, "/volumes/*": {}}},
+	}
+
+	for _, tc := range tt {
+		if got := parseCommaSeparatedValues(tc.input); !reflect.DeepEqual(got, tc.expected) {
+			t.Errorf("parseCommaSeparatedValues(%q) = %v, expected %v",
+				tc.input, got, tc.expected)
+		}
+	}
+}
 
 func TestFindInKey(t *testing.T) {
 	var tt = []struct {

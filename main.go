@@ -101,7 +101,8 @@ func parseStyle(styleOpt string) (table.Style, error) {
 	}
 }
 
-// parseCommaSeparatedValues parses comma separated string into a map.
+// parseCommaSeparatedValues parses comma separated string into a map, keeping
+// the case of each value.
 func parseCommaSeparatedValues(values string) map[string]struct{} {
 	m := make(map[string]struct{})
 	for _, v := range strings.Split(values, ",") {
@@ -110,7 +111,6 @@ func parseCommaSeparatedValues(values string) map[string]struct{} {
 			continue
 		}
 
-		v = strings.ToLower(v)
 		m[v] = struct{}{}
 	}
 	return m
@@ -264,10 +264,10 @@ func main() {
 
 	// validate filters
 	filters := FilterOptions{
-		HiddenDevices:     parseCommaSeparatedValues(*hideDevices),
-		OnlyDevices:       parseCommaSeparatedValues(*onlyDevices),
-		HiddenFilesystems: parseCommaSeparatedValues(*hideFs),
-		OnlyFilesystems:   parseCommaSeparatedValues(*onlyFs),
+		HiddenDevices:     parseCommaSeparatedValues(strings.ToLower(*hideDevices)),
+		OnlyDevices:       parseCommaSeparatedValues(strings.ToLower(*onlyDevices)),
+		HiddenFilesystems: parseCommaSeparatedValues(strings.ToLower(*hideFs)),
+		OnlyFilesystems:   parseCommaSeparatedValues(strings.ToLower(*onlyFs)),
 		HiddenMountPoints: parseCommaSeparatedValues(*hideMp),
 		OnlyMountPoints:   parseCommaSeparatedValues(*onlyMp),
 	}
