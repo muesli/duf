@@ -29,7 +29,9 @@ func findMounts(mounts []Mount, path string) ([]Mount, error) {
 			return []Mount{v}, nil
 		}
 
-		if strings.HasPrefix(path, v.Mountpoint) {
+		// A matching prefix must end at a directory boundary, including for root mounts.
+		mountpointPrefix := strings.TrimSuffix(v.Mountpoint, string(os.PathSeparator)) + string(os.PathSeparator)
+		if path == v.Mountpoint || strings.HasPrefix(path, mountpointPrefix) {
 			var nm []Mount
 
 			// keep all entries that are as close or closer to the target
