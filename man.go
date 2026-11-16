@@ -70,6 +70,12 @@ duf highlights the availability & usage columns in red, green, or yellow, depend
   $ duf --avail-threshold="10G,1G"
   $ duf --usage-threshold="0.5,0.9"
 
+Valid prefixes for the avail threshold are: K, M, G, T, P, E.
+
+To use SI units (powers of 1000) instead of IEC units (powers of 1024), for sizes and thresholds:
+
+  $ duf --si
+
 If you prefer your output as JSON:
 
   $ duf --json
