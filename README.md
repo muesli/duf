@@ -112,6 +112,17 @@ Show or hide specific columns:
 Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
 
+Show all byte sizes in the same unit (binary multiples of 1024):
+
+```bash
+duf --units G
+```
+
+Valid units are `B`, `K`, `M`, `G`, `T`, `P`, and `E` (case-insensitive).
+Without `--units`, each size uses its own human-readable unit. Byte output is
+exact; other units use one decimal place. This affects table output only, not
+JSON, inode counts, sorting, or color thresholds.
+
 List inode information instead of block usage:
 
     duf --inodes
