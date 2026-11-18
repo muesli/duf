@@ -128,6 +128,12 @@ depending on how much space is still available. You can set your own thresholds:
     duf --avail-threshold="10G,1G"
     duf --usage-threshold="0.5,0.9"
 
+Valid prefixes for the avail threshold are: `K`, `M`, `G`, `T`, `P`, `E`.
+
+To use SI units (powers of 1000) instead of IEC units (powers of 1024), for sizes and thresholds:
+
+    duf --si
+
 ### Bonus
 
 If you prefer your output as JSON:
