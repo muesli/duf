@@ -485,7 +485,31 @@ func inColumns(cols []int, i int) bool {
 }
 
 // sizeToString prettifies sizes.
-func sizeToString(size uint64) (str string) {
+func sizeToString(size uint64) string {
+	return formatSize(size, *units)
+}
+
+// parseSizeUnit validates and normalizes a fixed binary size unit.
+func parseSizeUnit(unit string) (string, error) {
+	unit = strings.ToUpper(unit)
+	switch unit {
+	case "", "B", "K", "M", "G", "T", "P", "E":
+		return unit, nil
+	default:
+		return "", fmt.Errorf("unknown size unit: %s (valid: B, K, M, G, T, P, E)", unit)
+	}
+}
+
+// formatSize formats a byte count in a fixed binary unit, or automatically if empty.
+func formatSize(size uint64, unit string) (str string) {
+	if unit == "B" {
+		return strconv.FormatUint(size, 10) + "B"
+	}
+	for i, suffix := range []string{"K", "M", "G", "T", "P", "E"} {
+		if unit == suffix {
+			return fmt.Sprintf("%.1f%s", float64(size)/float64(uint64(1)<<uint(10*(i+1))), suffix)
+		}
+	}
 	b := float64(size)
 
 	switch {

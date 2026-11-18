@@ -39,6 +39,7 @@ var (
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
+	units    = flag.String("units", "", "show all byte sizes in a fixed binary unit: B, K, M, G, T, P, E")
 	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
 	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
 	reverse  = flag.Bool("reverse", false, "reverse sort order")
@@ -235,6 +236,13 @@ func main() {
 
 	// validate style
 	style, err := parseStyle(*styleOpt)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// validate fixed size unit
+	*units, err = parseSizeUnit(*units)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
