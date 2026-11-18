@@ -188,6 +188,8 @@ func computeMaxContentWidths(m []Mount, opts TableOptions) map[int]int {
 	return maxColContent
 }
 
+const maxUsageBarWidth = 20
+
 // computeAssignedWidths computes the assigned widths for dynamic columns (1, 10, 11).
 func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) (map[int]int, int) {
 	visibleCols := append([]int{}, opts.Columns...)
@@ -222,6 +224,33 @@ func computeAssignedWidths(maxColContent map[int]int, opts TableOptions) (map[in
 	availableContent := totalAllowed - overhead - fixedContentWidth
 	if availableContent < 0 {
 		availableContent = 0
+	}
+
+	// Reserve room for usage bars before flexible text columns consume
+	// all remaining terminal width. Flexible columns can wrap while
+	// usage bars cannot.
+	numBars := 0
+	if inColumns(opts.Columns, 5) {
+		numBars++
+	}
+	if inColumns(opts.Columns, 9) {
+		numBars++
+	}
+
+	if numBars > 0 && availableContent > 0 && len(targets) > 0 {
+		// Preserve enough width for each flexible column header.
+		// Long values will wrap within WidthMax.
+		minTargetWidth := 0
+		for _, t := range targets {
+			minTargetWidth += runewidth.StringWidth(columns[t-1].Name)
+		}
+
+		maxReserve := availableContent - minTargetWidth
+		if maxReserve > 0 {
+			desiredReserve := numBars * (maxUsageBarWidth + 1)
+			barReserve := min(desiredReserve, maxReserve)
+			availableContent -= barReserve
+		}
 	}
 
 	// Cap target allocations by their max content need
@@ -327,7 +356,7 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	if numBars > 0 && slack >= 6 {
 		// Each bar consumes: barWidth + 1 (for space)
 		// So for numBars, total consumption is: numBars * (barWidth + 1)
-		maxBarWidth := min((slack/numBars)-1, 20)
+		maxBarWidth := min((slack/numBars)-1, maxUsageBarWidth)
 
 		if maxBarWidth > 0 {
 			barWidth = maxBarWidth
@@ -343,9 +372,22 @@ func printTable(title string, m []Mount, opts TableOptions) {
 	// Define barTransformerFunc
 	barTransformerFunc := func(val interface{}) string {
 		usage := val.(float64)
+
+		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
+		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
+
+		var fgColor termenv.Color
+		switch {
+		case usage >= redUsage:
+			fgColor = theme.colorRed
+		case usage >= yellowUsage:
+			fgColor = theme.colorYellow
+		default:
+			fgColor = theme.colorGreen
+		}
 		if barWidth <= 0 {
 			s := fmt.Sprintf("%*s", percentWidth, fmt.Sprintf("%.1f%%", usage*100))
-			return termenv.String(s).String()
+			return termenv.String(s).Foreground(fgColor).String()
 		}
 
 		bw := barWidth
@@ -387,19 +429,6 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		}
 
 		// Apply colors
-		redUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[1], 64)
-		yellowUsage, _ := strconv.ParseFloat(strings.Split(*usageThreshold, ",")[0], 64)
-
-		var fgColor termenv.Color
-		switch {
-		case usage >= redUsage:
-			fgColor = theme.colorRed
-		case usage >= yellowUsage:
-			fgColor = theme.colorYellow
-		default:
-			fgColor = theme.colorGreen
-		}
-
 		filledPart := termenv.String(filledStr).Foreground(fgColor)
 		emptyPart := termenv.String(emptyStr)
 		if opts.StyleName == "unicode" {
