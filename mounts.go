@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Mount contains all metadata for a single filesystem mount.
@@ -42,11 +43,24 @@ func readLines(filename string) ([]string, error) {
 }
 
 func unescapeFstab(path string) string {
-	escaped, err := strconv.Unquote(`"` + path + `"`)
-	if err != nil {
+	if !strings.Contains(path, `\`) {
 		return path
 	}
-	return escaped
+
+	// Mountinfo escapes are three octal digits. Copy all other bytes verbatim.
+	var decoded strings.Builder
+	decoded.Grow(len(path))
+	for i := 0; i < len(path); i++ {
+		if path[i] == '\\' && i+3 < len(path) {
+			if b, err := strconv.ParseUint(path[i+1:i+4], 8, 8); err == nil {
+				decoded.WriteByte(byte(b))
+				i += 3
+				continue
+			}
+		}
+		decoded.WriteByte(path[i])
+	}
+	return decoded.String()
 }
 
 //nolint:unused // used on BSD
