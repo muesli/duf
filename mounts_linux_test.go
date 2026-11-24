@@ -162,6 +162,21 @@ func TestGetFields(t *testing.T) {
 			number:   11,
 			expected: [11]string{"1111", "2", "3:3", "/", "/mnt/a\"b", "rw", "shared:7", "-", "tmpfs", "-", "rw,inode64"},
 		},
+		{
+			input:    `1 2 3:3 / /mnt/a"\134b rw - tmpfs dev"\0431 rw`,
+			number:   11,
+			expected: [11]string{"1", "2", "3:3", "/", "/mnt/a\"\\b", "rw", "", "-", "tmpfs", "dev\"#1", "rw"},
+		},
+		{
+			input:    "1 2 3:3 / /mnt/caf\xe9 rw - tmpfs tmpfs rw",
+			number:   11,
+			expected: [11]string{"1", "2", "3:3", "/", "/mnt/caf\xe9", "rw", "", "-", "tmpfs", "tmpfs", "rw"},
+		},
+		{
+			input:    `1 2 3:3 / /mnt/a\012b\134040 rw - tmpfs tmpfs rw`,
+			number:   11,
+			expected: [11]string{"1", "2", "3:3", "/", "/mnt/a\nb\\040", "rw", "", "-", "tmpfs", "tmpfs", "rw"},
+		},
 		// WSL2 9p mount table line.
 		{
 			input:    `380 383 0:33 / /usr/lib/wsl/drivers ro,nosuid,nodev,noatime - 9p drivers ro,dirsync,aname=drivers;fmask=222;dmask=222,mmap,access=client,msize=65536,trans=fd,rfd=8,wfd=8`,
