@@ -54,6 +54,9 @@ only specific filesystems, separated with commas
 \fB--only-mp\fP
 only specific mount points, separated with commas (supports wildcards)
 .TP
+\fB--order-columns\fP
+column order: default, custom (follow --output)
+.TP
 \fB--output\fP
 output fields: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem
 .TP
@@ -145,6 +148,12 @@ Show or hide specific columns:
 .PP
 .PP
 Valid keys are: mountpoint, size, used, avail, usage, inodes, inodes_used, inodes_avail, inodes_usage, type, filesystem\&.
+.PP
+.PP
+Reorder the selected columns explicitly (the default keeps the standard order):
+.PP
+.PP
+  $ duf --order-columns custom --output filesystem,mountpoint,usage
 .PP
 .PP
 List inode information instead of block usage:

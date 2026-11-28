@@ -112,6 +112,12 @@ Show or hide specific columns:
 Valid keys are: `mountpoint`, `size`, `used`, `avail`, `usage`, `inodes`,
 `inodes_used`, `inodes_avail`, `inodes_usage`, `type`, `filesystem`.
 
+Reorder the selected columns explicitly (the default keeps the standard order):
+
+```
+duf --order-columns custom --output filesystem,mountpoint,usage
+```
+
 List inode information instead of block usage:
 
     duf --inodes
