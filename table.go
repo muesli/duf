@@ -15,11 +15,12 @@ import (
 
 // TableOptions contains all options for the table.
 type TableOptions struct {
-	Columns   []int
-	SortBy    int
-	Reverse   bool
-	Style     table.Style
-	StyleName string
+	Columns     []int
+	CustomOrder bool
+	SortBy      int
+	Reverse     bool
+	Style       table.Style
+	StyleName   string
 }
 
 // Column defines a column.
@@ -55,16 +56,20 @@ func initializeTable(tab table.Writer, opts TableOptions) {
 }
 
 // appendHeaders adds the header row to the table.
-func appendHeaders(tab table.Writer) {
+func appendHeaders(tab table.Writer, order []int) {
 	headers := table.Row{}
-	for _, v := range columns {
-		headers = append(headers, v.Name)
+	for _, ci := range order {
+		if ci <= len(columns) {
+			headers = append(headers, columns[ci-1].Name)
+		} else {
+			headers = append(headers, "")
+		}
 	}
 	tab.AppendHeader(headers)
 }
 
 // appendRows adds data rows to the table for each mount.
-func appendRows(tab table.Writer, m []Mount) {
+func appendRows(tab table.Writer, m []Mount, order []int) {
 	for _, v := range m {
 		var usage, inodeUsage float64
 		if v.Total > 0 {
@@ -80,7 +85,7 @@ func appendRows(tab table.Writer, m []Mount) {
 			}
 		}
 
-		tab.AppendRow([]interface{}{
+		row := table.Row{
 			termenv.String(v.Mountpoint).Foreground(theme.colorBlue), // mounted on
 			v.Total,      // size
 			v.Used,       // used
@@ -100,7 +105,12 @@ func appendRows(tab table.Writer, m []Mount) {
 			v.InodesUsed, // inodes used sorting helper
 			v.InodesFree, // inodes avail sorting helper
 			inodeUsage,   // inodes use% sorting helper
-		})
+		}
+		reordered := make(table.Row, len(order))
+		for i, ci := range order {
+			reordered[i] = row[ci-1]
+		}
+		tab.AppendRow(reordered)
 	}
 }
 
@@ -292,6 +302,10 @@ func setColumnConfigs(tab table.Writer, maxColContent map[int]int, assigned map[
 		{Number: 18, Hidden: true}, // sortBy helper for inodes avail
 		{Number: 19, Hidden: true}, // sortBy helper for inodes usage
 	}
+	order := tableColumnOrder(opts)
+	for i := range cfgs {
+		cfgs[i].Number = columnPosition(order, cfgs[i].Number)
+	}
 	tab.SetColumnConfigs(cfgs)
 }
 
@@ -299,8 +313,9 @@ func setColumnConfigs(tab table.Writer, maxColContent map[int]int, assigned map[
 func printTable(title string, m []Mount, opts TableOptions) {
 	tab := table.NewWriter()
 	initializeTable(tab, opts)
-	appendHeaders(tab)
-	appendRows(tab, m)
+	order := tableColumnOrder(opts)
+	appendHeaders(tab, order)
+	appendRows(tab, m, order)
 
 	if tab.Length() == 0 {
 		return
@@ -444,7 +459,7 @@ func printTable(title string, m []Mount, opts TableOptions) {
 		}
 	}
 
-	tab.SortBy([]table.SortBy{{Number: opts.SortBy, Mode: sortMode}})
+	tab.SortBy([]table.SortBy{{Number: columnPosition(order, opts.SortBy), Mode: sortMode}})
 	tab.Render()
 }
 
@@ -579,4 +594,32 @@ func columnIDs() []string {
 	}
 
 	return s
+}
+
+// tableColumnOrder maps displayed positions to the original columns, including
+// hidden sorting helpers. Keeping every column preserves sorting by hidden data.
+func tableColumnOrder(opts TableOptions) []int {
+	order := make([]int, 0, 19)
+	if opts.CustomOrder {
+		for _, ci := range opts.Columns {
+			if !inColumns(order, ci) {
+				order = append(order, ci)
+			}
+		}
+	}
+	for ci := 1; ci <= 19; ci++ {
+		if !inColumns(order, ci) {
+			order = append(order, ci)
+		}
+	}
+	return order
+}
+
+func columnPosition(order []int, original int) int {
+	for i, ci := range order {
+		if ci == original {
+			return i + 1
+		}
+	}
+	return original
 }
