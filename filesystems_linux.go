@@ -269,6 +269,12 @@ func isFuseFs(m Mount) bool {
 }
 
 func isNetworkFs(m Mount) bool {
+	// WEKA identifies its Linux mounts as wekafs. Its statfs magic is not
+	// part of the public kernel filesystem type map.
+	if m.Fstype == "wekafs" {
+		return true
+	}
+
 	return networkMap[int64(m.Stat().Type)] //nolint:unconvert
 }
 
