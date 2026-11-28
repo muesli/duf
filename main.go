@@ -39,12 +39,13 @@ var (
 	onlyFs      = flag.String("only-fs", "", "only specific filesystems, separated with commas")
 	onlyMp      = flag.String("only-mp", "", "only specific mount points, separated with commas (supports wildcards)")
 
-	output   = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
-	sortBy   = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
-	reverse  = flag.Bool("reverse", false, "reverse sort order")
-	width    = flag.Uint("width", 0, "max output width")
-	themeOpt = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
-	styleOpt = flag.String("style", defaultStyleName(), "style: unicode, ascii")
+	orderColumns = flag.String("order-columns", "default", "column order: default, custom (follow --output)")
+	output       = flag.String("output", "", "output fields: "+strings.Join(columnIDs(), ", "))
+	sortBy       = flag.String("sort", "mountpoint", "sort output by: "+strings.Join(columnIDs(), ", "))
+	reverse      = flag.Bool("reverse", false, "reverse sort order")
+	width        = flag.Uint("width", 0, "max output width")
+	themeOpt     = flag.String("theme", defaultThemeName(), "color themes: dark, light, ansi")
+	styleOpt     = flag.String("style", defaultStyleName(), "style: unicode, ascii")
 
 	availThreshold = flag.String("avail-threshold", "10G,1G", "specifies the coloring threshold (yellow, red) of the avail column, must be integer with optional SI prefixes")
 	usageThreshold = flag.String("usage-threshold", "0.5,0.9", "specifies the coloring threshold (yellow, red) of the usage bars as a floating point number from 0 to 1")
@@ -240,6 +241,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// validate column order
+	if *orderColumns != "default" && *orderColumns != "custom" {
+		fmt.Fprintf(os.Stderr, "unknown column order: %s (valid: default, custom)\n", *orderColumns)
+		os.Exit(1)
+	}
+
 	// validate output columns
 	columns, err := parseColumns(*output)
 	if err != nil {
@@ -355,10 +362,11 @@ func main() {
 
 	// print tables
 	renderTables(m, filters, TableOptions{
-		Columns:   columns,
-		SortBy:    sortCol,
-		Reverse:   *reverse,
-		Style:     style,
-		StyleName: *styleOpt,
+		Columns:     columns,
+		CustomOrder: *orderColumns == "custom",
+		SortBy:      sortCol,
+		Reverse:     *reverse,
+		Style:       style,
+		StyleName:   *styleOpt,
 	})
 }
